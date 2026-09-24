@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Data Systems Lab — an interactive course for learning how databases work."
+    />
+    <title>Data Systems Lab</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23c8ed76'/%3E%3Cpath d='M9 9h14v3H9zm0 6h10v3H9zm0 6h7v3H9z' fill='%23124834'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css?v=20260924" />
+    <link rel="stylesheet" href="styles/operations.css?v=20260924" />
+    <link rel="stylesheet" href="styles/engine-lens.css?v=20260924" />
+    <link rel="stylesheet" href="styles/cross-engine-indexes.css?v=20260924" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Course navigation">
+        <a class="brand" href="#/welcome" aria-label="Data Systems Lab home">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span>
+            <strong>Data Systems</strong>
+            <small>Interactive lab</small>
+          </span>
+        </a>
+
+        <div class="progress-block">
+          <div class="progress-label">
+            <span>Course progress</span>
+            <strong id="progress-percent">0%</strong>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <nav id="course-nav"></nav>
+
+        <div class="sidebar-footer">
+          <span class="status-dot"></span>
+          Progress saves in this browser
+        </div>
+      </aside>
+
+      <header class="mobile-header">
+        <a class="brand" href="#/welcome">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <strong>Data Systems</strong>
+        </a>
+        <button class="icon-button" id="menu-button" aria-label="Open course navigation" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </header>
+
+      <main id="lesson-root" tabindex="-1"></main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="js/core.js?v=20260924"></script>
+    <script src="js/components/quiz.js?v=20260924b"></script>
+    <script src="js/components/engine-lens.js?v=20260924"></script>
+    <script src="js/lessons/welcome.js?v=20260924"></script>
+    <script src="js/lessons/storage.js?v=20260924"></script>
+    <script src="js/lessons/index-layout.js?v=20260924"></script>
+    <script src="js/lessons/indexes.js?v=20260924"></script>
+    <script src="js/lessons/access-paths.js?v=20260924"></script>
+    <script src="js/lessons/index-operations.js?v=20260924"></script>
+    <script src="js/lessons/btree-writes.js?v=20260924"></script>
+    <script src="js/lessons/bloom.js?v=20260924"></script>
+    <script src="js/lessons/index-quiz.js?v=20260924"></script>
+    <script src="js/lessons/query-planning.js?v=20260924"></script>
+    <script src="js/lessons/acid-foundations.js?v=20260924"></script>
+    <script src="js/lessons/transactions.js?v=20260924"></script>
+    <script src="js/lessons/mvcc-snapshots.js?v=20260924"></script>
+    <script src="js/lessons/serializability.js?v=20260924"></script>
+    <script src="js/lessons/consistency.js?v=20260924"></script>
+    <script src="js/lessons/durability.js?v=20260924"></script>
+    <script src="js/lessons/acid-quiz.js?v=20260924"></script>
+    <script src="js/lessons/replication.js?v=20260924"></script>
+    <script src="js/lessons/incident.js?v=20260924"></script>
+    <script src="js/lessons/tuple-versions.js?v=20260924"></script>
+    <script src="js/lessons/vacuum.js?v=20260924"></script>
+    <script src="js/lessons/join-algorithms.js?v=20260924"></script>
+    <script src="js/lessons/memory-spills.js?v=20260924"></script>
+    <script src="js/lessons/deadlocks.js?v=20260924"></script>
+    <script src="js/lessons/partitioning.js?v=20260924"></script>
+    <script src="js/lessons/predicate-indexes.js?v=20260924"></script>
+    <script src="js/lessons/specialized-indexes.js?v=20260924"></script>
+    <script src="js/lessons/index-observability.js?v=20260924"></script>
+    <script src="js/lessons/migration-capstone.js?v=20260924"></script>
+    <script src="app.js?v=20260924"></script>
+  </body>
+</html>

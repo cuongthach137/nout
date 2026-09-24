@@ -1,0 +1,74 @@
+/* Reusable four-level cross-engine learning surface. */
+.engine-lens { background: linear-gradient(180deg, rgba(225,232,244,.45), var(--surface) 170px); }
+.engine-levels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin: -4px 0 14px; }
+.engine-levels span { padding: 7px; border-radius: 6px; color: var(--muted); background: rgba(255,255,255,.75); font-family: var(--mono); font-size: 7px; text-align: center; text-transform: uppercase; }
+.engine-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; padding: 7px; border-radius: 11px; background: var(--surface-soft); }
+.engine-tab { min-width: 0; padding: 10px; border: 1px solid transparent; border-radius: 8px; color: var(--muted); background: transparent; cursor: pointer; text-align: left; }
+.engine-tab strong, .engine-tab span { display: block; }
+.engine-tab strong { color: var(--ink); font-size: 10px; }
+.engine-tab span { margin-top: 3px; font-family: var(--mono); font-size: 7px; }
+.engine-tab.active { border-color: var(--green); background: var(--surface); box-shadow: 0 3px 10px rgba(23,33,29,.06); }
+.engine-tab.active strong { color: var(--green-deep); }
+.engine-body { margin-top: 12px; }
+.engine-identity { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 14px; border-radius: 9px; color: white; background: var(--sidebar); }
+.engine-identity span, .engine-identity strong { display: block; }
+.engine-identity span { color: var(--lime); font-family: var(--mono); font-size: 8px; }
+.engine-identity strong { margin-top: 4px; font-size: 12px; }
+.engine-identity code { max-width: 50%; overflow-wrap: anywhere; color: #c9d4ce; font-size: 8px; text-align: right; }
+.engine-implementation { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 10px; margin-top: 10px; }
+.engine-trace { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 11px; background: #fbfcf9; }
+.engine-diagram { min-height: 105px; display: flex; align-items: center; justify-content: center; gap: 7px; overflow: hidden; }
+.engine-node { min-width: 0; flex: 1; padding: 9px 7px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); opacity: .44; transition: opacity .2s, border-color .2s, background .2s, transform .2s; }
+.engine-node small, .engine-node strong, .engine-node span { display: block; overflow-wrap: anywhere; }
+.engine-node small { color: var(--muted); font-size: 6px; text-transform: uppercase; }
+.engine-node strong { margin: 5px 0; font-size: 9px; }
+.engine-node span { color: var(--muted); font-family: var(--mono); font-size: 6px; }
+.engine-node.active { border-color: var(--green); background: var(--green-soft); opacity: 1; transform: translateY(-2px); }
+.engine-arrow { flex: 0 0 auto; color: var(--green); font-family: var(--mono); font-size: 8px; }
+.engine-step { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; min-height: 90px; margin-top: 10px; padding-top: 11px; border-top: 1px solid var(--line); }
+.engine-step small, .engine-step strong { display: block; }
+.engine-step small { color: var(--green); font-family: var(--mono); font-size: 7px; text-transform: uppercase; }
+.engine-step strong { margin-top: 4px; font-size: 10px; }
+.engine-step p { max-width: 590px; margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.engine-step > div:last-child { flex: 0 0 auto; display: flex; gap: 5px; }
+.engine-step .button { min-height: 32px; padding: 0 10px; font-size: 9px; }
+.engine-counters { display: grid; gap: 7px; }
+.engine-counters > div { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); }
+.engine-counters span, .engine-counters strong, .engine-counters small { display: block; }
+.engine-counters span, .engine-counters small { color: var(--muted); font-size: 7px; }
+.engine-counters strong { margin: 5px 0; overflow-wrap: anywhere; font-family: var(--mono); font-size: 14px; }
+.engine-production { display: grid; grid-template-columns: .9fr 1.1fr; gap: 10px; margin-top: 10px; }
+.engine-production > div, .engine-production pre { min-width: 0; margin: 0; padding: 15px; border-radius: 10px; }
+.engine-production > div { border: 1px solid var(--line); background: var(--surface); }
+.engine-production h3 { margin: 7px 0; font-size: 12px; }
+.engine-production p { margin: 0 0 9px; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.engine-production pre { overflow: auto; color: #c9d4ce; background: var(--sidebar); font-family: var(--mono); font-size: 8px; line-height: 1.55; white-space: pre-wrap; }
+.engine-level-tag { color: var(--green); font-family: var(--mono); font-size: 7px; text-transform: uppercase; }
+.engine-source { color: var(--green); font-family: var(--mono); font-size: 8px; text-decoration: underline; text-underline-offset: 3px; }
+.engine-challenge { margin-top: 10px; padding: 15px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.engine-challenge h3 { margin: 7px 0 11px; font-size: 12px; }
+.engine-challenge-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+.engine-challenge-options button { min-height: 46px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); font-size: 8px; cursor: pointer; }
+.engine-challenge-options button.correct { color: var(--green-deep); border-color: var(--green); background: var(--green-soft); }
+.engine-challenge-options button.wrong { color: #8f3d27; border-color: var(--coral); background: var(--coral-soft); }
+.engine-challenge-feedback { min-height: 34px; margin: 8px 0 0; padding: 8px 10px; border-radius: 7px; color: var(--muted); background: var(--surface-soft); font-size: 8px; line-height: 1.5; }
+.engine-challenge-feedback.correct { color: var(--green-deep); background: var(--green-soft); }
+.engine-challenge-feedback.wrong { color: #8f3d27; background: var(--coral-soft); }
+
+@media (max-width: 760px) {
+  .engine-levels { grid-template-columns: repeat(2, 1fr); }
+  .engine-tabs { grid-template-columns: 1fr; }
+  .engine-identity { align-items: flex-start; flex-direction: column; }
+  .engine-identity code { max-width: none; text-align: left; }
+  .engine-implementation, .engine-production { grid-template-columns: 1fr; }
+  .engine-counters { grid-template-columns: repeat(3, 1fr); }
+  .engine-diagram { align-items: stretch; flex-direction: column; }
+  .engine-node { width: 100%; }
+  .engine-arrow { align-self: center; transform: rotate(90deg); }
+  .engine-step { align-items: flex-start; flex-direction: column; }
+  .engine-challenge-options { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 430px) {
+  .engine-counters { grid-template-columns: 1fr; }
+}
