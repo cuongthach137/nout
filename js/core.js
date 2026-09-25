@@ -4,7 +4,7 @@
   const lessons = [
     { id: "welcome", module: "Start here", number: "00", title: "Course map", minutes: 3 },
     { id: "modeling", module: "Start here", number: "01", title: "One fact, one place", minutes: 14 },
-    { id: "pages", module: "Storage fundamentals", number: "02", title: "Pages, not rows", minutes: 14 },
+    { id: "pages", module: "Storage fundamentals", number: "02", title: "Pages, not rows", minutes: 18 },
     { id: "index-layout", module: "Indexes", number: "03", title: "Physical data layout", minutes: 12 },
     { id: "btree", module: "Indexes", number: "04", title: "Walk a B-tree", minutes: 16 },
     { id: "index-types", module: "Indexes", number: "05", title: "Choose an index", minutes: 15 },
