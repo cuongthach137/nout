@@ -1,7 +1,71 @@
 {
+ "end.1": {
+  "hash": "890c35b5ed28",
+  "ms": 4672
+ },
+ "neighbour.1": {
+  "hash": "1f3b774a2582",
+  "ms": 4587
+ },
+ "neighbour.2": {
+  "hash": "a575d8988955",
+  "ms": 2859
+ },
+ "neighbour.3": {
+  "hash": "69d6e90550ca",
+  "ms": 4864
+ },
+ "neighbour.ask": {
+  "hash": "9863fc567586",
+  "ms": 2155
+ },
+ "neighbour.free": {
+  "hash": "c3ea94166f7e",
+  "ms": 3861
+ },
+ "neighbour.hint": {
+  "hash": "de1b12f24a60",
+  "ms": 1749
+ },
+ "page.1": {
+  "hash": "6c49e5c7d3b5",
+  "ms": 4501
+ },
+ "page.amp": {
+  "hash": "198c557fc8a0",
+  "ms": 5696
+ },
  "page.ask": {
-  "hash": "171a106d7e08",
-  "ms": 1835
+  "hash": "56b15f7da2be",
+  "ms": 1792
+ },
+ "page.called-it": {
+  "hash": "35b8f0f24cd6",
+  "ms": 1664
+ },
+ "page.got": {
+  "hash": "e74f9c63a5ad",
+  "ms": 4757
+ },
+ "page.hint": {
+  "hash": "eec9281dbfbe",
+  "ms": 1984
+ },
+ "page.predict": {
+  "hash": "741d4d853fce",
+  "ms": 3947
+ },
+ "page.predict-page": {
+  "hash": "c81958794364",
+  "ms": 1707
+ },
+ "page.predict-row": {
+  "hash": "ba2a0f3830f9",
+  "ms": 2475
+ },
+ "page.predict-table": {
+  "hash": "581680154f2e",
+  "ms": 1749
  },
  "teach-page.1": {
   "hash": "081ea4d1e7d1",
@@ -22,5 +86,21 @@
  "teach-page.5": {
   "hash": "ea8987740083",
   "ms": 5013
+ },
+ "teach-page.skip": {
+  "hash": "ac1166f9dc85",
+  "ms": 1472
+ },
+ "teach-page.why": {
+  "hash": "c614e364a33f",
+  "ms": 10048
+ },
+ "teach-page.why-2": {
+  "hash": "38b15e484316",
+  "ms": 4395
+ },
+ "teach-page.why-ask": {
+  "hash": "4c8f27f7c62e",
+  "ms": 2219
  }
 }

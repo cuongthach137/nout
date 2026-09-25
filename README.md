@@ -52,6 +52,8 @@ Course progress is stored in the browser with `localStorage`.
 
 ## Narration audio
 
+Narrated mode (`js/components/narrator.js`) plays a lesson like a short film and stops for taps and response choices. A lesson's chapters live in `js/lessons/<lesson>-narrated.js`; its lines live in `narration/<lesson>.json`, where each line is a caption string or `{ "caption", "voice" }`. `build` also regenerates `narration/<lesson>.js`, the copy the page actually loads (plain script, so it works from `file://` too). Rebuild after editing lines.
+
 Narrated lessons use pre-rendered mp3s made with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx), a free local neural TTS (no API key). Needs [uv](https://docs.astral.sh/uv/) and ffmpeg; models download once to `~/.cache/kokoro-onnx`.
 
 ```bash

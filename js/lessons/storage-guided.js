@@ -67,6 +67,43 @@
     }
   }
 
+  // Fetch one customer: its whole page flies from the shelf into memory.
+  async function openRow(M, ui, st, id, api) {
+    const page = M.pageOf(id);
+    const shelfPage = ui.shelf.querySelector(`[data-page="${page}"]`);
+    retrigger(shelfPage, "st-lift");
+    await api.after(fly(shelfPage, ui.page, { duration: 650, lift: 60, className: "st-flying" }));
+    Object.assign(st, { open: page, wanted: [id], asked: M.customer(id).bytes, read: M.PAGE_BYTES });
+    paintAnatomy(M, ui, st);
+    retrigger(ui.page, "st-arrive");
+    floater(ui.c("read"), "+8,192 B", "warn");
+    ui.shelf.classList.add("locked");
+  }
+
+  // Only the other rows on the page in memory stay tappable.
+  function markNeighbours(M, ui, st) {
+    ui.shelf.querySelectorAll(".st-row").forEach((row) => {
+      const id = Number(row.dataset.id);
+      const live = M.pageOf(id) === st.open && !st.wanted.includes(id);
+      row.classList.toggle("gd-hint", live);
+      row.disabled = !live;
+    });
+  }
+
+  // Read a row whose page is already in memory: no extra bytes.
+  function readNeighbour(M, ui, st, id) {
+    st.wanted.push(id);
+    st.asked += M.customer(id).bytes;
+    paintAnatomy(M, ui, st, { renderPage: false });
+    const tuple = ui.page.querySelector(`.st-tuple[data-id="${id}"]`);
+    tuple.classList.replace("along", "want");
+    ui.page.querySelector(`.st-pointers [data-id="${id}"]`).classList.add("want");
+    retrigger(tuple, "ping");
+    burst(tuple, { count: 14 });
+    floater(ui.c("read"), "+0 B", "");
+    markNeighbours(M, ui, st);
+  }
+
   // Move elements to new places in the DOM, animating each from where it was (FLIP).
   function flipMove(elements, mutate, { duration = 700, stagger = 16 } = {}) {
     const before = new Map(elements.map((el) => [el, el.getBoundingClientRect()]));
@@ -80,74 +117,79 @@
   }
 
   // Teaching beats: show the idea first, one caption per tap.
+  // The page story is shared with Narrated mode, which speaks its own lines over the same frames.
+  function pageStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gt-page">
+          <div class="gt-disk"><span class="gt-label">disk</span><div class="gt-rows"></div><div class="gt-pages"></div></div>
+          <div class="gt-mem"><span class="gt-label">memory</span><div class="gt-mem-slot"></div></div>
+        </div>`;
+        return { rows: stage.querySelector(".gt-rows"), pages: stage.querySelector(".gt-pages"), mem: stage.querySelector(".gt-mem"), slot: stage.querySelector(".gt-mem-slot") };
+      },
+      frames: [
+        {
+          caption: "A table of 32 customers. Each one is a <b>row</b>.",
+          async enter(ctx, a) {
+            ctx.rows.innerHTML = Array.from({ length: 32 }, (_, i) => `<span class="gt-chip" data-id="${i + 1}" style="--i:${i}">${M.pad(i + 1)}</span>`).join("");
+            await a.wait(700);
+          },
+        },
+        {
+          caption: "On disk, rows are packed into <b>pages</b>.",
+          async enter(ctx, a) {
+            ctx.pages.innerHTML = Array.from({ length: M.PAGE_COUNT }, (_, p) => `<div class="gt-pg" data-page="${p}"><b>P${p + 1}</b></div>`).join("");
+            const chips = [...ctx.rows.children];
+            await a.after(flipMove(chips, () => {
+              chips.forEach((chip) => ctx.pages.querySelector(`[data-page="${M.pageOf(Number(chip.dataset.id))}"]`).appendChild(chip));
+              ctx.rows.remove();
+            }));
+          },
+        },
+        {
+          caption: "Every page is the same size: <b>8 KB</b>.",
+          async enter(ctx, a) {
+            ctx.pages.querySelectorAll(".gt-pg").forEach((page, i) => {
+              page.insertAdjacentHTML("beforeend", `<span class="gt-kb" style="--i:${i}">8 KB</span>`);
+            });
+            await a.wait(600);
+          },
+        },
+        {
+          caption: "A real page holds ~100 rows. We draw 4 so you can see them.",
+          async enter(ctx, a) {
+            const page = ctx.pages.querySelector('[data-page="2"]');
+            page.classList.add("zoom");
+            page.insertAdjacentHTML("beforeend", `<span class="gt-more">+ ~96 more rows</span>`);
+            await a.wait(600);
+          },
+        },
+        {
+          caption: "To read <b>one</b> row, the engine copies its <b>whole page</b> into memory.",
+          async enter(ctx, a) {
+            const page = ctx.pages.querySelector('[data-page="2"]');
+            page.classList.remove("zoom");
+            page.querySelector(".gt-more").remove();
+            ctx.mem.classList.add("show");
+            await a.wait(350);
+            await a.after(DSL.LabKit.fly(page, ctx.slot, { duration: 800, lift: 70 }));
+            ctx.slot.innerHTML = page.outerHTML;
+            const copy = ctx.slot.querySelector(".gt-pg");
+            copy.querySelector('[data-id="11"]').classList.add("want");
+            retrigger(copy, "bp-land");
+            floater(copy, "#11 wanted · 4 rows came", "warn");
+          },
+        },
+      ],
+    };
+  }
+
   function teachPage(M) {
     return {
       id: "teach-page",
       prompt: "What is a page?",
       mount(scene, api) {
-        DSL.Guided.storyboard(scene, api, {
-          build(stage) {
-            stage.innerHTML = `<div class="gt-page">
-              <div class="gt-disk"><span class="gt-label">disk</span><div class="gt-rows"></div><div class="gt-pages"></div></div>
-              <div class="gt-mem"><span class="gt-label">memory</span><div class="gt-mem-slot"></div></div>
-            </div>`;
-            return { rows: stage.querySelector(".gt-rows"), pages: stage.querySelector(".gt-pages"), mem: stage.querySelector(".gt-mem"), slot: stage.querySelector(".gt-mem-slot") };
-          },
-          frames: [
-            {
-              caption: "A table of 32 customers. Each one is a <b>row</b>.",
-              async enter(ctx, a) {
-                ctx.rows.innerHTML = Array.from({ length: 32 }, (_, i) => `<span class="gt-chip" data-id="${i + 1}" style="--i:${i}">${M.pad(i + 1)}</span>`).join("");
-                await a.wait(700);
-              },
-            },
-            {
-              caption: "On disk, rows are packed into <b>pages</b>.",
-              async enter(ctx, a) {
-                ctx.pages.innerHTML = Array.from({ length: M.PAGE_COUNT }, (_, p) => `<div class="gt-pg" data-page="${p}"><b>P${p + 1}</b></div>`).join("");
-                const chips = [...ctx.rows.children];
-                await a.after(flipMove(chips, () => {
-                  chips.forEach((chip) => ctx.pages.querySelector(`[data-page="${M.pageOf(Number(chip.dataset.id))}"]`).appendChild(chip));
-                  ctx.rows.remove();
-                }));
-              },
-            },
-            {
-              caption: "Every page is the same size: <b>8 KB</b>.",
-              async enter(ctx, a) {
-                ctx.pages.querySelectorAll(".gt-pg").forEach((page, i) => {
-                  page.insertAdjacentHTML("beforeend", `<span class="gt-kb" style="--i:${i}">8 KB</span>`);
-                });
-                await a.wait(600);
-              },
-            },
-            {
-              caption: "A real page holds ~100 rows. We draw 4 so you can see them.",
-              async enter(ctx, a) {
-                const page = ctx.pages.querySelector('[data-page="2"]');
-                page.classList.add("zoom");
-                page.insertAdjacentHTML("beforeend", `<span class="gt-more">+ ~96 more rows</span>`);
-                await a.wait(600);
-              },
-            },
-            {
-              caption: "To read <b>one</b> row, the engine copies its <b>whole page</b> into memory.",
-              async enter(ctx, a) {
-                const page = ctx.pages.querySelector('[data-page="2"]');
-                page.classList.remove("zoom");
-                page.querySelector(".gt-more").remove();
-                ctx.mem.classList.add("show");
-                await a.wait(350);
-                await a.after(DSL.LabKit.fly(page, ctx.slot, { duration: 800, lift: 70 }));
-                ctx.slot.innerHTML = page.outerHTML;
-                const copy = ctx.slot.querySelector(".gt-pg");
-                copy.querySelector('[data-id="11"]').classList.add("want");
-                retrigger(copy, "bp-land");
-                floater(copy, "#11 wanted · 4 rows came", "warn");
-              },
-            },
-          ],
-        });
+        DSL.Guided.storyboard(scene, api, pageStory(M));
       },
     };
   }
@@ -384,16 +426,7 @@
             const button = event.target.closest(".st-row");
             if (!button || busy || st.open !== null) return;
             busy = true;
-            const id = Number(button.dataset.id);
-            const page = M.pageOf(id);
-            const shelfPage = ui.shelf.querySelector(`[data-page="${page}"]`);
-            retrigger(shelfPage, "st-lift");
-            await api.after(fly(shelfPage, ui.page, { duration: 650, lift: 60, className: "st-flying" }));
-            Object.assign(st, { open: page, wanted: [id], asked: M.customer(id).bytes, read: M.PAGE_BYTES });
-            paintAnatomy(M, ui, st);
-            retrigger(ui.page, "st-arrive");
-            floater(ui.c("read"), "+8,192 B", "warn");
-            ui.shelf.classList.add("locked");
+            await openRow(M, ui, st, Number(button.dataset.id), api);
             api.done(`You wanted <b>${st.asked} B</b>. You got <b>8,192 B</b>.`, "warn");
           });
         },
@@ -408,27 +441,11 @@
           if (st.open === null || st.open === undefined) Object.assign(st, { open: 2, wanted: [11], asked: M.customer(11).bytes, read: M.PAGE_BYTES });
           const ui = anatomyScene(M, scene);
           paintAnatomy(M, ui, st, { animate: false });
-          const hint = () => ui.shelf.querySelectorAll(".st-row").forEach((row) => {
-            const id = Number(row.dataset.id);
-            const live = M.pageOf(id) === st.open && !st.wanted.includes(id);
-            row.classList.toggle("gd-hint", live);
-            row.disabled = !live;
-          });
-          hint();
+          markNeighbours(M, ui, st);
           ui.shelf.addEventListener("click", (event) => {
             const button = event.target.closest(".st-row");
             if (!button || button.disabled) return;
-            const id = Number(button.dataset.id);
-            st.wanted.push(id);
-            st.asked += M.customer(id).bytes;
-            paintAnatomy(M, ui, st, { renderPage: false });
-            const tuple = ui.page.querySelector(`.st-tuple[data-id="${id}"]`);
-            tuple.classList.replace("along", "want");
-            ui.page.querySelector(`.st-pointers [data-id="${id}"]`).classList.add("want");
-            retrigger(tuple, "ping");
-            burst(tuple, { count: 14 });
-            floater(ui.c("read"), "+0 B", "");
-            hint();
+            readNeighbour(M, ui, st, Number(button.dataset.id));
             api.done(`Free ride: <b>+0 B</b> read. Amplification drops.`);
             api.lab("anatomy");
           });
@@ -866,6 +883,8 @@
       }),
     ];
   }
+
+  DSL.StorageScenes = Object.freeze({ anatomyScene, paintAnatomy, openRow, markNeighbours, readNeighbour, pageStory });
 
   DSL.registerGuided("pages", () => DSL.Guided.run({
     lessonId: "pages",

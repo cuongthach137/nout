@@ -32,19 +32,20 @@
 
   function route() {
     DSL.clearTimers();
+    DSL.leave();
     DSL.elements.toast.classList.remove("show");
     const [path, query = ""] = window.location.hash.replace("#/", "").split("?");
     const requested = path || "welcome";
     const forced = new URLSearchParams(query).get("mode");
     DSL.state.current = DSL.renderers[requested] ? requested : "welcome";
-    if (forced === "guided" || forced === "explore") {
+    if (forced === "narrated" || forced === "guided" || forced === "explore") {
       DSL.setMode(forced);
       history.replaceState(null, "", `#/${DSL.state.current}`);
     }
-    const guided = DSL.getMode() === "guided" && Boolean(DSL.guided[DSL.state.current]);
-    document.body.classList.toggle("guided", guided);
+    const mode = DSL.modeFor(DSL.state.current);
+    document.body.classList.toggle("guided", mode !== "explore");
     renderNavigation();
-    (guided ? DSL.guided : DSL.renderers)[DSL.state.current]();
+    ({ narrated: DSL.narrated, guided: DSL.guided, explore: DSL.renderers })[mode][DSL.state.current]();
     window.scrollTo(0, 0);
     DSL.elements.root.focus({ preventScroll: true });
     document.querySelector(".sidebar").classList.remove("open");

@@ -3,11 +3,34 @@
   "voice": "af_heart",
   "speed": 1.0,
   "lines": {
-    "teach-page.1": "Here's a table of thirty-two customers. Each one is a row.",
-    "teach-page.2": "On disk, rows aren't stored one by one. They're packed into pages.",
-    "teach-page.3": "Every page is the same size. Eight kilobytes.",
+    "teach-page.1": "Here's a table of thirty-two customers. Each one is a <b>row</b>.",
+    "teach-page.2": "On disk, rows aren't stored one by one. They're packed into <b>pages</b>.",
+    "teach-page.3": { "caption": "Every page is the same size: <b>8 KB</b>.", "voice": "Every page is the same size. Eight kilobytes." },
+    "teach-page.why-ask": "Now, you might be wondering about that number.",
+    "teach-page.why": { "caption": "Disks move data in fixed-size blocks, so databases do too. Postgres uses <b>8 KB</b> pages; MySQL's InnoDB uses <b>16 KB</b>.", "voice": "Disks move data in fixed-size blocks, so databases do too. Postgres uses eight kilobyte pages. MySQL's InnoDB uses sixteen." },
+    "teach-page.why-2": "Big enough to read efficiently. Small enough to keep thousands of them in memory.",
+    "teach-page.skip": "Fair enough. Onward.",
     "teach-page.4": "A real page holds around a hundred rows. We'll draw four, so you can actually see them.",
-    "teach-page.5": "Here's the catch. To read one row, the engine copies its whole page into memory.",
-    "page.ask": "Your turn. Tap any customer."
+    "teach-page.5": "Here's the catch. To read <b>one</b> row, the engine copies its <b>whole page</b> into memory.",
+
+    "page.1": "Let's make that concrete. On the left, the table on disk. On the right, memory.",
+    "page.predict": "You're about to fetch one customer. How much will the disk actually read?",
+    "page.predict-row": "That's the intuitive answer. Let's find out.",
+    "page.predict-page": "Good instinct. Let's check.",
+    "page.predict-table": "Not quite that bad. Let's see.",
+    "page.ask": "Go ahead. Tap any customer.",
+    "page.hint": "Any numbered row on the shelf will do.",
+    "page.got": { "caption": "You wanted <b>{asked} B</b>. The disk handed over <b>8,192 B</b>.", "voice": "You asked for one small row. The disk handed over the whole page. Eight kilobytes." },
+    "page.called-it": "Exactly what you predicted.",
+    "page.amp": "That ratio, bytes read over bytes wanted, is called <b>read amplification</b>. Keep an eye on it.",
+
+    "neighbour.1": "But here's the upside. That page is sitting in memory now, with its neighbours on it.",
+    "neighbour.ask": "Tap one of the other rows on that page.",
+    "neighbour.hint": "The glowing rows share its page.",
+    "neighbour.free": { "caption": "Free ride: <b>+0 B</b> read from disk.", "voice": "Free. Zero extra bytes from disk. The page was already here." },
+    "neighbour.2": "Amplification drops with every neighbour you read.",
+    "neighbour.3": "That's why databases work so hard to store rows that are read together, together.",
+
+    "end.1": "That's all the narration for now. The rest of this lesson continues in guided mode."
   }
 }
