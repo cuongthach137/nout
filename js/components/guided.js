@@ -228,9 +228,85 @@
     step();
   }
 
+  // Shared closing beats: a card-by-card quiz and a finish screen.
+  function quizBeat({ questions, passScore = Math.ceil(questions.length * 0.75), onPass }) {
+    const { burst } = DSL.LabKit;
+    return {
+      id: "quiz",
+      prompt: `${questions.length} quick calls.`,
+      mount(scene, api) {
+        let q = 0;
+        let right = 0;
+        function render() {
+          const question = questions[q];
+          scene.innerHTML = `<div class="gd-quiz">
+            <span class="gd-q-count">${q + 1} / ${questions.length}</span>
+            <p class="gd-q">${question.prompt}</p>
+            <div class="gd-answers">${question.options.map((option, i) => `<button type="button" class="gd-answer" data-i="${i}">${option}</button>`).join("")}</div>
+          </div>`;
+          retrigger(scene.querySelector(".gd-quiz"), "gd-card-in");
+          scene.querySelectorAll(".gd-answer").forEach((button) => button.addEventListener("click", async () => {
+            const correct = Number(button.dataset.i) === question.answer;
+            scene.querySelectorAll(".gd-answer").forEach((b) => {
+              b.disabled = true;
+              if (Number(b.dataset.i) === question.answer) b.classList.add("correct");
+            });
+            if (correct) {
+              right += 1;
+              burst(button, { count: 12 });
+              api.say("✓ Right.", "ok");
+            } else {
+              button.classList.add("wrong");
+              api.say(`✗ ${question.why}`, "warn");
+            }
+            await api.wait(correct ? 1000 : 2600);
+            q += 1;
+            if (q < questions.length) {
+              render();
+              api.say("");
+              return;
+            }
+            const passed = right >= passScore;
+            scene.innerHTML = `<div class="gd-quiz gd-quiz-done"><b>${right} / ${questions.length}</b><span>${passed ? "Passed" : "Replay the steps and try again"}</span></div>`;
+            retrigger(scene.querySelector(".gd-quiz"), "gd-card-in");
+            if (passed) {
+              burst(scene.querySelector(".gd-quiz b"), { count: 20, spread: 80 });
+              if (onPass) onPass();
+            }
+            api.done(`<b>${right} / ${questions.length}</b> right.`);
+          }));
+        }
+        render();
+      },
+    };
+  }
+
+  function finishBeat({ lessonId, badges, next }) {
+    const { burst } = DSL.LabKit;
+    return {
+      id: "finish",
+      prompt: "Lesson done. 🎉",
+      mount(scene, api) {
+        const completed = DSL.state.completed.has(lessonId);
+        scene.innerHTML = `<div class="gd-finish">
+          <div class="gd-badges">${badges.map(([icon, title, sub], i) => `<div style="--i:${i}"><span>${icon}</span><b>${title}</b><small>${sub}</small></div>`).join("")}</div>
+          <div class="gd-finish-actions">
+            <button type="button" class="button primary complete-button ${completed ? "done" : ""}" data-complete="${lessonId}">${completed ? "✓ Completed" : "Mark complete"}</button>
+            ${next ? `<a class="button" href="#/${next}">Next lesson →</a>` : ""}
+            <button type="button" class="button ghost" data-mode="explore">Open Explore mode</button>
+            <button type="button" class="button ghost gd-replay">↺ Replay</button>
+          </div>
+        </div>`;
+        DSL.setTimer(() => burst(scene.querySelector(".gd-badges"), { count: 26, spread: 140 }), 350);
+        scene.querySelector(".gd-replay").addEventListener("click", () => api.restart());
+        api.done();
+      },
+    };
+  }
+
   document.addEventListener("keydown", (event) => {
     if (active && active.root.querySelector(".gd")) active.key(event);
   });
 
-  DSL.Guided = Object.freeze({ run, storyboard });
+  DSL.Guided = Object.freeze({ run, storyboard, quizBeat, finishBeat });
 })(window.DataSystemsLab);

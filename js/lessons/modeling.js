@@ -978,5 +978,11 @@
     paint();
   }
 
+  DSL.ModelingModel = Object.freeze({
+    PHONE_OLD, PHONE_NEW, ORDERS, CUSTOMERS, ITEMS, CUST_ID, ITEM_ID, HUNT_COPIES,
+    RESPONSES, DRILL_EVENTS, DRILL_DAYS, QUIZ, progress,
+    dish, buildNotebook, boardMarkup, flip, captureFlip, playFlip,
+  });
+
   DSL.registerRenderer("modeling", renderModeling);
 })(window.DataSystemsLab);
