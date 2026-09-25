@@ -67,6 +67,11 @@
     }
   }
 
+  // Beats report moments worth reacting to; Narrated mode listens, Guided mode ignores them.
+  function emit(api, name, data = {}) {
+    if (api.event) api.event(name, data);
+  }
+
   // Fetch one customer: its whole page flies from the shelf into memory.
   async function openRow(M, ui, st, id, api) {
     const page = M.pageOf(id);
@@ -194,216 +199,228 @@
     };
   }
 
+  function cacheStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gt-cache">
+          <div class="gt-side gt-diskside"><span class="gt-label">disk · big · slow</span><div class="bp-shelf">${diskMarkup(M)}</div><span class="gt-speed">🐢 8 ms per page</span></div>
+          <div class="gt-side gt-ramside"><span class="gt-label ram">RAM · small · fast</span><div class="bp-slots">${slotsMarkup(M, [], 2, "lru", { tag: false })}</div><span class="gt-speed">⚡ 0.1 ms per page</span></div>
+        </div>`;
+        return { disk: stage.querySelector(".gt-diskside"), ram: stage.querySelector(".gt-ramside"), shelf: stage.querySelector(".bp-shelf"), slots: stage.querySelector(".bp-slots") };
+      },
+      frames: [
+        { caption: "Disk holds every page, but each read is <b>slow</b>.", async enter(ctx, a) { ctx.disk.classList.add("show"); await a.wait(450); } },
+        { caption: "RAM is <b>fast</b>, but holds only a few pages. This one: 2.", async enter(ctx, a) { ctx.ram.classList.add("show"); await a.wait(450); } },
+        {
+          caption: "Page not in RAM? A <b>miss</b>: wait for the disk.",
+          async enter(ctx, a) {
+            const source = ctx.shelf.querySelector('[data-page="2"]');
+            retrigger(source, "bp-reading");
+            ctx.slots.innerHTML = slotsMarkup(M, [], 2, "lru", { incoming: 0 });
+            await a.after(fly(source, ctx.slots.querySelector('[data-slot="0"]'), { duration: 950, lift: 80, className: "bp-flying" }));
+            ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }], 2, "lru", { tag: false });
+            ctx.shelf.innerHTML = diskMarkup(M, new Set([2]));
+            const landed = ctx.slots.querySelector(".bp-card");
+            retrigger(landed, "bp-land");
+            floater(landed, "+8 ms", "bad");
+          },
+        },
+        {
+          caption: "Already in RAM? A <b>hit</b>: almost free.",
+          async enter(ctx, a) {
+            const hit = ctx.slots.querySelector(".bp-card");
+            retrigger(hit, "bp-hit");
+            burst(hit, { count: 14 });
+            floater(hit, "+0.1 ms", "");
+            await a.wait(500);
+          },
+        },
+        {
+          caption: "RAM fills up. To load another page, one must <b>leave</b>.",
+          async enter(ctx, a) {
+            ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }], 2, "lru", { incoming: 1 });
+            await a.after(fly(ctx.shelf.querySelector('[data-page="4"]'), ctx.slots.querySelector('[data-slot="1"]'), { duration: 600, lift: 60, className: "bp-flying" }));
+            ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }, { page: 4 }], 2, "lru", { tag: false });
+            ctx.shelf.innerHTML = diskMarkup(M, new Set([2, 4]));
+            await a.wait(450);
+            const next = ctx.shelf.querySelector('[data-page="6"]');
+            floater(next, "P7 needed", "warn");
+            ctx.slots.querySelector('[data-slot="0"] .bp-card').classList.add("bp-evicting");
+            await a.wait(360);
+            ctx.slots.innerHTML = slotsMarkup(M, [null, { page: 4 }], 2, "lru", { incoming: 0 });
+            await a.after(fly(next, ctx.slots.querySelector('[data-slot="0"]'), { duration: 600, lift: 60, className: "bp-flying" }));
+            ctx.slots.innerHTML = slotsMarkup(M, [{ page: 6 }, { page: 4 }], 2, "lru", { tag: false });
+            ctx.shelf.innerHTML = diskMarkup(M, new Set([6, 4]));
+            retrigger(ctx.slots.querySelector('[data-slot="0"] .bp-card'), "bp-land");
+          },
+        },
+      ],
+    };
+  }
+
   function teachCache(M) {
     return {
       id: "teach-cache",
       prompt: "Memory is a cache.",
       mount(scene, api) {
-        DSL.Guided.storyboard(scene, api, {
-          build(stage) {
-            stage.innerHTML = `<div class="gt-cache">
-              <div class="gt-side gt-diskside"><span class="gt-label">disk · big · slow</span><div class="bp-shelf">${diskMarkup(M)}</div><span class="gt-speed">🐢 8 ms per page</span></div>
-              <div class="gt-side gt-ramside"><span class="gt-label ram">RAM · small · fast</span><div class="bp-slots">${slotsMarkup(M, [], 2, "lru", { tag: false })}</div><span class="gt-speed">⚡ 0.1 ms per page</span></div>
-            </div>`;
-            return { disk: stage.querySelector(".gt-diskside"), ram: stage.querySelector(".gt-ramside"), shelf: stage.querySelector(".bp-shelf"), slots: stage.querySelector(".bp-slots") };
-          },
-          frames: [
-            { caption: "Disk holds every page, but each read is <b>slow</b>.", async enter(ctx, a) { ctx.disk.classList.add("show"); await a.wait(450); } },
-            { caption: "RAM is <b>fast</b>, but holds only a few pages. This one: 2.", async enter(ctx, a) { ctx.ram.classList.add("show"); await a.wait(450); } },
-            {
-              caption: "Page not in RAM? A <b>miss</b>: wait for the disk.",
-              async enter(ctx, a) {
-                const source = ctx.shelf.querySelector('[data-page="2"]');
-                retrigger(source, "bp-reading");
-                ctx.slots.innerHTML = slotsMarkup(M, [], 2, "lru", { incoming: 0 });
-                await a.after(fly(source, ctx.slots.querySelector('[data-slot="0"]'), { duration: 950, lift: 80, className: "bp-flying" }));
-                ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }], 2, "lru", { tag: false });
-                ctx.shelf.innerHTML = diskMarkup(M, new Set([2]));
-                const landed = ctx.slots.querySelector(".bp-card");
-                retrigger(landed, "bp-land");
-                floater(landed, "+8 ms", "bad");
-              },
-            },
-            {
-              caption: "Already in RAM? A <b>hit</b>: almost free.",
-              async enter(ctx, a) {
-                const hit = ctx.slots.querySelector(".bp-card");
-                retrigger(hit, "bp-hit");
-                burst(hit, { count: 14 });
-                floater(hit, "+0.1 ms", "");
-                await a.wait(500);
-              },
-            },
-            {
-              caption: "RAM fills up. To load another page, one must <b>leave</b>.",
-              async enter(ctx, a) {
-                ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }], 2, "lru", { incoming: 1 });
-                await a.after(fly(ctx.shelf.querySelector('[data-page="4"]'), ctx.slots.querySelector('[data-slot="1"]'), { duration: 600, lift: 60, className: "bp-flying" }));
-                ctx.slots.innerHTML = slotsMarkup(M, [{ page: 2 }, { page: 4 }], 2, "lru", { tag: false });
-                ctx.shelf.innerHTML = diskMarkup(M, new Set([2, 4]));
-                await a.wait(450);
-                const next = ctx.shelf.querySelector('[data-page="6"]');
-                floater(next, "P7 needed", "warn");
-                ctx.slots.querySelector('[data-slot="0"] .bp-card').classList.add("bp-evicting");
-                await a.wait(360);
-                ctx.slots.innerHTML = slotsMarkup(M, [null, { page: 4 }], 2, "lru", { incoming: 0 });
-                await a.after(fly(next, ctx.slots.querySelector('[data-slot="0"]'), { duration: 600, lift: 60, className: "bp-flying" }));
-                ctx.slots.innerHTML = slotsMarkup(M, [{ page: 6 }, { page: 4 }], 2, "lru", { tag: false });
-                ctx.shelf.innerHTML = diskMarkup(M, new Set([6, 4]));
-                retrigger(ctx.slots.querySelector('[data-slot="0"] .bp-card'), "bp-land");
-              },
-            },
-          ],
-        });
+        DSL.Guided.storyboard(scene, api, cacheStory(M));
       },
     };
   }
 
-  function teachEvict(M) {
+  function evictStory(M) {
     const tag = (slot, text, tone) => {
       slot.querySelectorAll(".gt-tag").forEach((t) => t.remove());
       if (text) slot.insertAdjacentHTML("beforeend", `<em class="gt-tag ${tone}">${text}</em>`);
     };
     return {
+      build(stage) {
+        stage.innerHTML = `<div class="gt-evict">
+          <div class="bp-ram gd-ram"><span class="gd-ram-label">RAM · full</span><div class="bp-slots">
+            <div class="bp-slot gt-slot" data-p="0">${card(M, 0)}<span class="gt-meta"></span></div>
+            <div class="bp-slot gt-slot" data-p="4">${card(M, 4)}<span class="gt-meta"></span></div>
+          </div></div>
+          <ol class="gt-timeline"></ol>
+        </div>`;
+        const slot = (p) => stage.querySelector(`.gt-slot[data-p="${p}"]`);
+        const log = (text) => stage.querySelector(".gt-timeline").insertAdjacentHTML("beforeend", `<li>${text}</li>`);
+        return { slot, log };
+      },
+      frames: [
+        {
+          caption: "RAM holds P1 and P5. P1 arrived <b>first</b>.",
+          async enter(ctx, a) {
+            ctx.log("① P1 arrives");
+            ctx.slot(0).querySelector(".gt-meta").textContent = "arrived 1st";
+            await a.wait(350);
+            ctx.log("② P5 arrives");
+            ctx.slot(4).querySelector(".gt-meta").textContent = "arrived 2nd";
+            await a.wait(350);
+          },
+        },
+        {
+          caption: "Then P1 is <b>used again</b>.",
+          async enter(ctx, a) {
+            ctx.log("③ P1 used");
+            const used = ctx.slot(0).querySelector(".bp-card");
+            retrigger(used, "bp-hit");
+            burst(used, { count: 10 });
+            ctx.slot(0).querySelector(".gt-meta").innerHTML = "arrived 1st · <b>used just now</b>";
+            await a.wait(500);
+          },
+        },
+        {
+          caption: "Rule 1 · <b>FIFO</b>: first in, first out. It evicts P1, even though P1 is busy.",
+          async enter(ctx, a) {
+            tag(ctx.slot(0), "FIFO evicts", "out");
+            retrigger(ctx.slot(0).querySelector(".bp-card"), "gd-wrong");
+            await a.wait(500);
+          },
+        },
+        {
+          caption: "Rule 2 · <b>LRU</b>: least recently used. It evicts P5.",
+          async enter(ctx, a) {
+            tag(ctx.slot(0), "stays", "stay");
+            tag(ctx.slot(4), "LRU evicts", "out");
+            retrigger(ctx.slot(4).querySelector(".bp-card"), "gd-wrong");
+            await a.wait(500);
+          },
+        },
+        {
+          caption: "Busy pages should stay, so real databases use <b>LRU-like</b> rules.",
+          async enter(ctx, a) {
+            ctx.slot(4).querySelector(".bp-card").classList.add("bp-evicting");
+            burst(ctx.slot(0).querySelector(".bp-card"), { count: 14 });
+            await a.wait(500);
+          },
+        },
+      ],
+    };
+  }
+
+  function teachEvict(M) {
+    return {
       id: "teach-evict",
       prompt: "Who gets evicted?",
       mount(scene, api) {
-        DSL.Guided.storyboard(scene, api, {
-          build(stage) {
-            stage.innerHTML = `<div class="gt-evict">
-              <div class="bp-ram gd-ram"><span class="gd-ram-label">RAM · full</span><div class="bp-slots">
-                <div class="bp-slot gt-slot" data-p="0">${card(M, 0)}<span class="gt-meta"></span></div>
-                <div class="bp-slot gt-slot" data-p="4">${card(M, 4)}<span class="gt-meta"></span></div>
-              </div></div>
-              <ol class="gt-timeline"></ol>
-            </div>`;
-            const slot = (p) => stage.querySelector(`.gt-slot[data-p="${p}"]`);
-            const log = (text) => stage.querySelector(".gt-timeline").insertAdjacentHTML("beforeend", `<li>${text}</li>`);
-            return { slot, log };
-          },
-          frames: [
-            {
-              caption: "RAM holds P1 and P5. P1 arrived <b>first</b>.",
-              async enter(ctx, a) {
-                ctx.log("① P1 arrives");
-                ctx.slot(0).querySelector(".gt-meta").textContent = "arrived 1st";
-                await a.wait(350);
-                ctx.log("② P5 arrives");
-                ctx.slot(4).querySelector(".gt-meta").textContent = "arrived 2nd";
-                await a.wait(350);
-              },
-            },
-            {
-              caption: "Then P1 is <b>used again</b>.",
-              async enter(ctx, a) {
-                ctx.log("③ P1 used");
-                const used = ctx.slot(0).querySelector(".bp-card");
-                retrigger(used, "bp-hit");
-                burst(used, { count: 10 });
-                ctx.slot(0).querySelector(".gt-meta").innerHTML = "arrived 1st · <b>used just now</b>";
-                await a.wait(500);
-              },
-            },
-            {
-              caption: "Rule 1 · <b>FIFO</b>: first in, first out. It evicts P1, even though P1 is busy.",
-              async enter(ctx, a) {
-                tag(ctx.slot(0), "FIFO evicts", "out");
-                retrigger(ctx.slot(0).querySelector(".bp-card"), "gd-wrong");
-                await a.wait(500);
-              },
-            },
-            {
-              caption: "Rule 2 · <b>LRU</b>: least recently used. It evicts P5.",
-              async enter(ctx, a) {
-                tag(ctx.slot(0), "stays", "stay");
-                tag(ctx.slot(4), "LRU evicts", "out");
-                retrigger(ctx.slot(4).querySelector(".bp-card"), "gd-wrong");
-                await a.wait(500);
-              },
-            },
-            {
-              caption: "Busy pages should stay, so real databases use <b>LRU-like</b> rules.",
-              async enter(ctx, a) {
-                ctx.slot(4).querySelector(".bp-card").classList.add("bp-evicting");
-                burst(ctx.slot(0).querySelector(".bp-card"), { count: 14 });
-                await a.wait(500);
-              },
-            },
-          ],
-        });
+        DSL.Guided.storyboard(scene, api, evictStory(M));
       },
     };
   }
 
-  function teachLocality(M) {
+  function localityStory(M) {
     const pages = M.DRILL_STEPS.heap.filter((key) => key.startsWith("heap"));
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gt-local"><div class="gt-orders"></div>${M.laneMarkup("gtlane", "The orders table on disk")}</div>`;
+        return { orders: stage.querySelector(".gt-orders"), strips: stage.querySelector("#gtlane-strips") };
+      },
+      frames: [
+        {
+          caption: "GET /orders shows Maya’s <b>12</b> latest orders.",
+          async enter(ctx, a) {
+            ctx.orders.innerHTML = Array.from({ length: 12 }, (_, i) => `<span class="gt-order" style="--i:${i}">order ${i + 1}</span>`).join("");
+            await a.wait(700);
+          },
+        },
+        {
+          caption: "They were written over two years, so they’re <b>scattered</b> across the table’s pages.",
+          async enter(ctx, a) {
+            const chips = [...ctx.orders.children];
+            await a.after(Promise.all(chips.map((chip, i) => a.wait(i * 70).then(() => {
+              const cell = ctx.strips.querySelector(`[data-key="${pages[i % pages.length]}"]`);
+              return fly(chip, cell, { duration: 650, lift: 50 }).then(() => {
+                chip.style.visibility = "hidden";
+                cell.classList.add("gt-has");
+                retrigger(cell, "st-pop");
+              });
+            }))));
+          },
+        },
+        {
+          caption: "An <b>index</b> says where each order is. Following it costs one jump per page.",
+          async enter(ctx, a) {
+            const start = ctx.strips.querySelector('[data-key="index-3"]');
+            start.classList.add("gt-idx");
+            let previous = M.point(ctx.strips, start);
+            for (const key of pages) {
+              const cell = ctx.strips.querySelector(`[data-key="${key}"]`);
+              const to = M.point(ctx.strips, cell);
+              M.arc(ctx.strips, previous, to, "heap");
+              cell.classList.add("miss");
+              previous = to;
+              await a.wait(150);
+            }
+          },
+        },
+        {
+          caption: "A <b>covering index</b> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
+          async enter(ctx, a) {
+            ctx.strips.querySelector(".st-arcs").innerHTML = "";
+            ctx.strips.classList.add("skip-heap");
+            let previous = null;
+            for (const key of M.DRILL_STEPS.covering) {
+              const cell = ctx.strips.querySelector(`[data-key="${key}"]`);
+              cell.classList.remove("gt-idx");
+              cell.classList.add("good");
+              retrigger(cell, "st-pop");
+              const to = M.point(ctx.strips, cell);
+              if (previous) M.arc(ctx.strips, previous, to, "covering");
+              previous = to;
+              await a.wait(220);
+            }
+          },
+        },
+      ],
+    };
+  }
+
+  function teachLocality(M) {
     return {
       id: "teach-locality",
       prompt: "Where do rows live?",
       mount(scene, api) {
-        DSL.Guided.storyboard(scene, api, {
-          build(stage) {
-            stage.innerHTML = `<div class="gt-local"><div class="gt-orders"></div>${M.laneMarkup("gtlane", "The orders table on disk")}</div>`;
-            return { orders: stage.querySelector(".gt-orders"), strips: stage.querySelector("#gtlane-strips") };
-          },
-          frames: [
-            {
-              caption: "GET /orders shows Maya’s <b>12</b> latest orders.",
-              async enter(ctx, a) {
-                ctx.orders.innerHTML = Array.from({ length: 12 }, (_, i) => `<span class="gt-order" style="--i:${i}">order ${i + 1}</span>`).join("");
-                await a.wait(700);
-              },
-            },
-            {
-              caption: "They were written over two years, so they’re <b>scattered</b> across the table’s pages.",
-              async enter(ctx, a) {
-                const chips = [...ctx.orders.children];
-                await a.after(Promise.all(chips.map((chip, i) => a.wait(i * 70).then(() => {
-                  const cell = ctx.strips.querySelector(`[data-key="${pages[i % pages.length]}"]`);
-                  return fly(chip, cell, { duration: 650, lift: 50 }).then(() => {
-                    chip.style.visibility = "hidden";
-                    cell.classList.add("gt-has");
-                    retrigger(cell, "st-pop");
-                  });
-                }))));
-              },
-            },
-            {
-              caption: "An <b>index</b> says where each order is. Following it costs one jump per page.",
-              async enter(ctx, a) {
-                const start = ctx.strips.querySelector('[data-key="index-3"]');
-                start.classList.add("gt-idx");
-                let previous = M.point(ctx.strips, start);
-                for (const key of pages) {
-                  const cell = ctx.strips.querySelector(`[data-key="${key}"]`);
-                  const to = M.point(ctx.strips, cell);
-                  M.arc(ctx.strips, previous, to, "heap");
-                  cell.classList.add("miss");
-                  previous = to;
-                  await a.wait(150);
-                }
-              },
-            },
-            {
-              caption: "A <b>covering index</b> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
-              async enter(ctx, a) {
-                ctx.strips.querySelector(".st-arcs").innerHTML = "";
-                ctx.strips.classList.add("skip-heap");
-                let previous = null;
-                for (const key of M.DRILL_STEPS.covering) {
-                  const cell = ctx.strips.querySelector(`[data-key="${key}"]`);
-                  cell.classList.remove("gt-idx");
-                  cell.classList.add("good");
-                  retrigger(cell, "st-pop");
-                  const to = M.point(ctx.strips, cell);
-                  if (previous) M.arc(ctx.strips, previous, to, "covering");
-                  previous = to;
-                  await a.wait(220);
-                }
-              },
-            },
-          ],
-        });
+        DSL.Guided.storyboard(scene, api, localityStory(M));
       },
     };
   }
@@ -502,6 +519,7 @@
               floater(landed, "+8 ms", "bad");
               api.say("Miss: <b>8 ms</b> waiting on disk.", "warn");
               api.prompt("Again: fetch #11.");
+              emit(api, "miss");
               button.textContent = "Fetch #11 again";
               step = 1;
             } else {
@@ -575,6 +593,7 @@
               retrigger(hitCard, "bp-hit");
               burst(hitCard, { count: 10 });
               api.say(`${M.pad(id)} lives on P${page + 1}, already in RAM: <b>hit</b>.`, "ok");
+              emit(api, "bet", { right, outcome });
               await api.wait(650);
             } else {
               let target = slots.length;
@@ -592,6 +611,7 @@
               retrigger(landed, "bp-land");
               floater(landed, "+8 ms", "bad");
               api.say(`${M.pad(id)} lives on P${page + 1}, not in RAM: <b>miss</b>.`, "warn");
+              emit(api, "bet", { right, outcome });
               await api.wait(350);
             }
             i += 1;
@@ -608,6 +628,7 @@
             ask.textContent = "🎉";
             counter.textContent = "done";
             burst(scoreEl, { count: 14 });
+            emit(api, "score", { score, total: SEQ.length });
             api.done(`<b>${score} / ${SEQ.length}</b> right.${score >= 5 ? " Sharp!" : " The page ranges are the clue."}`);
           }
 
@@ -652,6 +673,7 @@
             verdict.querySelector('[data-rule="lru"]').classList.add("match");
             retrigger(verdict, "gd-pop");
             if (right) burst(verdict.querySelector(".match"), { count: 12 });
+            emit(api, "evict", { right });
             api.done(right ? "Right: P8 was used longest ago. <b>LRU</b> keeps busy P4." : "LRU evicts <b>P8</b>: used longest ago. P4 was just used, so it stays.", right ? "ok" : "warn");
           }));
         },
@@ -722,6 +744,7 @@
             burst(lru.querySelector(".gd-racer-head"), { count: 18, spread: 70 });
             go.disabled = false;
             go.textContent = "Race again";
+            emit(api, "race", { lru: runs.lru.at(-1).reads, fifo: runs.fifo.at(-1).reads });
             api.done(`LRU <b>${runs.lru.at(-1).reads}</b> reads · FIFO <b>${runs.fifo.at(-1).reads}</b>. LRU keeps the hot page.`);
             api.lab("buffer");
           });
@@ -810,6 +833,7 @@
             }
             if (phase === 0) {
               api.say(`<b>10</b> jumps, <b>80 ms</b>. Now the other path.`, "warn");
+              emit(api, "phase");
               await api.wait(900);
               phase = 1;
               resetPhase();
@@ -884,7 +908,7 @@
     ];
   }
 
-  DSL.StorageScenes = Object.freeze({ anatomyScene, paintAnatomy, openRow, markNeighbours, readNeighbour, pageStory });
+  DSL.StorageScenes = Object.freeze({ anatomyScene, paintAnatomy, openRow, markNeighbours, readNeighbour, pageStory, cacheStory, evictStory, localityStory, beats: makeBeats });
 
   DSL.registerGuided("pages", () => DSL.Guided.run({
     lessonId: "pages",

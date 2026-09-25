@@ -6,7 +6,7 @@
   // animate along, and the film stops whenever the learner has to act or pick a response.
   //
   // chapter = { id, title, continues?, script(n, scene) → Promise }
-  // n       = { say, show, ask, choose, wait, after, alive, lab, state }
+  // n       = { say, react, show, mount, ask, choose, wait, after, alive, lab, state }
   //
   // Lines are written in narration/<lesson>.json as { id: caption } or { id: { caption, voice } }.
   // Captions may hold markup and {placeholders}; the voice text never does.
@@ -299,8 +299,11 @@
       const alive = () => t === token && root.contains(scene);
       const after = (promise) => Promise.resolve(promise).then((value) => (alive() ? value : never()));
 
+      let reacting = Promise.resolve();
+
       async function say(id, vars) {
         if (!alive()) return never();
+        await after(reacting);
         await after(clock.ready());
         caption(id, vars);
         dock.classList.add("speaking");
@@ -309,32 +312,77 @@
         await after(clock.sleep(LINE_GAP));
       }
 
-      // Stop the film until the learner acts. setup(finish) wires listeners and calls finish(value).
+      // A line spoken over the action without stopping it (a reaction mid-game). The next say waits for it.
+      function react(id, vars) {
+        if (!alive()) return never();
+        caption(id, vars);
+        dock.classList.add("speaking");
+        reacting = voice.play(id).then(() => dock.classList.remove("speaking"));
+        return after(reacting);
+      }
+
+      // Stop the film until the learner acts: setup(finish) wires listeners and calls finish(value),
+      // or pass a promise (like the one mount returns) to wait for it.
       function ask(setup, { hint, highlight, label = "Your turn" } = {}) {
         if (!alive()) return never();
+        if (typeof setup.then === "function") {
+          const pending = setup;
+          setup = (finish) => pending.then(finish);
+        }
         setTurn(label);
         return after(new Promise((resolve) => {
           let settled = false;
+          let hinting = false;
           const targets = () => (highlight ? [...scene.querySelectorAll(highlight)] : []);
           const finish = (value) => {
             if (settled || !alive()) return;
             settled = true;
             setTurn("");
             targets().forEach((target) => target.classList.remove("nr-nudge"));
-            voice.stop();
+            if (hinting) voice.stop();
             resolve(value);
           };
           clock.sleep(IDLE_HINT).then(() => {
             if (settled || !alive()) return;
             targets().forEach((target) => target.classList.add("nr-nudge"));
             if (hint) {
-              caption(hint);
-              dock.classList.add("speaking");
-              voice.play(hint).then(() => dock.classList.remove("speaking"));
+              hinting = true;
+              react(hint).then(() => { hinting = false; });
             }
           });
           setup(finish);
         }));
+      }
+
+      // Put a Guided beat on stage now; the returned promise resolves when it calls done().
+      // Its say() text shows as a silent caption; event(name, data) calls reach onEvent.
+      function mount(beat, { onEvent } = {}) {
+        return new Promise((finish) => beat.mount(scene, {
+          state,
+          alive,
+          after,
+          wait,
+          prompt() {},
+          say(html) {
+            if (!alive() || !html) return;
+            cap.innerHTML = html;
+            retrigger(cap, "nr-cap-in");
+          },
+          done: () => finish(),
+          lab,
+          restart,
+          event(name, data) {
+            if (alive() && onEvent) onEvent(name, data);
+          },
+        }));
+      }
+
+      function wait(ms) {
+        return after(clock.sleep(reducedMotion() ? Math.min(ms, 80) : ms));
+      }
+
+      function lab(labId) {
+        if (onLab) onLab(labId);
       }
 
       // Stop the film for a response. options = [[key, label], …] → resolves with the chosen key.
@@ -366,11 +414,13 @@
         alive,
         after,
         say,
+        react,
         ask,
+        mount,
         choose,
-        wait: (ms) => after(clock.sleep(reducedMotion() ? Math.min(ms, 80) : ms)),
+        wait,
         show: (fn) => after(fn()),
-        lab: (labId) => { if (onLab) onLab(labId); },
+        lab,
       };
     }
 
@@ -415,6 +465,12 @@
         await n.wait(600);
         play(i + 1, 1);
       }
+    }
+
+    function restart() {
+      done.clear();
+      Object.keys(state).forEach((key) => delete state[key]);
+      play(0, -1);
     }
 
     function start(from) {

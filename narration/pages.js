@@ -38,12 +38,308 @@ window.DataSystemsLab.Narrator.register("pages", {
   },
   "neighbour.2": "Amplification drops with every neighbour you read.",
   "neighbour.3": "That's why databases work so hard to store rows that are read together, together.",
-  "end.1": "That's all the narration for now. The rest of this lesson continues in guided mode."
+  "teach-cache.1": "Disk holds every page. But every read from disk is <b>slow</b>.",
+  "teach-cache.2": "RAM is <b>fast</b>, but it only holds a few pages. This one holds two.",
+  "teach-cache.3": "If the page you need isn't in RAM, that's a <b>miss</b>. You wait for the disk.",
+  "teach-cache.4": "If it's already there, that's a <b>hit</b>. Almost free.",
+  "teach-cache.5": "But RAM fills up. To load another page, one of them has to <b>leave</b>.",
+  "teach-cache.6": "Which one? We'll get to that. First, feel the difference yourself.",
+  "hit.1": "Here's the disk, and a RAM with two empty slots. The stopwatch times each fetch.",
+  "hit.ask": {
+   "caption": "Fetch customer <b>#11</b>.",
+   "voice": "Fetch customer eleven."
+  },
+  "hit.hint": "Press the Fetch button.",
+  "hit.miss": {
+   "caption": "Miss: <b>8 ms</b> waiting on disk. Now fetch it again.",
+   "voice": "A miss. Eight milliseconds, just waiting on the disk. Now fetch it again."
+  },
+  "hit.hit": {
+   "caption": "Hit: <b>0.1 ms</b>. That's <b>80\u00d7</b> faster.",
+   "voice": "A hit. A tenth of a millisecond. Eighty times faster."
+  },
+  "hit.outro": "Real numbers vary, but the gap between memory and disk is always huge.",
+  "bet.1": "Now you call it. For each lookup, bet: is its page already in RAM?",
+  "bet.2": "The clue is on the cards. Each page shows which customers it holds.",
+  "bet.ask": "Place your bets.",
+  "bet.hint": "Check whether the customer's number falls inside a page in RAM.",
+  "bet.right-hit": "Hit. Called it.",
+  "bet.right-miss": "Miss, just like you said.",
+  "bet.wrong-hit": "Nope. That page was already in RAM.",
+  "bet.wrong-miss": "Nope. That page wasn't in RAM.",
+  "bet.sharp": {
+   "caption": "<b>{score} / {total}</b>. You're reading the buffer pool like the engine does.",
+   "voice": "Sharp. You're reading the buffer pool like the engine does."
+  },
+  "bet.ok": {
+   "caption": "<b>{score} / {total}</b>. The page ranges are the clue.",
+   "voice": "Once you spot the page ranges, it gets easy."
+  },
+  "teach-evict.1": {
+   "caption": "RAM holds P1 and P5. P1 arrived <b>first</b>.",
+   "voice": "RAM holds page one and page five. Page one arrived first."
+  },
+  "teach-evict.2": {
+   "caption": "Then P1 is <b>used again</b>.",
+   "voice": "Then page one gets used again."
+  },
+  "teach-evict.ask": {
+   "caption": "Now another page is needed, and RAM is full. Which one should leave?",
+   "voice": "Now another page is needed, and RAM is full. Which one should leave?"
+  },
+  "teach-evict.p1": "That's exactly what the simplest rule does. Let's compare.",
+  "teach-evict.p5": "That's what the smarter rule does. Let's compare.",
+  "teach-evict.3": {
+   "caption": "Rule 1 \u00b7 <b>FIFO</b>: first in, first out. It evicts P1, even though P1 is busy.",
+   "voice": "Rule one. FIFO: first in, first out. It evicts page one, even though page one is busy."
+  },
+  "teach-evict.4": {
+   "caption": "Rule 2 \u00b7 <b>LRU</b>: least recently used. It evicts P5.",
+   "voice": "Rule two. LRU: least recently used. It evicts page five."
+  },
+  "teach-evict.5": {
+   "caption": "Busy pages should stay, so real databases use <b>LRU-like</b> rules.",
+   "voice": "Busy pages should stay. So real databases use rules like LRU."
+  },
+  "evict.1": {
+   "caption": "Customer <b>#26</b> needs P7, and RAM is full.",
+   "voice": "Customer twenty-six needs page seven, and RAM is full."
+  },
+  "evict.ask": "Which page would LRU evict? Tap it.",
+  "evict.hint": "Look at when each page was last used.",
+  "evict.right": {
+   "caption": "Right: P8 was used longest ago. <b>LRU</b> keeps busy P4.",
+   "voice": "Right. Page eight was used longest ago, so it goes. Busy page four stays."
+  },
+  "evict.wrong": {
+   "caption": "That's FIFO's pick. <b>LRU</b> evicts P8, used longest ago.",
+   "voice": "Not quite. That's what FIFO would pick. LRU evicts page eight, the one used longest ago."
+  },
+  "race.1": {
+   "caption": "In this workload, P1 \ud83d\udd25 is needed on every other lookup. It's <b>hot</b>.",
+   "voice": "In this workload, page one is needed on every other lookup. It's hot."
+  },
+  "race.predict": "FIFO against LRU, same lookups. Which one goes to disk less?",
+  "race.guess": "Let's race.",
+  "race.ask": "Press Go.",
+  "race.hint": "The Go button starts the race.",
+  "race.result": {
+   "caption": "LRU: <b>{lru}</b> disk reads. FIFO: <b>{fifo}</b>.",
+   "voice": "LRU made fewer trips to disk."
+  },
+  "race.called-it": "Just like you called it.",
+  "race.explain": "FIFO keeps throwing out the hot page just for being old. LRU refreshes it on every use, so it never leaves.",
+  "teach-locality.1": {
+   "caption": "GET /orders shows Maya's <b>12</b> latest orders.",
+   "voice": "An orders endpoint shows Maya's twelve latest orders."
+  },
+  "teach-locality.2": "They were written over two years, so they're <b>scattered</b> across the table's pages.",
+  "teach-locality.3": "An <b>index</b> says where each order is. Following it costs one jump per page.",
+  "teach-locality.4": {
+   "caption": "A <b>covering index</b> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
+   "voice": "A covering index stores the orders themselves, in order. So they sit on a few neighbouring pages."
+  },
+  "head.1": "Now you're the read head. Every page you touch costs a trip to disk.",
+  "head.ask": "Tap the glowing page, and keep following it.",
+  "head.hint": "Tap the page that's glowing.",
+  "head.phase": {
+   "caption": "<b>10</b> jumps, <b>80 ms</b>. Now the covering index.",
+   "voice": "Ten jumps. Eighty milliseconds. Now try the covering index."
+  },
+  "head.result": {
+   "caption": "Same 12 rows: <b>10</b> scattered pages vs <b>3</b> neighbours.",
+   "voice": "Same twelve rows. Ten scattered pages, versus three neighbours."
+  },
+  "head.outro": "Under a third of the time, just from storing rows that are read together, together.",
+  "cache.1": "One more twist. Everything so far assumed a cold cache, like right after a restart.",
+  "cache.ask": "Flip the switch to warm the cache.",
+  "cache.hint": "Tap the switch between Cold and Warm.",
+  "cache.warm": {
+   "caption": "Warm RAM hides the jumps. <b>Staging lies.</b>",
+   "voice": "With a warm cache, both paths are fast. The jumps are hidden."
+  },
+  "cache.2": "That's why this bug hides in staging, then shows up after a restart, a failover, or once the data outgrows memory.",
+  "cache.ram": "More RAM helps, until the data outgrows it, or the server restarts. Fixing the access pattern keeps working either way.",
+  "cache.got": "Good. Let's see what stuck.",
+  "quiz.intro": "Four quick questions.",
+  "quiz.q1": {
+   "caption": "You ask for customer #11, a 70-byte row. What does the engine read from storage?",
+   "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?"
+  },
+  "quiz.q1-why": "Storage moves whole pages. The row you wanted arrives with every neighbour on its page.",
+  "quiz.q2": {
+   "caption": "#12 sits on the same page as #11, which you fetched a moment ago. Fetching #12 next is most likely\u2026",
+   "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?"
+  },
+  "quiz.q2-why": "The page came into memory with eleven, so twelve is a buffer hit. Neighbours ride along for free.",
+  "quiz.q3": {
+   "caption": "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
+   "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?"
+  },
+  "quiz.q3-why": "LRU refreshes a page every time it's used, so a hot page never becomes the oldest. FIFO evicts by arrival, even if the page was just used.",
+  "quiz.q4": {
+   "caption": "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?",
+   "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?"
+  },
+  "quiz.q4-why": "The rows are few, but scattered. An index in the query's order, holding the columns it shows, turns ten random pages into a few neighbouring ones.",
+  "quiz.right1": "Right.",
+  "quiz.right2": "Exactly.",
+  "quiz.right3": "Correct.",
+  "quiz.pass": {
+   "caption": "<b>{right} / 4</b>. Passed.",
+   "voice": "Nicely done. You passed."
+  },
+  "quiz.retry": {
+   "caption": "<b>{right} / 4</b>. Worth another pass.",
+   "voice": "Not quite there. Replay a chapter or two, then try again."
+  },
+  "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
+  "finish.2": "Next up: how tables and indexes are actually laid out on disk."
  },
  "audio": {
-  "end.1": {
-   "hash": "890c35b5ed28",
-   "ms": 4672
+  "bet.1": {
+   "hash": "b64595c39839",
+   "ms": 4437
+  },
+  "bet.2": {
+   "hash": "3883de3b2573",
+   "ms": 3968
+  },
+  "bet.ask": {
+   "hash": "07a9d7afa81b",
+   "ms": 1067
+  },
+  "bet.hint": {
+   "hash": "0735c9639e76",
+   "ms": 4032
+  },
+  "bet.ok": {
+   "hash": "1591d93852f3",
+   "ms": 2816
+  },
+  "bet.right-hit": {
+   "hash": "21ad9bf97479",
+   "ms": 1045
+  },
+  "bet.right-miss": {
+   "hash": "b023074d89d8",
+   "ms": 1493
+  },
+  "bet.sharp": {
+   "hash": "c83184186712",
+   "ms": 2859
+  },
+  "bet.wrong-hit": {
+   "hash": "6d5e15327f20",
+   "ms": 2475
+  },
+  "bet.wrong-miss": {
+   "hash": "901827a6bce3",
+   "ms": 2176
+  },
+  "cache.1": {
+   "hash": "114770e34641",
+   "ms": 5525
+  },
+  "cache.2": {
+   "hash": "a69ce386185e",
+   "ms": 7275
+  },
+  "cache.ask": {
+   "hash": "0d3056f9a99b",
+   "ms": 1771
+  },
+  "cache.got": {
+   "hash": "dcee8d964a62",
+   "ms": 1429
+  },
+  "cache.hint": {
+   "hash": "169e8bb57fe3",
+   "ms": 2048
+  },
+  "cache.ram": {
+   "hash": "9cc7b3cee3ca",
+   "ms": 7595
+  },
+  "cache.warm": {
+   "hash": "a8ace709a079",
+   "ms": 3477
+  },
+  "evict.1": {
+   "hash": "6ee921b2e62d",
+   "ms": 3797
+  },
+  "evict.ask": {
+   "hash": "a6d99572cedd",
+   "ms": 2432
+  },
+  "evict.hint": {
+   "hash": "bb29d285b98e",
+   "ms": 2176
+  },
+  "evict.right": {
+   "hash": "35ddbd785cdf",
+   "ms": 4800
+  },
+  "evict.wrong": {
+   "hash": "e94734af79c1",
+   "ms": 5653
+  },
+  "finish.1": {
+   "hash": "fb729d6af372",
+   "ms": 8256
+  },
+  "finish.2": {
+   "hash": "852f348c9c8c",
+   "ms": 3797
+  },
+  "head.1": {
+   "hash": "dc2c8c3d489e",
+   "ms": 3733
+  },
+  "head.ask": {
+   "hash": "095bfdbf47a9",
+   "ms": 2432
+  },
+  "head.hint": {
+   "hash": "05311e8f4b22",
+   "ms": 1536
+  },
+  "head.outro": {
+   "hash": "34f6c804e004",
+   "ms": 4352
+  },
+  "head.phase": {
+   "hash": "767334c3cf0a",
+   "ms": 3776
+  },
+  "head.result": {
+   "hash": "ee3f67aa24f0",
+   "ms": 3840
+  },
+  "hit.1": {
+   "hash": "7cdccaa67cb4",
+   "ms": 5205
+  },
+  "hit.ask": {
+   "hash": "882744998f03",
+   "ms": 1472
+  },
+  "hit.hint": {
+   "hash": "a49de33ca142",
+   "ms": 1259
+  },
+  "hit.hit": {
+   "hash": "1ca3e9b1d37e",
+   "ms": 3264
+  },
+  "hit.miss": {
+   "hash": "5649e2b87d24",
+   "ms": 4075
+  },
+  "hit.outro": {
+   "hash": "40f3b36941f9",
+   "ms": 4224
   },
   "neighbour.1": {
    "hash": "1f3b774a2582",
@@ -108,6 +404,166 @@ window.DataSystemsLab.Narrator.register("pages", {
   "page.predict-table": {
    "hash": "581680154f2e",
    "ms": 1749
+  },
+  "quiz.intro": {
+   "hash": "218f273fd54d",
+   "ms": 1365
+  },
+  "quiz.pass": {
+   "hash": "786a1da69820",
+   "ms": 1579
+  },
+  "quiz.q1": {
+   "hash": "2dd98044f536",
+   "ms": 5333
+  },
+  "quiz.q1-why": {
+   "hash": "986cdab05f5f",
+   "ms": 5248
+  },
+  "quiz.q2": {
+   "hash": "15baa9cb6846",
+   "ms": 6997
+  },
+  "quiz.q2-why": {
+   "hash": "9935ae762f71",
+   "ms": 5760
+  },
+  "quiz.q3": {
+   "hash": "7c22a8aeb229",
+   "ms": 6848
+  },
+  "quiz.q3-why": {
+   "hash": "e2d784161661",
+   "ms": 9621
+  },
+  "quiz.q4": {
+   "hash": "bade4e282303",
+   "ms": 7211
+  },
+  "quiz.q4-why": {
+   "hash": "ec4d3d0e0d1c",
+   "ms": 9216
+  },
+  "quiz.retry": {
+   "hash": "27db497a5bab",
+   "ms": 3349
+  },
+  "quiz.right1": {
+   "hash": "534ccf7f5fce",
+   "ms": 725
+  },
+  "quiz.right2": {
+   "hash": "aeceae5832a3",
+   "ms": 917
+  },
+  "quiz.right3": {
+   "hash": "54d235879a00",
+   "ms": 789
+  },
+  "race.1": {
+   "hash": "1b77c648fcc3",
+   "ms": 4352
+  },
+  "race.ask": {
+   "hash": "8eacf4ac40ca",
+   "ms": 896
+  },
+  "race.called-it": {
+   "hash": "592eb8aac560",
+   "ms": 1259
+  },
+  "race.explain": {
+   "hash": "1a87ec794b74",
+   "ms": 6891
+  },
+  "race.guess": {
+   "hash": "8747e9c4bc97",
+   "ms": 981
+  },
+  "race.hint": {
+   "hash": "2665915d95fb",
+   "ms": 1600
+  },
+  "race.predict": {
+   "hash": "787b1af41683",
+   "ms": 4117
+  },
+  "race.result": {
+   "hash": "ec19ab82322d",
+   "ms": 1963
+  },
+  "teach-cache.1": {
+   "hash": "78c3d0bd1c6a",
+   "ms": 3499
+  },
+  "teach-cache.2": {
+   "hash": "42a61c7caacf",
+   "ms": 4544
+  },
+  "teach-cache.3": {
+   "hash": "330a28dc5eae",
+   "ms": 4224
+  },
+  "teach-cache.4": {
+   "hash": "eb216dbe9195",
+   "ms": 2581
+  },
+  "teach-cache.5": {
+   "hash": "e9772b10e44d",
+   "ms": 4181
+  },
+  "teach-cache.6": {
+   "hash": "67c4a4cbda19",
+   "ms": 3563
+  },
+  "teach-evict.1": {
+   "hash": "2ebca7d7a725",
+   "ms": 4672
+  },
+  "teach-evict.2": {
+   "hash": "ebd712ea61ec",
+   "ms": 1941
+  },
+  "teach-evict.3": {
+   "hash": "7e94fe152988",
+   "ms": 6016
+  },
+  "teach-evict.4": {
+   "hash": "dcca2194541f",
+   "ms": 4267
+  },
+  "teach-evict.5": {
+   "hash": "a98b178be8a5",
+   "ms": 4565
+  },
+  "teach-evict.ask": {
+   "hash": "cb8534be422a",
+   "ms": 4352
+  },
+  "teach-evict.p1": {
+   "hash": "429aea0616ae",
+   "ms": 3328
+  },
+  "teach-evict.p5": {
+   "hash": "0a820dfdc8bc",
+   "ms": 2539
+  },
+  "teach-locality.1": {
+   "hash": "7fa592c31898",
+   "ms": 3200
+  },
+  "teach-locality.2": {
+   "hash": "7956770c27f8",
+   "ms": 3947
+  },
+  "teach-locality.3": {
+   "hash": "f1009eb5e35d",
+   "ms": 4288
+  },
+  "teach-locality.4": {
+   "hash": "47a6a0306f4f",
+   "ms": 5568
   },
   "teach-page.1": {
    "hash": "081ea4d1e7d1",
