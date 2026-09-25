@@ -68,9 +68,40 @@
     api.renderers[id] = renderer;
   }
 
+  // Guided mode: a lesson may register a second, step-by-step renderer.
+  const MODE_KEY = "dsl-mode";
+
+  function registerGuided(id, renderer) {
+    if (!getLesson(id)) throw new Error(`Cannot register guided mode for unknown lesson: ${id}`);
+    api.guided[id] = renderer;
+  }
+
+  function getMode() {
+    try {
+      return localStorage.getItem(MODE_KEY) === "explore" ? "explore" : "guided";
+    } catch (error) {
+      return "guided";
+    }
+  }
+
+  function setMode(mode) {
+    try {
+      localStorage.setItem(MODE_KEY, mode === "explore" ? "explore" : "guided");
+    } catch (error) {
+      // The preference is a convenience; the default still works.
+    }
+  }
+
+  function modeSwitch(id) {
+    if (!api.guided[id]) return "";
+    const mode = getMode();
+    return `<div class="mode-switch" role="group" aria-label="Lesson mode"><button type="button" data-mode="guided" aria-pressed="${mode === "guided"}">▶ Guided</button><button type="button" data-mode="explore" aria-pressed="${mode === "explore"}">Explore</button></div>`;
+  }
+
   function lessonHeader(lesson, title, lede, difficulty = "Foundational") {
     return `
       <header class="lesson-header">
+        ${modeSwitch(lesson.id)}
         <div class="eyebrow">Lesson ${lesson.number} · ${lesson.module}</div>
         <h1>${title}</h1>
         <p class="lede">${lede}</p>
@@ -122,8 +153,13 @@
     state,
     elements,
     renderers: Object.create(null),
+    guided: Object.create(null),
     getLesson,
     registerRenderer,
+    registerGuided,
+    getMode,
+    setMode,
+    modeSwitch,
     lessonHeader,
     lessonFooter,
     clearTimers,

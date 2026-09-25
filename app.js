@@ -33,10 +33,18 @@
   function route() {
     DSL.clearTimers();
     DSL.elements.toast.classList.remove("show");
-    const requested = window.location.hash.replace("#/", "") || "welcome";
+    const [path, query = ""] = window.location.hash.replace("#/", "").split("?");
+    const requested = path || "welcome";
+    const forced = new URLSearchParams(query).get("mode");
     DSL.state.current = DSL.renderers[requested] ? requested : "welcome";
+    if (forced === "guided" || forced === "explore") {
+      DSL.setMode(forced);
+      history.replaceState(null, "", `#/${DSL.state.current}`);
+    }
+    const guided = DSL.getMode() === "guided" && Boolean(DSL.guided[DSL.state.current]);
+    document.body.classList.toggle("guided", guided);
     renderNavigation();
-    DSL.renderers[DSL.state.current]();
+    (guided ? DSL.guided : DSL.renderers)[DSL.state.current]();
     window.scrollTo(0, 0);
     DSL.elements.root.focus({ preventScroll: true });
     document.querySelector(".sidebar").classList.remove("open");
@@ -55,12 +63,26 @@
       DSL.showToast("Lesson completed — progress saved");
     }
     if (event.target.closest("[data-finish]")) DSL.showToast("Course complete — now explain one incident in your own words.");
+    const modeButton = event.target.closest("[data-mode]");
+    if (modeButton) {
+      DSL.setMode(modeButton.dataset.mode);
+      route();
+    }
+    if (event.target.closest("[data-nav-toggle]")) {
+      const sidebar = document.querySelector(".sidebar");
+      const open = sidebar.classList.toggle("open");
+      document.getElementById("menu-button").setAttribute("aria-expanded", String(open));
+    }
   });
 
   document.getElementById("menu-button").addEventListener("click", (event) => {
     const sidebar = document.querySelector(".sidebar");
     const open = sidebar.classList.toggle("open");
     event.currentTarget.setAttribute("aria-expanded", String(open));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") document.querySelector(".sidebar").classList.remove("open");
   });
 
   window.addEventListener("hashchange", route);

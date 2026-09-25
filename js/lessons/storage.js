@@ -15,6 +15,12 @@
   const MISS_MS = 8;
   const HIT_MS = 0.1;
 
+  // The 12 orders for GET /orders, as page reads along each access path.
+  const DRILL_STEPS = {
+    heap: ["index-3", "heap-2", "heap-11", "heap-4", "heap-18", "heap-7", "heap-13", "heap-1", "heap-16", "heap-9"],
+    covering: ["index-3", "index-4", "index-5"],
+  };
+
   const NAMES = ["Maya", "Omar", "Ana", "Lena", "Raj", "Kofi", "Yuki", "Ines", "Theo", "Priya", "Sam", "Noor", "Ivan", "Zara", "Leo", "Mei", "Tariq", "Elif", "Bruno", "Aiko", "Dara", "Femi", "Hugo", "Iris", "Jonas", "Kira", "Luca", "Mira", "Nils", "Olga", "Pavel", "Rosa"];
   const CITIES = ["Lisbon", "Osaka", "Lagos", "Oslo", "Pune", "Accra", "Quito", "Hanoi", "Lyon", "Tunis", "Perth"];
 
@@ -172,6 +178,15 @@
     });
   }
 
+  function pageMarkup(page, wanted) {
+    const rows = idsOn(page).map(customer);
+    const used = HEADER_BYTES + rows.length * POINTER_BYTES + rows.reduce((sum, row) => sum + row.bytes, 0);
+    return `<div class="st-page-head"><b>Page ${page + 1}</b><span>header · ${HEADER_BYTES} B</span></div>
+      <div class="st-pointers">${rows.map((row, i) => `<span data-id="${row.id}" class="${wanted.has(row.id) ? "want" : ""}">→${i + 1}</span>`).join("")}<small>line pointers · ${POINTER_BYTES} B each</small></div>
+      <div class="st-free"><span>free space · ${bytes(PAGE_BYTES - used)}</span></div>
+      <div class="st-tuples">${rows.slice().reverse().map((row, i) => `<div class="st-tuple ${wanted.has(row.id) ? "want" : "along"}" data-id="${row.id}" style="--i:${i}"><b>${pad(row.id)}</b><span>${row.name} · ${row.city}</span><em>${row.bytes} B</em></div>`).join("")}</div>`;
+  }
+
   // Lab 02A: one row requested, one whole page read.
   function setupAnatomyLab() {
     const shelf = document.getElementById("anat-shelf");
@@ -186,15 +201,6 @@
     let asked = 0;
     let read = 0;
     let busy = false;
-
-    function pageMarkup(page) {
-      const rows = idsOn(page).map(customer);
-      const used = HEADER_BYTES + rows.length * POINTER_BYTES + rows.reduce((sum, row) => sum + row.bytes, 0);
-      return `<div class="st-page-head"><b>Page ${page + 1}</b><span>header · ${HEADER_BYTES} B</span></div>
-        <div class="st-pointers">${rows.map((row, i) => `<span data-id="${row.id}" class="${wanted.has(row.id) ? "want" : ""}">→${i + 1}</span>`).join("")}<small>line pointers · ${POINTER_BYTES} B each</small></div>
-        <div class="st-free"><span>free space · ${bytes(PAGE_BYTES - used)}</span></div>
-        <div class="st-tuples">${rows.slice().reverse().map((row, i) => `<div class="st-tuple ${wanted.has(row.id) ? "want" : "along"}" data-id="${row.id}" style="--i:${i}"><b>${pad(row.id)}</b><span>${row.name} · ${row.city}</span><em>${row.bytes} B</em></div>`).join("")}</div>`;
-    }
 
     function paintMetrics() {
       countTo(askedEl, asked, { format: bytes });
@@ -240,7 +246,7 @@
       asked += row.bytes;
       read += PAGE_BYTES;
       pageEl.className = "st-page";
-      pageEl.innerHTML = pageMarkup(page);
+      pageEl.innerHTML = pageMarkup(page, wanted);
       retrigger(pageEl, "st-arrive");
       floater(readEl, `+${bytes(PAGE_BYTES)}`, "warn");
       paintMetrics();
@@ -538,12 +544,29 @@
     </div>`;
   }
 
+  // Read-head geometry shared by the drill and guided mode.
+  function point(strips, cell) {
+    const base = strips.getBoundingClientRect();
+    const rect = cell.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2 - base.left, y: rect.top - base.top };
+  }
+
+  function arc(strips, from, to, tone) {
+    const svg = strips.querySelector(".st-arcs");
+    const lift = 12 + Math.abs(to.x - from.x) * 0.22 + Math.abs(to.y - from.y) * 0.3;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", `M ${from.x} ${from.y} Q ${(from.x + to.x) / 2} ${Math.min(from.y, to.y) - lift} ${to.x} ${to.y}`);
+    path.setAttribute("class", tone);
+    svg.appendChild(path);
+    if (DSL.LabKit.reducedMotion()) return;
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = String(length);
+    path.animate([{ strokeDashoffset: length }, { strokeDashoffset: 0 }], { duration: 260, easing: "ease-out" }).onfinish = () => { path.style.strokeDasharray = ""; };
+  }
+
   // Production drill: the same 12 rows along two access paths, with a read head that shows the jumps.
   function setupDrillLab() {
-    const STEPS = {
-      heap: ["index-3", "heap-2", "heap-11", "heap-4", "heap-18", "heap-7", "heap-13", "heap-1", "heap-16", "heap-9"],
-      covering: ["index-3", "index-4", "index-5"],
-    };
+    const STEPS = DRILL_STEPS;
     const cached = { heap: new Set(), covering: new Set() };
     const diagnosis = document.getElementById("drill-diagnosis");
     const runButton = document.getElementById("drill-run");
@@ -562,25 +585,6 @@
       const flag = document.getElementById(`${name}-flag`);
       flag.className = "lane-flag";
       flag.textContent = "";
-    }
-
-    function point(strips, cell) {
-      const base = strips.getBoundingClientRect();
-      const rect = cell.getBoundingClientRect();
-      return { x: rect.left + rect.width / 2 - base.left, y: rect.top - base.top };
-    }
-
-    function arc(strips, from, to, tone) {
-      const svg = strips.querySelector(".st-arcs");
-      const lift = 12 + Math.abs(to.x - from.x) * 0.22 + Math.abs(to.y - from.y) * 0.3;
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", `M ${from.x} ${from.y} Q ${(from.x + to.x) / 2} ${Math.min(from.y, to.y) - lift} ${to.x} ${to.y}`);
-      path.setAttribute("class", tone);
-      svg.appendChild(path);
-      if (DSL.LabKit.reducedMotion()) return;
-      const length = path.getTotalLength();
-      path.style.strokeDasharray = String(length);
-      path.animate([{ strokeDashoffset: length }, { strokeDashoffset: 0 }], { duration: 260, easing: "ease-out" }).onfinish = () => { path.style.strokeDasharray = ""; };
     }
 
     async function runLane(name, token) {
@@ -656,6 +660,11 @@
     reset("heap");
     reset("covering");
   }
+
+  DSL.StorageModel = Object.freeze({
+    PAGE_BYTES, ROWS_PER_PAGE, PAGE_COUNT, MISS_MS, HIT_MS, DRILL_STEPS, QUIZ, progress,
+    customer, pageOf, idsOn, pad, range, bytes, ms, pageMarkup, laneMarkup, point, arc,
+  });
 
   DSL.registerRenderer("pages", renderPages);
 })(window.DataSystemsLab);

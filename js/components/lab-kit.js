@@ -57,7 +57,12 @@
       return document.querySelector(`[data-complete="${lessonId}"]`);
     }
 
+    function onScreen() {
+      return Boolean(root && root.isConnected);
+    }
+
     function paint() {
+      if (!onScreen()) return;
       root.querySelector("[data-lab-count]").textContent = `${done.size} / ${ids.length} labs`;
       ids.forEach((id) => {
         const finished = done.has(id);
@@ -93,12 +98,13 @@
     }
 
     function complete(id) {
+      if (!onScreen()) done = read();
       retrigger(document.getElementById(`lab-${id}`), "ding");
       if (done.has(id)) return;
       done.add(id);
       save();
       paint();
-      retrigger(root.querySelector(`.lc-item[data-goto="${id}"]`), "ping");
+      if (onScreen()) retrigger(root.querySelector(`.lc-item[data-goto="${id}"]`), "ping");
       if (done.size === ids.length) {
         const button = completeButton();
         if (button && !button.classList.contains("done")) button.classList.add("nudge");
