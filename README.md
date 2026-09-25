@@ -50,6 +50,16 @@ Each concept lesson starts with a small visual model and ends with a production-
 
 Course progress is stored in the browser with `localStorage`.
 
+## Narration audio
+
+Narrated lessons use pre-rendered mp3s made with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx), a free local neural TTS (no API key). Needs [uv](https://docs.astral.sh/uv/) and ffmpeg; models download once to `~/.cache/kokoro-onnx`.
+
+```bash
+uv run tools/voice.py say "Try a line."            # preview
+uv run tools/voice.py voices                       # list voices
+uv run tools/voice.py build narration/pages.json   # render changed lines to audio/pages/
+```
+
 ## Architecture
 
 The course is intentionally framework-free and requires no backend. It uses ordered, namespaced browser scripts so it also works in simple static hosting environments:
