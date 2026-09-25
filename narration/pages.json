@@ -5,14 +5,19 @@
   "lines": {
     "teach-page.1": "Here's a table of thirty-two customers. Each one is a <b>row</b>.",
     "teach-page.2": "On disk, rows aren't stored one by one. They're packed into <b>pages</b>.",
-    "teach-page.3": { "caption": "Every page is the same size: <b>8 KB</b>.", "voice": "Every page is the same size. Eight kilobytes." },
+    "teach-page.3": {
+      "caption": "Every page is the same size: <b>8 KB</b>.",
+      "voice": "Every page is the same size. Eight kilobytes."
+    },
     "teach-page.why-ask": "Now, you might be wondering about that number.",
-    "teach-page.why": { "caption": "Disks move data in fixed-size blocks, so databases do too. Postgres uses <b>8 KB</b> pages; MySQL's InnoDB uses <b>16 KB</b>.", "voice": "Disks move data in fixed-size blocks, so databases do too. Postgres uses eight kilobyte pages. MySQL's InnoDB uses sixteen." },
+    "teach-page.why": {
+      "caption": "Disks move data in fixed-size blocks, so databases do too. Postgres uses <b>8 KB</b> pages; MySQL's InnoDB uses <b>16 KB</b>.",
+      "voice": "Disks move data in fixed-size blocks, so databases do too. Postgres uses eight kilobyte pages. MySQL's InnoDB uses sixteen."
+    },
     "teach-page.why-2": "Big enough to read efficiently. Small enough to keep thousands of them in memory.",
     "teach-page.skip": "Fair enough. Onward.",
     "teach-page.4": "A real page holds around a hundred rows. We'll draw four, so you can actually see them.",
     "teach-page.5": "Here's the catch. To read <b>one</b> row, the engine copies its <b>whole page</b> into memory.",
-
     "page.1": "Let's make that concrete. On the left, the table on disk. On the right, memory.",
     "page.predict": "You're about to fetch one customer. How much will the disk actually read?",
     "page.predict-row": "That's the intuitive answer. Let's find out.",
@@ -20,17 +25,177 @@
     "page.predict-table": "Not quite that bad. Let's see.",
     "page.ask": "Go ahead. Tap any customer.",
     "page.hint": "Any numbered row on the shelf will do.",
-    "page.got": { "caption": "You wanted <b>{asked} B</b>. The disk handed over <b>8,192 B</b>.", "voice": "You asked for one small row. The disk handed over the whole page. Eight kilobytes." },
+    "page.got": {
+      "caption": "You wanted <b>{asked} B</b>. The disk handed over <b>8,192 B</b>.",
+      "voice": "You asked for one small row. The disk handed over the whole page. Eight kilobytes."
+    },
     "page.called-it": "Exactly what you predicted.",
     "page.amp": "That ratio, bytes read over bytes wanted, is called <b>read amplification</b>. Keep an eye on it.",
-
     "neighbour.1": "But here's the upside. That page is sitting in memory now, with its neighbours on it.",
     "neighbour.ask": "Tap one of the other rows on that page.",
     "neighbour.hint": "The glowing rows share its page.",
-    "neighbour.free": { "caption": "Free ride: <b>+0 B</b> read from disk.", "voice": "Free. Zero extra bytes from disk. The page was already here." },
+    "neighbour.free": {
+      "caption": "Free ride: <b>+0 B</b> read from disk.",
+      "voice": "Free. Zero extra bytes from disk. The page was already here."
+    },
     "neighbour.2": "Amplification drops with every neighbour you read.",
     "neighbour.3": "That's why databases work so hard to store rows that are read together, together.",
-
-    "end.1": "That's all the narration for now. The rest of this lesson continues in guided mode."
+    "teach-cache.1": "Disk holds every page. But every read from disk is <b>slow</b>.",
+    "teach-cache.2": "RAM is <b>fast</b>, but it only holds a few pages. This one holds two.",
+    "teach-cache.3": "If the page you need isn't in RAM, that's a <b>miss</b>. You wait for the disk.",
+    "teach-cache.4": "If it's already there, that's a <b>hit</b>. Almost free.",
+    "teach-cache.5": "But RAM fills up. To load another page, one of them has to <b>leave</b>.",
+    "teach-cache.6": "Which one? We'll get to that. First, feel the difference yourself.",
+    "hit.1": "Here's the disk, and a RAM with two empty slots. The stopwatch times each fetch.",
+    "hit.ask": {
+      "caption": "Fetch customer <b>#11</b>.",
+      "voice": "Fetch customer eleven."
+    },
+    "hit.hint": "Press the Fetch button.",
+    "hit.miss": {
+      "caption": "Miss: <b>8 ms</b> waiting on disk. Now fetch it again.",
+      "voice": "A miss. Eight milliseconds, just waiting on the disk. Now fetch it again."
+    },
+    "hit.hit": {
+      "caption": "Hit: <b>0.1 ms</b>. That's <b>80×</b> faster.",
+      "voice": "A hit. A tenth of a millisecond. Eighty times faster."
+    },
+    "hit.outro": "Real numbers vary, but the gap between memory and disk is always huge.",
+    "bet.1": "Now you call it. For each lookup, bet: is its page already in RAM?",
+    "bet.2": "The clue is on the cards. Each page shows which customers it holds.",
+    "bet.ask": "Place your bets.",
+    "bet.hint": "Check whether the customer's number falls inside a page in RAM.",
+    "bet.right-hit": "Hit. Called it.",
+    "bet.right-miss": "Miss, just like you said.",
+    "bet.wrong-hit": "Nope. That page was already in RAM.",
+    "bet.wrong-miss": "Nope. That page wasn't in RAM.",
+    "bet.sharp": {
+      "caption": "<b>{score} / {total}</b>. You're reading the buffer pool like the engine does.",
+      "voice": "Sharp. You're reading the buffer pool like the engine does."
+    },
+    "bet.ok": {
+      "caption": "<b>{score} / {total}</b>. The page ranges are the clue.",
+      "voice": "Once you spot the page ranges, it gets easy."
+    },
+    "teach-evict.1": {
+      "caption": "RAM holds P1 and P5. P1 arrived <b>first</b>.",
+      "voice": "RAM holds page one and page five. Page one arrived first."
+    },
+    "teach-evict.2": {
+      "caption": "Then P1 is <b>used again</b>.",
+      "voice": "Then page one gets used again."
+    },
+    "teach-evict.ask": {
+      "caption": "Now another page is needed, and RAM is full. Which one should leave?",
+      "voice": "Now another page is needed, and RAM is full. Which one should leave?"
+    },
+    "teach-evict.p1": "That's exactly what the simplest rule does. Let's compare.",
+    "teach-evict.p5": "That's what the smarter rule does. Let's compare.",
+    "teach-evict.3": {
+      "caption": "Rule 1 · <b>FIFO</b>: first in, first out. It evicts P1, even though P1 is busy.",
+      "voice": "Rule one. FIFO: first in, first out. It evicts page one, even though page one is busy."
+    },
+    "teach-evict.4": {
+      "caption": "Rule 2 · <b>LRU</b>: least recently used. It evicts P5.",
+      "voice": "Rule two. LRU: least recently used. It evicts page five."
+    },
+    "teach-evict.5": {
+      "caption": "Busy pages should stay, so real databases use <b>LRU-like</b> rules.",
+      "voice": "Busy pages should stay. So real databases use rules like LRU."
+    },
+    "evict.1": {
+      "caption": "Customer <b>#26</b> needs P7, and RAM is full.",
+      "voice": "Customer twenty-six needs page seven, and RAM is full."
+    },
+    "evict.ask": "Which page would LRU evict? Tap it.",
+    "evict.hint": "Look at when each page was last used.",
+    "evict.right": {
+      "caption": "Right: P8 was used longest ago. <b>LRU</b> keeps busy P4.",
+      "voice": "Right. Page eight was used longest ago, so it goes. Busy page four stays."
+    },
+    "evict.wrong": {
+      "caption": "That's FIFO's pick. <b>LRU</b> evicts P8, used longest ago.",
+      "voice": "Not quite. That's what FIFO would pick. LRU evicts page eight, the one used longest ago."
+    },
+    "race.1": {
+      "caption": "In this workload, P1 🔥 is needed on every other lookup. It's <b>hot</b>.",
+      "voice": "In this workload, page one is needed on every other lookup. It's hot."
+    },
+    "race.predict": "FIFO against LRU, same lookups. Which one goes to disk less?",
+    "race.guess": "Let's race.",
+    "race.ask": "Press Go.",
+    "race.hint": "The Go button starts the race.",
+    "race.result": {
+      "caption": "LRU: <b>{lru}</b> disk reads. FIFO: <b>{fifo}</b>.",
+      "voice": "LRU made fewer trips to disk."
+    },
+    "race.called-it": "Just like you called it.",
+    "race.explain": "FIFO keeps throwing out the hot page just for being old. LRU refreshes it on every use, so it never leaves.",
+    "teach-locality.1": {
+      "caption": "GET /orders shows Maya's <b>12</b> latest orders.",
+      "voice": "An orders endpoint shows Maya's twelve latest orders."
+    },
+    "teach-locality.2": "They were written over two years, so they're <b>scattered</b> across the table's pages.",
+    "teach-locality.3": "An <b>index</b> says where each order is. Following it costs one jump per page.",
+    "teach-locality.4": {
+      "caption": "A <b>covering index</b> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
+      "voice": "A covering index stores the orders themselves, in order. So they sit on a few neighbouring pages."
+    },
+    "head.1": "Now you're the read head. Every page you touch costs a trip to disk.",
+    "head.ask": "Tap the glowing page, and keep following it.",
+    "head.hint": "Tap the page that's glowing.",
+    "head.phase": {
+      "caption": "<b>10</b> jumps, <b>80 ms</b>. Now the covering index.",
+      "voice": "Ten jumps. Eighty milliseconds. Now try the covering index."
+    },
+    "head.result": {
+      "caption": "Same 12 rows: <b>10</b> scattered pages vs <b>3</b> neighbours.",
+      "voice": "Same twelve rows. Ten scattered pages, versus three neighbours."
+    },
+    "head.outro": "Under a third of the time, just from storing rows that are read together, together.",
+    "cache.1": "One more twist. Everything so far assumed a cold cache, like right after a restart.",
+    "cache.ask": "Flip the switch to warm the cache.",
+    "cache.hint": "Tap the switch between Cold and Warm.",
+    "cache.warm": {
+      "caption": "Warm RAM hides the jumps. <b>Staging lies.</b>",
+      "voice": "With a warm cache, both paths are fast. The jumps are hidden."
+    },
+    "cache.2": "That's why this bug hides in staging, then shows up after a restart, a failover, or once the data outgrows memory.",
+    "cache.ram": "More RAM helps, until the data outgrows it, or the server restarts. Fixing the access pattern keeps working either way.",
+    "cache.got": "Good. Let's see what stuck.",
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": {
+      "caption": "You ask for customer #11, a 70-byte row. What does the engine read from storage?",
+      "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?"
+    },
+    "quiz.q1-why": "Storage moves whole pages. The row you wanted arrives with every neighbour on its page.",
+    "quiz.q2": {
+      "caption": "#12 sits on the same page as #11, which you fetched a moment ago. Fetching #12 next is most likely…",
+      "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?"
+    },
+    "quiz.q2-why": "The page came into memory with eleven, so twelve is a buffer hit. Neighbours ride along for free.",
+    "quiz.q3": {
+      "caption": "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
+      "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?"
+    },
+    "quiz.q3-why": "LRU refreshes a page every time it's used, so a hot page never becomes the oldest. FIFO evicts by arrival, even if the page was just used.",
+    "quiz.q4": {
+      "caption": "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?",
+      "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?"
+    },
+    "quiz.q4-why": "The rows are few, but scattered. An index in the query's order, holding the columns it shows, turns ten random pages into a few neighbouring ones.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": {
+      "caption": "<b>{right} / 4</b>. Passed.",
+      "voice": "Nicely done. You passed."
+    },
+    "quiz.retry": {
+      "caption": "<b>{right} / 4</b>. Worth another pass.",
+      "voice": "Not quite there. Replay a chapter or two, then try again."
+    },
+    "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
+    "finish.2": "Next up: how tables and indexes are actually laid out on disk."
   }
 }

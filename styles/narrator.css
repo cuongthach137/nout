@@ -62,3 +62,10 @@
   .nr-dock.speaking .nr-voice i, .nr-nudge { animation: none; }
   .nr-dock.speaking .nr-voice i { height: 12px; }
 }
+
+.nr-quiz { gap: 18px; }
+.nr-marks { display: flex; gap: 12px; }
+.nr-marks i { display: grid; place-items: center; width: 44px; height: 44px; border: 2px solid var(--line-strong); border-radius: 99px; color: #fff; font-style: normal; font-weight: 800; transition: border-color .2s, background .2s; }
+.nr-marks i.current { border-color: var(--ink); }
+.nr-marks i.ok { border-color: var(--green); background: var(--green); }
+.nr-marks i.bad { border-color: var(--coral); background: var(--coral); }

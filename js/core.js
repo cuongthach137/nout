@@ -78,33 +78,41 @@
     api.guided[id] = renderer;
   }
 
-  function registerNarrated(id, renderer) {
+  // A lesson's narration counts as complete once every chapter is written and voiced; only then
+  // does Narrated become that lesson's default.
+  function registerNarrated(id, renderer, { complete = false } = {}) {
     if (!getLesson(id)) throw new Error(`Cannot register narrated mode for unknown lesson: ${id}`);
     api.narrated[id] = renderer;
+    if (complete) api.narratedComplete.add(id);
   }
 
+  // The mode the learner picked with the toggle, or null if they never picked one.
   function getMode() {
     try {
       const saved = localStorage.getItem(MODE_KEY);
-      return MODES.includes(saved) ? saved : "guided";
+      return MODES.includes(saved) ? saved : null;
     } catch (error) {
-      return "guided";
+      return null;
     }
   }
 
   function setMode(mode) {
     try {
-      localStorage.setItem(MODE_KEY, MODES.includes(mode) ? mode : "guided");
+      localStorage.setItem(MODE_KEY, MODES.includes(mode) ? mode : "narrated");
     } catch (error) {
       // The preference is a convenience; the default still works.
     }
   }
 
-  // The mode a lesson actually renders in: the saved one, falling back to what it offers.
+  // The mode a lesson actually renders in: the learner's pick if the lesson offers it; otherwise
+  // Narrated once its narration is complete, then Guided, then a narration in progress, then Explore.
   function modeFor(id) {
-    const mode = getMode();
-    if (mode === "narrated" && api.narrated[id]) return "narrated";
-    if (mode !== "explore" && api.guided[id]) return "guided";
+    const picked = getMode();
+    if (picked === "explore") return "explore";
+    if (picked && (picked === "narrated" ? api.narrated : api.guided)[id]) return picked;
+    if (api.narrated[id] && api.narratedComplete.has(id)) return "narrated";
+    if (api.guided[id]) return "guided";
+    if (api.narrated[id]) return "narrated";
     return "explore";
   }
 
@@ -182,6 +190,7 @@
     renderers: Object.create(null),
     guided: Object.create(null),
     narrated: Object.create(null),
+    narratedComplete: new Set(),
     getLesson,
     registerRenderer,
     registerGuided,
