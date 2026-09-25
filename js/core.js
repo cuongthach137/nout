@@ -50,6 +50,7 @@
     completed: readCompletedLessons(),
     current: "welcome",
     timers: new Set(),
+    leaving: new Set(),
   };
 
   const elements = {
@@ -68,17 +69,24 @@
     api.renderers[id] = renderer;
   }
 
-  // Guided mode: a lesson may register a second, step-by-step renderer.
+  // Guided and Narrated modes: a lesson may register extra renderers beside Explore.
   const MODE_KEY = "dsl-mode";
+  const MODES = ["narrated", "guided", "explore"];
 
   function registerGuided(id, renderer) {
     if (!getLesson(id)) throw new Error(`Cannot register guided mode for unknown lesson: ${id}`);
     api.guided[id] = renderer;
   }
 
+  function registerNarrated(id, renderer) {
+    if (!getLesson(id)) throw new Error(`Cannot register narrated mode for unknown lesson: ${id}`);
+    api.narrated[id] = renderer;
+  }
+
   function getMode() {
     try {
-      return localStorage.getItem(MODE_KEY) === "explore" ? "explore" : "guided";
+      const saved = localStorage.getItem(MODE_KEY);
+      return MODES.includes(saved) ? saved : "guided";
     } catch (error) {
       return "guided";
     }
@@ -86,16 +94,35 @@
 
   function setMode(mode) {
     try {
-      localStorage.setItem(MODE_KEY, mode === "explore" ? "explore" : "guided");
+      localStorage.setItem(MODE_KEY, MODES.includes(mode) ? mode : "guided");
     } catch (error) {
       // The preference is a convenience; the default still works.
     }
   }
 
-  function modeSwitch(id) {
-    if (!api.guided[id]) return "";
+  // The mode a lesson actually renders in: the saved one, falling back to what it offers.
+  function modeFor(id) {
     const mode = getMode();
-    return `<div class="mode-switch" role="group" aria-label="Lesson mode"><button type="button" data-mode="guided" aria-pressed="${mode === "guided"}">▶ Guided</button><button type="button" data-mode="explore" aria-pressed="${mode === "explore"}">Explore</button></div>`;
+    if (mode === "narrated" && api.narrated[id]) return "narrated";
+    if (mode !== "explore" && api.guided[id]) return "guided";
+    return "explore";
+  }
+
+  function modeSwitch(id) {
+    if (!api.guided[id] && !api.narrated[id]) return "";
+    const mode = modeFor(id);
+    const button = (value, label) => `<button type="button" data-mode="${value}" aria-pressed="${mode === value}">${label}</button>`;
+    return `<div class="mode-switch" role="group" aria-label="Lesson mode">${api.narrated[id] ? button("narrated", "🎧 Narrated") : ""}${api.guided[id] ? button("guided", "▶ Guided") : ""}${button("explore", "Explore")}</div>`;
+  }
+
+  // Work to stop when the learner leaves the current screen (audio, speech, listeners).
+  function onLeave(callback) {
+    state.leaving.add(callback);
+  }
+
+  function leave() {
+    state.leaving.forEach((callback) => callback());
+    state.leaving.clear();
   }
 
   function lessonHeader(lesson, title, lede, difficulty = "Foundational") {
@@ -154,12 +181,17 @@
     elements,
     renderers: Object.create(null),
     guided: Object.create(null),
+    narrated: Object.create(null),
     getLesson,
     registerRenderer,
     registerGuided,
+    registerNarrated,
     getMode,
     setMode,
+    modeFor,
     modeSwitch,
+    onLeave,
+    leave,
     lessonHeader,
     lessonFooter,
     clearTimers,
