@@ -11,7 +11,7 @@
         <div class="concept-card"><span class="concept-number">03 / locality</span><h3>Neighbors matter</h3><p>Organizing related rows together turns future lookups into cheap reads from an already loaded page.</p></div>
       </section>
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 01</span><h2>Fetch a customer</h2><p class="lab-copy">Choose an ID and watch which page enters the buffer pool. Repeat the query to see the difference between a disk read and a buffer hit.</p></div><span class="lab-badge">storage → memory</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 02</span><h2>Fetch a customer</h2><p class="lab-copy">Choose an ID and watch which page enters the buffer pool. Repeat the query to see the difference between a disk read and a buffer hit.</p></div><span class="lab-badge">storage → memory</span></div>
         <div class="controls">
           <div class="control grow"><label for="customer-id">Customer ID (1–16)</label><input id="customer-id" type="number" min="1" max="16" value="11"></div>
           <button class="button primary" id="fetch-row">Fetch row</button>

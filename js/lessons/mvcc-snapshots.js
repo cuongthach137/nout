@@ -29,7 +29,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Every read asks: <em>which version is visible?</em>", "MVCC keeps multiple row versions so readers do not need to block writers. The isolation level determines whether a transaction receives a fresh snapshot for each statement or keeps one stable view.", "Intermediate")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 13 · MVCC timeline</span><h2>Repeat a read while another transaction commits</h2><p class="lab-copy">Compare PostgreSQL Read Committed with Repeatable Read. The write is the same; only transaction A’s snapshot policy changes.</p></div><span class="lab-badge">visible ≠ latest</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 15 · MVCC timeline</span><h2>Repeat a read while another transaction commits</h2><p class="lab-copy">Compare PostgreSQL Read Committed with Repeatable Read. The write is the same; only transaction A’s snapshot policy changes.</p></div><span class="lab-badge">visible ≠ latest</span></div>
         <div class="controls">
           <div class="control grow"><label for="snapshot-scenario">Phenomenon</label><select id="snapshot-scenario"><option value="nonrepeatable">Non-repeatable read · one row changes</option><option value="phantom">Phantom read · result set changes</option></select></div>
           <div class="control grow"><label for="snapshot-isolation">Transaction A isolation</label><select id="snapshot-isolation"><option value="read-committed">READ COMMITTED</option><option value="repeatable-read">REPEATABLE READ</option></select></div>

@@ -10,7 +10,7 @@
       ${DSL.lessonHeader(lesson, "Dead tuples are not free space <em>yet.</em>", "Updates and deletes leave old row versions behind. VACUUM decides which versions are no longer visible to any transaction and turns their space into something future writes can reuse.", "Intermediate")}
 
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 21 · maintenance</span><h2>Reclaim a high-churn table</h2><p class="lab-copy">Generate obsolete versions, optionally pin them with an old snapshot, then compare ordinary VACUUM with the table rewrite performed by VACUUM FULL.</p></div><span class="lab-badge">visibility → reclaim</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 23 · maintenance</span><h2>Reclaim a high-churn table</h2><p class="lab-copy">Generate obsolete versions, optionally pin them with an old snapshot, then compare ordinary VACUUM with the table rewrite performed by VACUUM FULL.</p></div><span class="lab-badge">visibility → reclaim</span></div>
         <div class="controls">
           <div class="control grow"><label for="vacuum-churn">Obsolete tuples: <span id="vacuum-churn-value">50%</span></label><input id="vacuum-churn" type="range" min="15" max="85" step="5" value="50"></div>
           <div class="control"><label for="vacuum-snapshot">Oldest snapshot</label><select id="vacuum-snapshot"><option value="none">No old transaction</option><option value="pinned">Report open for 4 hours</option></select></div>

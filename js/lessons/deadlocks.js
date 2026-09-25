@@ -8,7 +8,7 @@
 
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Production drill</span><strong>Transfers occasionally fail with SQLSTATE 40P01</strong><span class="severity">concurrency</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Lab 24 · wait-for graph</span><h2>Run two valid transfers at the same time</h2><p class="lab-copy">Transaction A moves $10 from account 1 to 2; transaction B moves $20 in the opposite direction. Change only their lock order and watch a wait become—or avoid—a cycle.</p></div><span class="lab-badge">2 rows · 2 transactions</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 26 · wait-for graph</span><h2>Run two valid transfers at the same time</h2><p class="lab-copy">Transaction A moves $10 from account 1 to 2; transaction B moves $20 in the opposite direction. Change only their lock order and watch a wait become—or avoid—a cycle.</p></div><span class="lab-badge">2 rows · 2 transactions</span></div>
         <div class="controls"><div class="control grow"><label for="lock-order">Row lock order</label><select id="lock-order"><option value="opposite">Business order · opposite</option><option value="consistent">Account ID order · consistent</option></select></div><div class="control"><label for="deadlock-retry">On deadlock</label><select id="deadlock-retry"><option value="none">Return error</option><option value="retry">Retry whole transaction</option></select></div><button class="button primary" id="run-deadlock">Run schedule</button></div>
 
         <div class="deadlock-scene" aria-live="polite">
