@@ -39,12 +39,7 @@
 .model-table tr.hot-bad td { animation: modelingHotBad 1.2s ease-out; }
 
 /* Lab 01A: hunt the copies. */
-.metric-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
-.segmented { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); }
-.segmented button { min-height: 32px; padding: 0 12px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
-.segmented button:hover { color: var(--ink); }
-.segmented button[aria-pressed="true"] { color: #fff; background: var(--green); }
 
 .hunt-timer { height: 6px; margin-top: 14px; border-radius: 99px; background: var(--surface-soft); overflow: hidden; }
 .hunt-timer i { display: block; width: 100%; height: 100%; border-radius: inherit; background: var(--green); transition: width 0.1s linear, background 0.3s; }
@@ -73,8 +68,6 @@
 .key-chip, .ref-chip { padding: 1px 7px; border-radius: 99px; font-weight: 700; font-size: 11.5px; }
 .key-chip { color: var(--green-deep); background: var(--green-soft); }
 .ref-chip { color: var(--blue); background: var(--blue-soft); }
-@keyframes modelingPing { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(200, 237, 118, 0.9); background: var(--lime); } 60% { transform: scale(1.18); box-shadow: 0 0 0 9px rgba(200, 237, 118, 0); } 100% { transform: scale(1); } }
-.ping { animation: modelingPing 0.7s ease-out; }
 
 .form-track { display: flex; margin: 16px 0 0; padding: 0; list-style: none; counter-reset: form; }
 .form-track li { position: relative; flex: 1; padding-top: 20px; color: var(--muted); font-size: 11px; font-weight: 700; text-align: center; counter-increment: form; }
@@ -120,41 +113,7 @@
 .metric strong.good { color: var(--green); }
 .metric strong.warn { color: var(--amber); }
 
-/* Lesson progress: checklist, per-lab stamps, completion nudge. */
-.lab-checklist { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -8px 0 8px; }
-.lab-checklist > strong { margin-right: 4px; font-family: var(--mono); font-size: 11px; color: var(--green-deep); }
-.lc-item { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 11px 0 8px; border: 1px solid var(--line-strong); border-radius: 99px; color: var(--muted); background: var(--surface); font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer; transition: border-color .15s, color .15s, background .25s; }
-.lc-item:hover { color: var(--ink); border-color: var(--green); }
-.lc-item i { display: grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line-strong); font-style: normal; font-size: 10px; transition: .25s; }
-.lc-item.done { color: var(--green-deep); border-color: var(--green); background: var(--green-soft); }
-.lc-item.done i { border-color: var(--green); background: var(--green); color: #fff; }
-.lc-item.done i::before { content: "✓"; }
-.lc-reset { margin-left: auto; padding: 4px 6px; border: 0; color: var(--muted); background: none; font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; }
-
-.lab-side { display: flex; flex: 0 0 auto; flex-direction: column; align-items: flex-end; gap: 8px; }
-.lab-stamp { display: none; padding: 5px 10px; border: 1.5px solid var(--green); border-radius: 99px; color: var(--green-deep); background: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .02em; transform: rotate(-3deg); }
-.lab.is-done .lab-stamp { display: inline-block; }
-@keyframes modelingStamp { 0% { opacity: 0; transform: rotate(-3deg) scale(2.2); } 60% { opacity: 1; transform: rotate(-3deg) scale(.9); } 100% { transform: rotate(-3deg) scale(1); } }
-@keyframes modelingDing { 0% { box-shadow: var(--shadow), 0 0 0 0 rgba(200, 237, 118, .9); } 100% { box-shadow: var(--shadow), 0 0 0 18px rgba(200, 237, 118, 0); } }
-.lab.ding { animation: modelingDing .9s ease-out; }
-.lab.ding .lab-stamp { animation: modelingStamp .5s cubic-bezier(.2, .8, .2, 1.2); }
-@keyframes modelingNudge { 0%, 100% { box-shadow: 0 0 0 0 rgba(29, 111, 80, .45); } 50% { box-shadow: 0 0 0 7px rgba(29, 111, 80, 0); } }
-.complete-button.nudge:not(.done) { border-color: var(--green); animation: modelingNudge 1.6s ease-in-out infinite; }
-
-/* Collapsible "Wait, what?" asides. */
-.wonder { margin-top: 16px; border: 1px dashed var(--line-strong); border-left: 3px solid var(--lime); border-radius: var(--radius-sm); background: var(--surface-soft); }
-.wonder summary { display: flex; align-items: baseline; gap: 10px; padding: 11px 14px; font-size: 13.5px; font-weight: 600; cursor: pointer; list-style: none; }
-.wonder summary::-webkit-details-marker { display: none; }
-.wonder summary::after { content: "+"; margin-left: auto; color: var(--green); font-family: var(--mono); font-size: 15px; transition: transform .2s; }
-.wonder[open] summary::after { transform: rotate(45deg); }
-.wonder summary > span { flex: 0 0 auto; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--green-deep); }
-.wonder p { margin: 0; padding: 0 14px 13px; font-size: 13.5px; line-height: 1.55; }
-.concept-card .wonder { margin-top: 14px; }
-.concept-card .wonder summary { flex-wrap: wrap; row-gap: 2px; font-size: 12.5px; }
-.concept-card .wonder p { font-size: 12.5px; color: var(--ink); }
-
 /* Concept-card mini diagrams, each a short looping story. */
-.mini { display: flex; align-items: center; justify-content: center; gap: 8px; height: 74px; margin: -6px 0 14px; border-radius: 10px; background: var(--surface-soft); font-size: 11.5px; overflow: hidden; }
 .mini-card { display: grid; gap: 2px; padding: 6px 9px; border: 1px solid var(--line-strong); border-radius: 7px; background: var(--surface); font-family: var(--mono); font-size: 11px; }
 .mini-card b { color: var(--muted); font-size: 9.5px; font-weight: 500; }
 .mini-window { display: block; height: 15px; overflow: hidden; }
@@ -187,13 +146,6 @@
 .model-board.paper > small::before { content: "🧾 "; }
 
 /* Lab 01C: race lanes, pointer arrows, assembled row. */
-.control-hint { align-self: center; color: var(--muted); font-size: 12px; }
-.race { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 14px; margin-top: 18px; }
-.lane { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background-color: #fbfcf9; background-image: radial-gradient(var(--line) .8px, transparent .8px); background-size: 17px 17px; }
-.lane-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
-.hops { display: inline-flex; gap: 5px; }
-.hops i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--line-strong); background: var(--surface); transition: .2s; }
-.hops i.on { border-color: var(--blue); background: var(--blue); }
 .lane-stage { position: relative; flex: 1; }
 .lane .model-table th, .lane .model-table td { padding: 7px 10px; font-size: 12.5px; }
 .lane .model-table .mono { font-size: 12px; }
@@ -204,10 +156,6 @@
 .slot.filled { border-style: solid; border-color: var(--green); color: var(--ink); background: var(--green-soft); font-family: var(--mono); font-size: 12px; }
 .slot.filled.wrong { border-color: var(--coral); background: var(--coral-soft); color: #8f3d27; }
 .slot.filled.wrong::after { content: " ✗ stale"; font-family: var(--font); font-size: 10px; font-weight: 700; }
-.lane-flag { min-height: 20px; font-size: 12px; font-weight: 700; opacity: 0; transform: translateY(4px); transition: .3s; }
-.lane-flag.show { opacity: 1; transform: none; }
-.lane-flag.warn { color: var(--coral); }
-.lane-flag.ok { color: var(--green); }
 
 /* Production drill: response cards and a month on a timeline. */
 .response-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -284,10 +232,7 @@
 
 @media (max-width: 680px) {
   .model-table th, .model-table td { padding: 8px 10px; font-size: 12.5px; }
-  .metric-grid.four { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .response-cards { grid-template-columns: 1fr; }
-  .race { grid-template-columns: 1fr; }
   .timeline { gap: 2px; }
-  .lab-side { align-items: flex-start; }
   .form-track li { font-size: 9.5px; }
 }

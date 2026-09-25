@@ -41,9 +41,13 @@
   const DISH = { "Lemon cake": "🍋", "Carrot cake": "🥕", Sourdough: "🍞", Croissant: "🥐", "Rye loaf": "🥖", Eclair: "🍫", Babka: "🍰", Scone: "🧁" };
   const dish = (name) => `${DISH[name] || ""} ${name}`.trim();
 
-  const LAB_IDS = ["copies", "split", "join", "drill", "quiz"];
-  const LAB_NAMES = { copies: "01A Copies", split: "01B Split", join: "01C Join", drill: "Drill", quiz: "Quiz" };
-  const LAB_KEY = "dsl-modeling-labs";
+  const { reducedMotion, retrigger, wonder, labSide } = DSL.LabKit;
+  const progress = DSL.LabKit.createProgress({
+    lessonId: "modeling",
+    storageKey: "dsl-modeling-labs",
+    labs: [{ id: "copies", name: "01A Copies" }, { id: "split", name: "01B Split" }, { id: "join", name: "01C Join" }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
+  });
+  const completeLab = (id) => progress.complete(id);
 
   // Lab 01C: the screen row both lanes assemble for order #103.
   const SLOTS = [["id", "order"], ["name", "name"], ["phone", "phone"], ["item", "item"], ["price", "price"]];
@@ -76,14 +80,6 @@
     if (tone) el.classList.add(tone);
   }
 
-  function wonder(question, answer) {
-    return `<details class="wonder"><summary><span>Wait, what?</span>${question}</summary><p>${answer}</p></details>`;
-  }
-
-  function labSide(badge) {
-    return `<div class="lab-side"><span class="lab-badge">${badge}</span><span class="lab-stamp" aria-hidden="true">✓ lab done</span></div>`;
-  }
-
   function slotsMarkup(prefix) {
     return `<div class="assembled" id="${prefix}-result" aria-live="polite">${SLOTS.map(([key, label]) => `<span class="slot" data-slot="${key}">${label}</span>`).join("")}</div>`;
   }
@@ -92,11 +88,7 @@
     const lesson = DSL.getLesson("modeling");
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "One fact, <em>one place</em>.", "Before indexes, joins, or tuning: the shape of your data decides whether a one-line change stays a one-line change. This lesson needs nothing but a bakery order notebook.")}
-      <nav class="lab-checklist" aria-label="Lesson labs">
-        <strong id="lab-count">0 / ${LAB_IDS.length} labs</strong>
-        ${LAB_IDS.map((id) => `<button type="button" class="lc-item" data-goto="${id}"><i aria-hidden="true"></i>${LAB_NAMES[id]}</button>`).join("")}
-        <button type="button" class="lc-reset" id="lab-reset">reset</button>
-      </nav>
+      ${progress.markup()}
       <section class="concept-grid">
         <div class="concept-card">
           <span class="concept-number">01 / copies</span>
@@ -231,14 +223,14 @@
       </section>
 
       <section class="lab" id="lab-quiz">
-        <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Four calls, no jargon required</h2><p class="lab-copy">Answer with the plain-language rules from the labs; the database vocabulary is only their formal name.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button><span class="lab-stamp" aria-hidden="true">✓ lab done</span></div></div>
+        <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Four calls, no jargon required</h2><p class="lab-copy">Answer with the plain-language rules from the labs; the database vocabulary is only their formal name.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
         <div id="modeling-quiz">${DSL.Quiz.render(QUIZ, "Modeling review")}</div>
       </section>
 
       <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> shape decides cost before any tuning does. One fact, one place; pointers instead of copies; copies only with a named owner.</p></div>
       ${DSL.lessonFooter("modeling")}
     </article>`;
-    setupLabProgress();
+    progress.mount();
     setupCopyLab();
     setupSplitLab();
     setupJoinLab();
@@ -250,80 +242,6 @@
       successCopy: "You can explain normalization without the vocabulary.",
       onComplete: ({ passed }) => { if (passed) completeLab("quiz"); },
     });
-  }
-
-  // Per-lab progress: a checklist under the header, a stamp on each lab, saved per browser.
-  let labsDone = new Set();
-
-  function readLabs() {
-    try {
-      const stored = JSON.parse(localStorage.getItem(LAB_KEY) || "[]");
-      return new Set(Array.isArray(stored) ? stored.filter((id) => LAB_IDS.includes(id)) : []);
-    } catch (error) {
-      return new Set();
-    }
-  }
-
-  function saveLabs() {
-    try {
-      localStorage.setItem(LAB_KEY, JSON.stringify([...labsDone]));
-    } catch (error) {
-      // Progress is a convenience; the lesson works without storage.
-    }
-  }
-
-  function paintLabs() {
-    document.getElementById("lab-count").textContent = `${labsDone.size} / ${LAB_IDS.length} labs`;
-    LAB_IDS.forEach((id) => {
-      const done = labsDone.has(id);
-      document.querySelector(`.lc-item[data-goto="${id}"]`).classList.toggle("done", done);
-      document.getElementById(`lab-${id}`).classList.toggle("is-done", done);
-    });
-  }
-
-  function setupLabProgress() {
-    labsDone = readLabs();
-    document.querySelector(".lab-checklist").addEventListener("click", (event) => {
-      const item = event.target.closest("[data-goto]");
-      if (item) document.getElementById(`lab-${item.dataset.goto}`).scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
-    });
-    document.getElementById("lab-reset").addEventListener("click", () => {
-      labsDone.clear();
-      saveLabs();
-      paintLabs();
-      const button = document.querySelector('[data-complete="modeling"]');
-      if (button) button.classList.remove("nudge");
-    });
-    paintLabs();
-  }
-
-  function completeLab(id) {
-    const section = document.getElementById(`lab-${id}`);
-    retrigger(section, "ding");
-    if (labsDone.has(id)) return;
-    labsDone.add(id);
-    saveLabs();
-    paintLabs();
-    retrigger(document.querySelector(`.lc-item[data-goto="${id}"]`), "ping");
-    if (labsDone.size === LAB_IDS.length) {
-      const button = document.querySelector('[data-complete="modeling"]');
-      if (button && !button.classList.contains("done")) button.classList.add("nudge");
-      DSL.showToast("All five labs done. Mark the lesson complete to save it to your course progress.");
-    } else {
-      DSL.showToast(`${LAB_NAMES[id]} done · ${labsDone.size} of ${LAB_IDS.length} labs`);
-    }
-  }
-
-  function reducedMotion() {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  }
-
-  // Restart a one-shot CSS animation class on an element.
-  function retrigger(el, className) {
-    if (!el) return;
-    el.classList.remove(className);
-    void el.offsetWidth;
-    el.classList.add(className);
   }
 
   function phoneFor(name) {
