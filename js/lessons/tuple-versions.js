@@ -7,7 +7,7 @@
       ${DSL.lessonHeader(lesson, "An UPDATE creates a <em>new row version.</em>", "PostgreSQL keeps the old tuple long enough for existing snapshots to see it. Whether the indexes must also change determines how much physical work one logical update creates.", "Intermediate")}
 
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 20 · tuple lifecycle</span><h2>Follow one row through the heap</h2><p class="lab-copy">Replay several updates. A HOT update can keep the version chain on one heap page without adding index entries; changing an indexed value—or running out of page space—breaks that shortcut.</p></div><span class="lab-badge">logical row ≠ physical tuple</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 22 · tuple lifecycle</span><h2>Follow one row through the heap</h2><p class="lab-copy">Replay several updates. A HOT update can keep the version chain on one heap page without adding index entries; changing an indexed value—or running out of page space—breaks that shortcut.</p></div><span class="lab-badge">logical row ≠ physical tuple</span></div>
         <div class="controls">
           <div class="control"><label for="version-column">Column being changed</label><select id="version-column"><option value="bio">profile_bio · not indexed</option><option value="email">email · indexed</option></select></div>
           <div class="control"><label for="version-space">Free space on page 42</label><select id="version-space"><option value="room">Enough room</option><option value="full">Page is full</option></select></div>

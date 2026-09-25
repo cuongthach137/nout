@@ -71,7 +71,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "An index may map rows—or <em>move them</em>.", "Secondary and clustered indexes both keep keys ordered, but they affect physical storage differently. Compare the layouts, then measure the page reads for one range query.")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 02</span><h2>See where the rows live</h2><p class="lab-copy">The query needs customer IDs 43–45. Change the storage design and watch both the table pages and the I/O path.</p></div><span class="lab-badge">logical key → physical page</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 03</span><h2>See where the rows live</h2><p class="lab-copy">The query needs customer IDs 43–45. Change the storage design and watch both the table pages and the I/O path.</p></div><span class="lab-badge">logical key → physical page</span></div>
         <div class="query-box"><code>SELECT * FROM customers WHERE id BETWEEN 43 AND 45 ORDER BY id;</code></div>
         <div class="controls">
           <div class="control grow"><label for="physical-layout-mode">Storage design</label><select id="physical-layout-mode"><option value="heap">Heap table · no index</option><option value="secondary">Secondary B-tree · table stays in insertion order</option><option value="clustered">Clustered B-tree · table ordered by ID</option></select></div>

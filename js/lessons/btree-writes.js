@@ -25,7 +25,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Your key shape changes the <em>write path</em>.", "A B-tree must place every new key in sorted order. Random identifiers and time-ordered identifiers create very different cache, fragmentation, and page-split behavior.", "Advanced")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 07</span><h2>Insert into a live B-tree</h2><p class="lab-copy">Run the same 12 inserts with random and time-ordered UUIDs. Each pulse is a leaf page touched; a split means the target page had no room.</p></div><span class="lab-badge">key → leaf → split</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 08</span><h2>Insert into a live B-tree</h2><p class="lab-copy">Run the same 12 inserts with random and time-ordered UUIDs. Each pulse is a leaf page touched; a split means the target page had no room.</p></div><span class="lab-badge">key → leaf → split</span></div>
         <div class="controls"><div class="control grow"><label for="id-pattern">Primary-key pattern</label><select id="id-pattern"><option value="uuid4">Random UUIDv4</option><option value="uuid7">Time-ordered UUIDv7</option></select></div><button class="button primary" id="run-inserts">Run 12 inserts</button></div>
         <div class="leaf-buffer" id="leaf-buffer" aria-label="B-tree leaf pages receiving inserts" aria-live="polite"></div>
         <div class="insert-stream" id="insert-stream"><span>Waiting for inserts</span></div>

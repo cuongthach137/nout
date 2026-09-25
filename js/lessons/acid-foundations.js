@@ -17,7 +17,7 @@
 
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Production drill</span><strong>Payment failed after the debit succeeded</strong><span class="severity">atomicity</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Lab 11 · transfer boundary</span><h2>Crash between two correct updates</h2><p class="lab-copy">Move $100 from Alice to Bob and write an audit receipt. Inject a failure, then compare statement autocommit with one explicit transaction.</p></div><span class="lab-badge">$500 + $200 = $700</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 13 · transfer boundary</span><h2>Crash between two correct updates</h2><p class="lab-copy">Move $100 from Alice to Bob and write an audit receipt. Inject a failure, then compare statement autocommit with one explicit transaction.</p></div><span class="lab-badge">$500 + $200 = $700</span></div>
         <div class="controls">
           <div class="control grow"><label for="atomic-mode">Execution boundary</label><select id="atomic-mode"><option value="autocommit">Each statement autocommits</option><option value="transaction">One BEGIN … COMMIT transaction</option></select></div>
           <div class="control grow"><label for="atomic-failure">Injected failure</label><select id="atomic-failure"><option value="credit">Credit statement errors</option><option value="receipt">Receipt insert errors</option><option value="none">No failure</option></select></div>

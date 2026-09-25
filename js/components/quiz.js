@@ -55,6 +55,7 @@
       }
 
       const passed = correct >= passScore;
+      if (options.onComplete) options.onComplete({ passed, correct });
       verdict.className = `quiz-verdict ${passed ? "passed" : "retry"}`;
       verdict.innerHTML = passed
         ? `<strong>${options.successTitle || "Review passed"}</strong><span>${correct} of ${questions.length} correct. ${options.successCopy || "You connected the symptoms to the underlying mechanism."}</span>`

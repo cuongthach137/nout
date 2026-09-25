@@ -19,7 +19,7 @@
 
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Production drill</span><strong>Report latency fixed; database memory exhausted next</strong><span class="severity">resource trade-off</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Lab 23 · memory and temp I/O</span><h2>Fit one query without sinking the cluster</h2><p class="lab-copy">The model uses an 8 GiB database host and PostgreSQL's default 2× hash-memory multiplier. Values are teaching estimates, not a capacity formula.</p></div><span class="lab-badge">RAM ↔ temp files</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 25 · memory and temp I/O</span><h2>Fit one query without sinking the cluster</h2><p class="lab-copy">The model uses an 8 GiB database host and PostgreSQL's default 2× hash-memory multiplier. Values are teaching estimates, not a capacity formula.</p></div><span class="lab-badge">RAM ↔ temp files</span></div>
         <div class="controls">
           <div class="control"><label for="memory-workload">Workload</label><select id="memory-workload"><option value="endpoint">API endpoint · 120k rows</option><option value="report" selected>Monthly report · 8m rows</option></select></div>
           <div class="control"><label for="memory-operator">Operator</label><select id="memory-operator"><option value="sort">Sort</option><option value="hash" selected>Hash join</option><option value="aggregate">Hash aggregate</option></select></div>

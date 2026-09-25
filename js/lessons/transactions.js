@@ -6,7 +6,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Two correct transactions can produce a wrong result.", "Isolation controls what concurrent work is allowed to observe. Run the same schedule under two isolation behaviors and watch the final balance change.", "Intermediate")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 12 · isolation</span><h2>The lost update</h2><p class="lab-copy">Two transactions read $100, then independently add $20 and $30. Choose how the database handles the collision.</p></div><span class="lab-badge">read → write → commit</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 14 · isolation</span><h2>The lost update</h2><p class="lab-copy">Two transactions read $100, then independently add $20 and $30. Choose how the database handles the collision.</p></div><span class="lab-badge">read → write → commit</span></div>
         <div class="controls"><div class="control grow"><label for="isolation-mode">Concurrency behavior</label><select id="isolation-mode"><option value="unsafe">Allow overwrite (lost update)</option><option value="locked">Lock the row (serialized)</option></select></div><button class="button primary" id="run-transactions">Run schedule</button></div>
         <div class="balance-display"><div class="balance-card"><small>Starting balance</small><strong>$100</strong></div><div class="balance-card"><small>Final balance</small><strong id="final-balance">—</strong></div></div>
         <div class="schedule" id="schedule" aria-live="polite"></div>

@@ -50,7 +50,7 @@
       ${DSL.lessonHeader(lesson, "Consistency starts with an <em>explicit invariant</em>.", "The database cannot preserve a business rule it has never been told. Turn assumptions into constraints so every writer—API, job, migration, or console—faces the same gate.", "Intermediate")}
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Schema review</span><strong>Valid SQL produced invalid business data</strong><span class="severity">consistency</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Lab 15 · invariant workbench</span><h2>Put the rule at the write boundary</h2><p class="lab-copy">Select a data-integrity incident and an enforcement mechanism. The incoming write bypasses application validation, just like an import script or a second service might.</p></div><span class="lab-badge">state → rule → next state</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Lab 17 · invariant workbench</span><h2>Put the rule at the write boundary</h2><p class="lab-copy">Select a data-integrity incident and an enforcement mechanism. The incoming write bypasses application validation, just like an import script or a second service might.</p></div><span class="lab-badge">state → rule → next state</span></div>
         <div class="controls">
           <div class="control grow"><label for="consistency-scenario">Incoming write</label><select id="consistency-scenario"><option value="price">Negative product price</option><option value="email">Duplicate account email</option><option value="orphan">Order references missing product</option><option value="overlap">Overlapping room reservation</option></select></div>
           <div class="control grow"><label for="consistency-mechanism">Database enforcement</label><select id="consistency-mechanism"><option value="app">Application pre-check only</option><option value="check">CHECK constraint</option><option value="unique">UNIQUE constraint</option><option value="foreign-key">FOREIGN KEY constraint</option><option value="exclude">EXCLUDE constraint</option></select></div>
@@ -71,7 +71,7 @@
 
       <section class="consistency-meanings">
         <div><span class="lab-kicker">ACID consistency</span><h3>Is this state valid?</h3><p>Transactions should move the database from one invariant-satisfying state to another. Constraints, isolation, and correct transaction logic work together to make that true.</p></div>
-        <div><span class="lab-kicker">Distributed consistency</span><h3>Which version did this node return?</h3><p>Replica freshness and agreement are a different dimension. A perfectly valid old value can still violate a user’s read-your-writes expectation.</p><a href="#/replication">Explore eventual consistency in Lesson 18 →</a></div>
+        <div><span class="lab-kicker">Distributed consistency</span><h3>Which version did this node return?</h3><p>Replica freshness and agreement are a different dimension. A perfectly valid old value can still violate a user’s read-your-writes expectation.</p><a href="#/replication">Explore eventual consistency in Lesson 19 →</a></div>
       </section>
       <div class="insight"><span class="insight-mark">!</span><p><strong>Consistency is not one switch.</strong> Name the invariant, the scope where it must hold, and the failure behavior the application will handle.</p></div>
       ${DSL.lessonFooter("consistency")}
