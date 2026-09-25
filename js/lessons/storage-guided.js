@@ -858,78 +858,12 @@
           paint(false);
         },
       },
-      {
-        id: "quiz",
-        prompt: "Four quick calls.",
-        mount(scene, api) {
-          const questions = M.QUIZ;
-          let q = 0;
-          let right = 0;
-          function render() {
-            const question = questions[q];
-            scene.innerHTML = `<div class="gd-quiz">
-              <span class="gd-q-count">${q + 1} / ${questions.length}</span>
-              <p class="gd-q">${question.prompt}</p>
-              <div class="gd-answers">${question.options.map((option, i) => `<button type="button" class="gd-answer" data-i="${i}">${option}</button>`).join("")}</div>
-            </div>`;
-            retrigger(scene.querySelector(".gd-quiz"), "gd-card-in");
-            scene.querySelectorAll(".gd-answer").forEach((button) => button.addEventListener("click", async () => {
-              const pick = Number(button.dataset.i);
-              const correct = pick === question.answer;
-              scene.querySelectorAll(".gd-answer").forEach((b) => {
-                b.disabled = true;
-                if (Number(b.dataset.i) === question.answer) b.classList.add("correct");
-              });
-              if (correct) {
-                right += 1;
-                burst(button, { count: 12 });
-                api.say("✓ Right.", "ok");
-              } else {
-                button.classList.add("wrong");
-                api.say(`✗ ${question.why}`, "warn");
-              }
-              await api.wait(correct ? 1000 : 2600);
-              q += 1;
-              if (q < questions.length) {
-                render();
-                api.say("");
-                return;
-              }
-              scene.innerHTML = `<div class="gd-quiz gd-quiz-done"><b>${right} / ${questions.length}</b><span>${right >= 3 ? "Passed" : "Replay the beats and try again"}</span></div>`;
-              retrigger(scene.querySelector(".gd-quiz"), "gd-card-in");
-              if (right >= 3) {
-                burst(scene.querySelector(".gd-quiz b"), { count: 20, spread: 80 });
-                api.lab("quiz");
-              }
-              api.done(`<b>${right} / ${questions.length}</b> right.`);
-            }));
-          }
-          render();
-        },
-      },
-      {
-        id: "finish",
-        prompt: "Lesson done. 🎉",
-        mount(scene, api) {
-          const completed = DSL.state.completed.has("pages");
-          scene.innerHTML = `<div class="gd-finish">
-            <div class="gd-badges">
-              <div style="--i:0"><span>📄</span><b>Whole pages</b><small>one row costs 8 KB</small></div>
-              <div style="--i:1"><span>⚡</span><b>Hits are cheap</b><small>RAM is 80× faster</small></div>
-              <div style="--i:2"><span>🎯</span><b>Neighbours win</b><small>locality beats luck</small></div>
-            </div>
-            <div class="gd-finish-actions">
-              <button type="button" class="button primary complete-button ${completed ? "done" : ""}" data-complete="pages">${completed ? "✓ Completed" : "Mark complete"}</button>
-              <a class="button" href="#/index-layout">Next lesson →</a>
-              <button type="button" class="button ghost" data-mode="explore">Open Explore mode</button>
-              <button type="button" class="button ghost gd-replay">↺ Replay</button>
-            </div>
-          </div>`;
-          DSL.setTimer(() => burst(scene.querySelector(".gd-badges"), { count: 26, spread: 140 }), 350);
-          scene.querySelector(".gd-replay").addEventListener("click", () => api.restart());
-          api.done();
-        },
-      },
+      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Guided.finishBeat({
+        lessonId: "pages",
+        next: "index-layout",
+        badges: [["📄", "Whole pages", "one row costs 8 KB"], ["⚡", "Hits are cheap", "RAM is 80× faster"], ["🎯", "Neighbours win", "locality beats luck"]],
+      }),
     ];
   }
 
