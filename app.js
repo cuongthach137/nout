@@ -36,13 +36,19 @@
     DSL.elements.toast.classList.remove("show");
     const [path, query = ""] = window.location.hash.replace("#/", "").split("?");
     const requested = path || "welcome";
-    const forced = new URLSearchParams(query).get("mode");
+    const params = new URLSearchParams(query);
+    const forced = params.get("mode");
+    // ?view= shows a mode for this visit only, without changing the learner's saved choice.
+    const view = params.get("view");
     DSL.state.current = DSL.renderers[requested] ? requested : "welcome";
     if (forced === "narrated" || forced === "guided" || forced === "explore") {
       DSL.setMode(forced);
       history.replaceState(null, "", `#/${DSL.state.current}`);
     }
-    const mode = DSL.modeFor(DSL.state.current);
+    const offered = { narrated: DSL.narrated, guided: DSL.guided, explore: DSL.renderers };
+    const mode = view && offered[view] && offered[view][DSL.state.current] ? view : DSL.modeFor(DSL.state.current);
+    if (view) history.replaceState(null, "", `#/${DSL.state.current}`);
+    DSL.state.mode = mode;
     document.body.classList.toggle("guided", mode !== "explore");
     renderNavigation();
     ({ narrated: DSL.narrated, guided: DSL.guided, explore: DSL.renderers })[mode][DSL.state.current]();

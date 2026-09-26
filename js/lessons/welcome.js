@@ -13,6 +13,7 @@
       <article class="lesson welcome-hero">
         <div class="hero-orbit" aria-hidden="true"><div class="orbit-ring"></div><div class="orbit-ring"></div><i class="orbit-node one"></i><i class="orbit-node two"></i><i class="orbit-node three"></i></div>
         <header class="lesson-header welcome-title">
+          ${DSL.modeSwitch("welcome")}
           <div class="eyebrow">An interactive database course</div>
           <h1>Stop memorizing.<br><em>See the system.</em></h1>
           <p class="lede">Trace bytes from disk to memory. Walk an index one page at a time. Then diagnose slow endpoints, duplicate bookings, and stale reads—the kinds of bugs these mental models help you fix in production.</p>
