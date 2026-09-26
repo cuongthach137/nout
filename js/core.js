@@ -138,7 +138,8 @@
 
   function modeSwitch(id) {
     if (!api.guided[id] && !api.narrated[id]) return "";
-    const mode = modeFor(id);
+    // The mode on screen right now (a ?view= visit can differ from the saved choice).
+    const mode = id === state.current && state.mode ? state.mode : modeFor(id);
     const button = (value, label) => `<button type="button" data-mode="${value}" aria-pressed="${mode === value}">${label}</button>`;
     return `<div class="mode-switch" role="group" aria-label="Lesson mode">${api.narrated[id] ? button("narrated", "🎧 Narrated") : ""}${api.guided[id] ? button("guided", "▶ Guided") : ""}${button("explore", "Explore")}</div>`;
   }
