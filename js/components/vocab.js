@@ -28,8 +28,13 @@
   }
 
   const card = (id) => cards[id] || (cards[id] = {});
-  // Every keyword from every loaded narration bundle: { id: { term, def, lesson } }.
-  const terms = () => (DSL.Narrator ? DSL.Narrator.keywords() : {});
+  // Cards that aren't keywords, like a lesson's open interview question: { id: { term, def, lesson, kind } }.
+  const extras = Object.create(null);
+  function addCards(lessonId, list) {
+    Object.entries(list).forEach(([id, entry]) => { extras[id] = { ...entry, lesson: lessonId }; });
+  }
+  // Every keyword from every loaded narration bundle, plus extra cards: { id: { term, def, lesson } }.
+  const terms = () => ({ ...(DSL.Narrator ? DSL.Narrator.keywords() : {}), ...extras });
 
   function seen(id, lesson) {
     const c = card(id);
@@ -185,8 +190,8 @@
       return `<div class="fc-session">
         <div class="fc-progress"><span>${session.length} left</span><i><b style="width:${(reviewed / (reviewed + session.length)) * 100}%"></b></i></div>
         <div class="fc-card ${flipped ? "flipped" : ""}" tabindex="0" aria-live="polite">
-          <div class="fc-face fc-front"><small>${lessonTitle(term.lesson)}</small><b>${term.term}</b><span class="fc-tip">Say the definition, then flip</span></div>
-          <div class="fc-face fc-back"><small>${term.term}</small><p>${term.def}</p><a href="#/${term.lesson}">Revisit the lesson</a></div>
+          <div class="fc-face fc-front ${term.kind === "interview" ? "fc-interview" : ""}"><small>${term.kind === "interview" ? "Interview question · " : ""}${lessonTitle(term.lesson)}</small><b>${term.term}</b><span class="fc-tip">${term.kind === "interview" ? "Answer out loud, then flip" : "Say the definition, then flip"}</span></div>
+          <div class="fc-face fc-back ${term.kind === "interview" ? "fc-interview" : ""}"><small>${term.term}</small><div class="fc-def">${term.def}</div><a href="#/${term.lesson}">Revisit the lesson</a></div>
         </div>
         ${flipped
           ? `<div class="fc-rate">${RATINGS.map(([key, label], i) => `<button type="button" class="fc-rate-btn ${key}" data-rate="${key}"><kbd>${i + 1}</kbd><b>${label}</b><small>${whenLabel(next(c, key).due - Date.now())}</small></button>`).join("")}</div>`
@@ -306,7 +311,7 @@
   });
 
   DSL.Vocab = {
-    seen, hasSeen, star, isStarred, rate, queue, dueCount, cardsMarkup, listMarkup, wireCards, reviewChapter, renderDeck,
+    seen, hasSeen, star, isStarred, rate, queue, dueCount, cardsMarkup, listMarkup, wireCards, reviewChapter, renderDeck, addCards,
     // Replaced by the app to refresh the sidebar's due count.
     onChange() {},
   };

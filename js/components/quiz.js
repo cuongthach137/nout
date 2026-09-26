@@ -77,6 +77,7 @@
         });
 
         const isCorrect = selected === questions[questionIndex].answer;
+        if (options.onAnswer) options.onAnswer(questionIndex, isCorrect);
         DSL.Sfx.play(isCorrect ? "correct" : "wrong");
         const feedback = card.querySelector(".quiz-feedback");
         feedback.className = `quiz-feedback ${isCorrect ? "correct" : "wrong"}`;

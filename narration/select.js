@@ -95,41 +95,67 @@ window.DataSystemsLab.Narrator.register("select", {
    "caption": "Postgres and MySQL reject that WHERE. <b>SQLite</b>, the engine in this course, lets it slide. Don't count on it.",
    "voice": "Postgres and My S Q L reject that WHERE. S Q Lite, the engine in this course, lets it slide. Don't count on it."
   },
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "Which query returns each city exactly once?",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Shape a result: pick columns, compute and name them, and remove repeated rows.",
+  "goals.2": "Two. Filter rows with WHERE, and bracket AND with OR so the query means what you say.",
+  "goals.3": "Three. Sort and take the top few, and explain the order SQL runs its clauses in.",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "SELECT picks the columns, and the answer is a table: the result set. AS names a computed column, and DISTINCT keeps one copy of each row.",
+  "recap.2": "WHERE tests every row and keeps the true ones. AND binds before OR, which is how Raj's refund slipped into Maya's query until brackets fixed it.",
+  "recap.3": "ORDER BY, then LIMIT: without a sort, top three means any three. And SQL runs FROM, WHERE, SELECT, ORDER BY, then LIMIT.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>SELECT DISTINCT city, name</code>. Ten customers, seven cities. How many rows?",
+   "voice": "Select distinct city and name. Ten customers, seven different cities. How many rows come back?"
+  },
+  "check.q1-why": "Ten. DISTINCT compares whole rows, and every city and name pair is different, because every name is.",
+  "check.q2": {
+   "caption": "Paid orders from Maya or Omar: <code>status = 'paid' AND customer_id = 1 OR customer_id = 2</code>. What's wrong?",
+   "voice": "Paid orders from Maya or Omar: status is paid, and customer is one, or customer is two. What's wrong with it?"
+  },
+  "check.q2-why": "AND binds first, so it's Maya's paid orders, or anything of Omar's. His pending order sneaks in. Use IN, one comma two, inside the AND.",
+  "check.q3": {
+   "caption": "<code>ORDER BY new_price DESC LIMIT 2</code>, where new_price is an alias from SELECT. In PostgreSQL, does it work?",
+   "voice": "Order by new price, descending, limit two, where new price is an alias made in SELECT. In Postgres, does it work?"
+  },
+  "check.q3-why": "It works. ORDER BY runs after SELECT, so the alias exists. WHERE runs before SELECT, and that's where it would fail.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "Why is <code>SELECT *</code> discouraged in production code?",
+   "voice": "Why is select star discouraged in production code?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "DISTINCT collapses repeated rows. LIMIT would just cut the list short.",
-  "quiz.q2": {
-   "caption": "How does SQL read <code>WHERE a = 1 AND b = 2 OR c = 3</code>?",
-   "voice": "Where a equals one, and b equals two, or c equals three. How does SQL read that?",
+  "interview.w1-why": "Extra columns cost reading and network time, and the result changes whenever someone adds a column.",
+  "interview.w2": {
+   "caption": "After a deploy with no query changes, a list page shows rows in a different order. Why?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "AND binds tighter than OR, so it's grouped first. Add brackets to say what you mean.",
-  "quiz.q3": {
-   "caption": "A query ends in LIMIT 10, with no ORDER BY. Which ten rows come back?",
-   "voice": "A query ends in limit ten, with no order by. Which ten rows come back?",
+  "interview.w2-why": "With no ORDER BY, the order was never promised. A new index or a different plan changes it.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Walk me through the order in which SQL evaluates FROM, WHERE, SELECT, ORDER BY and LIMIT, and give one consequence of it.",
+   "voice": "Walk me through the order in which SQL evaluates from, where, select, order by and limit. And give me one consequence of it.",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "With no ORDER BY, there's no promised order. Sort first, then cut.",
-  "quiz.q4": {
-   "caption": "<code>SELECT price * 2 AS doubled FROM products WHERE doubled &gt; 10</code> fails in Postgres. Why?",
-   "voice": "Select price times two as doubled, from products, where doubled is over ten. Postgres rejects it. Why?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "WHERE runs before SELECT, so the alias doesn't exist yet. Repeat the expression in WHERE instead.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -217,6 +243,54 @@ window.DataSystemsLab.Narrator.register("select", {
    "hash": "0bc10e016906",
    "ms": 2268
   },
+  "check.intro": {
+   "hash": "e2ce00ee353d",
+   "ms": 4968
+  },
+  "check.pass": {
+   "hash": "c8130accb1a3",
+   "ms": 2952
+  },
+  "check.q1": {
+   "hash": "0daec402c134",
+   "ms": 6480
+  },
+  "check.q1-why": {
+   "hash": "f60ab05a598e",
+   "ms": 6264
+  },
+  "check.q2": {
+   "hash": "3f9a45fc5a4b",
+   "ms": 8532
+  },
+  "check.q2-why": {
+   "hash": "0185e63b9ae7",
+   "ms": 10584
+  },
+  "check.q3": {
+   "hash": "5aaeca8f5cdd",
+   "ms": 7920
+  },
+  "check.q3-why": {
+   "hash": "fef6efab0497",
+   "ms": 7668
+  },
+  "check.retry": {
+   "hash": "17e6ed537d47",
+   "ms": 6228
+  },
+  "check.right1": {
+   "hash": "5df4176b3959",
+   "ms": 864
+  },
+  "check.right2": {
+   "hash": "e99e52b00ddc",
+   "ms": 1116
+  },
+  "check.right3": {
+   "hash": "bbb1d6dfd81d",
+   "ms": 864
+  },
   "filter.1": {
    "hash": "ad3a788b476d",
    "ms": 4572
@@ -257,6 +331,22 @@ window.DataSystemsLab.Narrator.register("select", {
    "hash": "ddcab87e85d6",
    "ms": 5940
   },
+  "goals.1": {
+   "hash": "676485cc5633",
+   "ms": 6444
+  },
+  "goals.2": {
+   "hash": "4fb9fd859d5b",
+   "ms": 5904
+  },
+  "goals.3": {
+   "hash": "e7281e185813",
+   "ms": 5832
+  },
+  "goals.intro": {
+   "hash": "7105eda85e67",
+   "ms": 2700
+  },
   "hook.1": {
    "hash": "59e4c583273d",
    "ms": 7056
@@ -268,6 +358,66 @@ window.DataSystemsLab.Narrator.register("select", {
   "hook.3": {
    "hash": "238770faf8ee",
    "ms": 6588
+  },
+  "interview.got": {
+   "hash": "aabb8fade94b",
+   "ms": 2556
+  },
+  "interview.hint": {
+   "hash": "ec946fd698df",
+   "ms": 1764
+  },
+  "interview.intro": {
+   "hash": "a64cb106fc49",
+   "ms": 5328
+  },
+  "interview.missed": {
+   "hash": "cf7b5457ae7f",
+   "ms": 4284
+  },
+  "interview.open": {
+   "hash": "1405a97954d1",
+   "ms": 11124
+  },
+  "interview.partly": {
+   "hash": "4cd133f7622f",
+   "ms": 4248
+  },
+  "interview.rate": {
+   "hash": "33112c8f4502",
+   "ms": 2412
+  },
+  "interview.reveal": {
+   "hash": "2ab0cad8958c",
+   "ms": 3852
+  },
+  "interview.right1": {
+   "hash": "4defc0b4ea6a",
+   "ms": 1044
+  },
+  "interview.right2": {
+   "hash": "15b09ac0e501",
+   "ms": 1368
+  },
+  "interview.think": {
+   "hash": "04527f670030",
+   "ms": 7524
+  },
+  "interview.w1": {
+   "hash": "178f8179643e",
+   "ms": 3492
+  },
+  "interview.w1-why": {
+   "hash": "636113f7e357",
+   "ms": 5688
+  },
+  "interview.w2": {
+   "hash": "60dfefc0bc9a",
+   "ms": 6480
+  },
+  "interview.w2-why": {
+   "hash": "9151ae1800dc",
+   "ms": 5832
   },
   "keywords.1": {
    "hash": "52c9899fd888",
@@ -377,61 +527,21 @@ window.DataSystemsLab.Narrator.register("select", {
    "hash": "6a5905c5aac2",
    "ms": 2700
   },
-  "quiz.intro": {
-   "hash": "08fdf9d19fee",
-   "ms": 1584
+  "recap.1": {
+   "hash": "e7874664871d",
+   "ms": 10332
   },
-  "quiz.pass": {
-   "hash": "1e2c41acf108",
-   "ms": 2412
+  "recap.2": {
+   "hash": "80dcbafcf396",
+   "ms": 9720
   },
-  "quiz.q1": {
-   "hash": "b0bae7e4f2d8",
-   "ms": 3204
+  "recap.3": {
+   "hash": "5bf6b3a9c1ac",
+   "ms": 11340
   },
-  "quiz.q1-why": {
-   "hash": "981347b7cebc",
-   "ms": 4428
-  },
-  "quiz.q2": {
-   "hash": "1eb0d44cf195",
-   "ms": 6660
-  },
-  "quiz.q2-why": {
-   "hash": "fc59055c28be",
-   "ms": 5760
-  },
-  "quiz.q3": {
-   "hash": "65b9c64806bc",
-   "ms": 5112
-  },
-  "quiz.q3-why": {
-   "hash": "338bc2ed3746",
-   "ms": 5256
-  },
-  "quiz.q4": {
-   "hash": "cc36f1f5884f",
-   "ms": 7740
-  },
-  "quiz.q4-why": {
-   "hash": "6936cb2fce83",
-   "ms": 6696
-  },
-  "quiz.retry": {
-   "hash": "674b74cededc",
-   "ms": 3852
-  },
-  "quiz.right1": {
-   "hash": "5df4176b3959",
-   "ms": 900
-  },
-  "quiz.right2": {
-   "hash": "e99e52b00ddc",
-   "ms": 1152
-  },
-  "quiz.right3": {
-   "hash": "bbb1d6dfd81d",
-   "ms": 972
+  "recap.intro": {
+   "hash": "f29481f34c13",
+   "ms": 1800
   },
   "recent.1": {
    "hash": "6e4d02107a35",

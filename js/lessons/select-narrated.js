@@ -27,6 +27,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "query",
         title: "A query is a question",
@@ -141,7 +142,9 @@
           await n.say("logic.5");
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("select"),
       {
         id: "finish",
@@ -149,6 +152,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "select",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🧾", "Shape", "SELECT, AS, DISTINCT"], ["🔎", "Filter", "WHERE, with brackets"], ["🏁", "Sort, then cut", "ORDER BY, LIMIT"]],
           }));
           await n.say("finish.1");

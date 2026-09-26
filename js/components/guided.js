@@ -274,8 +274,9 @@
     };
   }
 
-  // next defaults to the lesson after this one in the course order.
-  function finishBeat({ lessonId, badges, next }) {
+  // next defaults to the lesson after this one in the course order. before() returns markup shown
+  // above the badges (the lesson's goals, with how each went).
+  function finishBeat({ lessonId, badges, next, before }) {
     const { burst } = DSL.LabKit;
     const after = DSL.lessons[DSL.lessons.findIndex((lesson) => lesson.id === lessonId) + 1];
     next = next || (after && after.id);
@@ -285,7 +286,7 @@
       mount(scene, api) {
         const completed = DSL.state.completed.has(lessonId);
         scene.innerHTML = `<div class="gd-finish">
-          <div class="gd-badges">${badges.map(([icon, title, sub], i) => `<div style="--i:${i}"><span>${icon}</span><b>${title}</b><small>${sub}</small></div>`).join("")}</div>
+          ${before ? before() : `<div class="gd-badges">${badges.map(([icon, title, sub], i) => `<div style="--i:${i}"><span>${icon}</span><b>${title}</b><small>${sub}</small></div>`).join("")}</div>`}
           <div class="gd-finish-actions">
             <button type="button" class="button primary complete-button ${completed ? "done" : ""}" data-complete="${lessonId}">${completed ? "✓ Completed" : "Mark complete"}</button>
             ${next ? `<a class="button" href="#/${next}">Next lesson →</a>` : ""}
@@ -293,7 +294,7 @@
             <button type="button" class="button ghost gd-replay">↺ Replay</button>
           </div>
         </div>`;
-        DSL.setTimer(() => { burst(scene.querySelector(".gd-badges"), { count: 26, spread: 140 }); DSL.Sfx.play("complete"); }, 350);
+        DSL.setTimer(() => { burst(scene.querySelector(".gd-badges, .pr-summary"), { count: 26, spread: 140 }); DSL.Sfx.play("complete"); }, 350);
         scene.querySelector(".gd-replay").addEventListener("click", () => api.restart());
         api.done();
       },
