@@ -138,6 +138,23 @@ DSL.registerNarrated("select", () => DSL.Narrator.run({
 }), { complete: true });
 ```
 
+## 4b. Goals and practice (js/components/practice.js)
+
+Every lesson states what the learner will be able to do, and ends by checking it. Define one `PRACTICE` object in the lesson's Explore file and expose it on the model (see `select.js`):
+
+- `goals`: 2–3, one per big idea, each `{ id, text, recap }`. `text` is a can-do sentence ("Filter rows with WHERE, and bracket AND/OR…"); `recap` is the one-paragraph takeaway, with the lesson's own example.
+- `checks`: one or two per goal, `{ id, goal, prompt, options, answer, why }`. Make the learner *use* the idea: predict an output, spot the bug, choose the explanation. Not "what is X called?".
+- `warmups`: two real interview questions, multiple choice, in the interviewer's voice.
+- `open`: one open interview question, `{ id, goal, prompt, points, answer }`. `points` is the checklist an interviewer listens for; `answer` is a model answer in prose.
+
+Call `DSL.Practice.registerCards(PRACTICE)` so an open question rated "partly" or "missed" becomes a flashcard. Then wire it in:
+
+- Explore: `DSL.Practice.goalsMarkup(PRACTICE)` under the header, `DSL.Practice.exploreMarkup(PRACTICE)` as the last lab (`lab-quiz`, named "Practice"), and `DSL.Practice.mountExplore(root, PRACTICE, { onPass })`.
+- Guided: `goalsBeat` first; at the end `recapBeat`, `checkBeat`, `warmupBeat`, `openBeat`, then `finishBeat({ …, before: () => DSL.Practice.goalsSummary(PRACTICE) })`.
+- Narrated: `goalsChapter` after the hook; at the end `recapChapter`, `checkChapter`, `interviewChapter`, the keywords chapter, then the finish with the same `before`. The script needs the lines listed at the top of `practice.js` (goals.*, recap.*, check.*, interview.*).
+
+The wrap-up shows each goal as ✓ or "revisit", from the answers tied to it.
+
 ## 5. Narration script: `narration/<lesson>.json`
 
 Every line the narrator says, plus the lesson's speakers and keywords. Read `narration/STYLE.md` first: it sets the budget (8 to 12 minutes, at most 3 big ideas and 8 keywords), the tutor and interviewer voices, the story (Maya's bakery), and how lines and keywords are written.

@@ -371,6 +371,7 @@
   function makeBeats() {
     const M = DSL.SelectModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-query", "A query is a question.", queryStory(), "You never tell the database how to find rows: which index to use, which order to read pages in. It plans that itself. That's what declarative means."),
       pickBeat(),
       teach("teach-shape", "Shape the answer.", slice(shapeStory(), 0, 3), "Aliases name computed columns, so the application can read them by name. Without AS, the column is called whatever the expression looks like."),
@@ -383,9 +384,13 @@
       teach("teach-order", "Sort, then cut.", orderStory(), "Row order without ORDER BY depends on how the engine happens to read the data: table order, an index, or several workers at once."),
       recentChallenge(),
       teach("teach-logic", "The order SQL runs in.", logicStory(), "Full order, for later lessons: FROM, WHERE, GROUP BY, HAVING, SELECT, DISTINCT, ORDER BY, LIMIT."),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "select",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🧾", "Shape", "SELECT, AS, DISTINCT"], ["🔎", "Filter", "WHERE, with brackets"], ["🏁", "Sort, then cut", "ORDER BY, LIMIT"]],
       }),
     ];

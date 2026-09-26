@@ -1,0 +1,65 @@
+/* Lesson goals and end-of-lesson practice (js/components/practice.js). */
+
+.pr-scene { display: grid; gap: 14px; width: 100%; max-width: 720px; max-height: 100%; min-height: 0; overflow: auto; }
+.pr-kicker { margin: 0; color: var(--green-deep); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.pr-goals { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pr-goal { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface); transition: opacity .3s, border-color .3s, background .3s; animation: sqIn .4s backwards; animation-delay: calc(var(--i) * 90ms); }
+.pr-goal b { font-size: 15.5px; line-height: 1.4; }
+.pr-goal p { margin: 6px 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+.pr-goal code { font-family: var(--mono); font-size: .92em; }
+.pr-num { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 99px; color: var(--green-deep); background: var(--green-soft); font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.pr-goal.pr-dim { opacity: .35; }
+.pr-goal.pr-on { border-color: var(--green); }
+.pr-goal.pr-done .pr-num { color: #fff; background: var(--green); }
+.pr-goal.pr-done .pr-num { font-size: 0; }
+.pr-goal.pr-done .pr-num::after { content: "✓"; font-size: 14px; }
+.pr-goal em { align-self: center; padding: 3px 10px; border-radius: 99px; font-family: var(--mono); font-size: 11px; font-style: normal; }
+.pr-goal.solid { border-color: var(--green); }
+.pr-goal.solid em { color: #fff; background: var(--green); }
+.pr-goal.revisit { border-color: var(--amber); }
+.pr-goal.revisit em { color: var(--amber); background: var(--amber-soft); }
+
+.pr-tag { justify-self: start; padding: 2px 9px; border-radius: 99px; color: var(--green-deep); background: var(--green-soft); font-family: var(--mono); font-size: 11px; }
+.pr-count { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.pr-q { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.pr-q p { margin: 0; font-size: clamp(17px, 2vw, 21px); font-weight: 600; line-height: 1.4; }
+.pr-q code, .gd-q code { font-family: var(--mono); font-size: .85em; }
+.pr-who { display: inline-block; margin-right: 8px; padding: 2px 9px; border-radius: 99px; color: #fff; background: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; vertical-align: 3px; }
+.pr-marks { justify-content: center; }
+
+/* Open question */
+.pr-open { display: grid; gap: 12px; }
+.pr-ask { margin: 0; font-size: clamp(17px, 2vw, 21px); font-weight: 600; line-height: 1.4; }
+.pr-notes { position: relative; }
+.pr-notes textarea { width: 100%; min-height: 84px; padding: 12px 64px 12px 14px; border: 1.5px solid var(--line-strong); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; resize: vertical; }
+.pr-timer { position: absolute; top: 10px; right: 12px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 99px; background: conic-gradient(var(--green) calc(var(--p, 0) * 360deg), var(--surface-soft) 0); }
+.pr-timer i { position: absolute; inset: 4px; border-radius: 99px; background: var(--surface); }
+.pr-timer b { position: relative; font-family: var(--mono); font-size: 11px; }
+.pr-reveal { justify-self: start; }
+.pr-model { display: grid; gap: 10px; padding: 14px 16px; border: 1.5px solid var(--green); border-radius: 14px; background: var(--surface); }
+.pr-model[hidden] { display: none; }
+.pr-model-lede { margin: 0; color: var(--muted); font-size: 13px; }
+.pr-points { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pr-points label { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; cursor: pointer; }
+.pr-points input { margin-top: 3px; accent-color: var(--green); }
+.pr-answer summary { color: var(--green-deep); font-size: 13px; font-weight: 700; cursor: pointer; }
+.pr-answer p { margin: 6px 0 0; font-size: 14px; line-height: 1.55; }
+.pr-rate { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pr-rate span { margin-right: 4px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.pr-rate button { min-height: 38px; padding: 0 14px; border: 1.5px solid var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.pr-rate button[data-rate="got"]:hover, .pr-rate button[data-rate="got"].picked { border-color: var(--green); background: var(--lime); }
+.pr-rate button[data-rate="partly"].picked { border-color: var(--amber); background: var(--amber-soft); }
+.pr-rate button[data-rate="missed"].picked { border-color: var(--coral); background: var(--coral-soft); }
+.pr-rate button:disabled:not(.picked) { opacity: .4; }
+
+/* In lesson pages and the finish screen */
+.pr-intro { display: grid; gap: 10px; margin-top: 22px; }
+.pr-summary { display: grid; gap: 10px; width: 100%; max-width: 620px; }
+.pr-explore .pr-goals { margin-bottom: 8px; }
+.pr-h { margin: 22px 0 10px; font-size: 16px; }
+.pr-open-host { margin-top: 16px; }
+
+/* Flashcards: interview-question cards */
+.fc-face.fc-interview b { font-size: clamp(16px, 2vw, 20px); line-height: 1.4; }
+.fc-back .fc-def { max-width: 52ch; font-size: 15px; line-height: 1.5; text-align: left; }
+.fc-back .fc-def ul { margin: 0; padding-left: 18px; }

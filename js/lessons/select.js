@@ -10,7 +10,7 @@
   const code = (sql) => `<code>${hl(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "select",
-    labs: [{ id: "shape", name: `${DSL.labLabel("select", "A")} Shape` }, { id: "filter", name: `${DSL.labLabel("select", "B")} Filter` }, { id: "sort", name: `${DSL.labLabel("select", "C")} Sort & cut` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "shape", name: `${DSL.labLabel("select", "A")} Shape` }, { id: "filter", name: `${DSL.labLabel("select", "B")} Filter` }, { id: "sort", name: `${DSL.labLabel("select", "C")} Sort & cut` }, { id: "quiz", name: "Practice" }],
   });
 
   // Exercises, by lab. Each is graded against the rows its solution returns.
@@ -36,17 +36,40 @@
     ],
   };
 
-  // Narrated and Guided ask these four; Explore adds two more.
-  const QUIZ = [
-    { prompt: "Which query returns each city exactly once?", options: ["SELECT city FROM customers", "SELECT DISTINCT city FROM customers", "SELECT city FROM customers LIMIT 1"], answer: 1, why: "DISTINCT collapses repeated rows. LIMIT would just cut the list short." },
-    { prompt: "How does SQL read <code>WHERE a = 1 AND b = 2 OR c = 3</code>?", options: ["a = 1 AND (b = 2 OR c = 3)", "(a = 1 AND b = 2) OR c = 3", "It's a syntax error"], answer: 1, why: "AND binds tighter than OR, so it's grouped first. Add brackets to say what you mean." },
-    { prompt: "A query ends in <code>LIMIT 10</code>, with no ORDER BY. Which ten rows come back?", options: ["The first ten inserted", "The ten with the smallest IDs", "Any ten: the order isn't guaranteed"], answer: 2, why: "With no ORDER BY there's no promised order. Sort first, then cut." },
-    { prompt: "<code>SELECT price * 2 AS doubled FROM products WHERE doubled &gt; 10</code> fails in PostgreSQL. Why?", options: ["Aliases can't contain numbers", "WHERE runs before SELECT, so the alias doesn't exist yet", "You can't do arithmetic in SELECT"], answer: 1, why: "WHERE runs before SELECT, so the alias doesn't exist yet. Repeat the expression in WHERE instead." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "<code>WHERE phone = NULL</code> returns…", options: ["Customers with no phone", "No rows at all", "An error"], answer: 1, why: "Comparing anything with NULL gives unknown, never true, so no row passes. Use IS NULL." },
-    { prompt: "20 results per page. Which clause gets page 3?", options: ["LIMIT 20 OFFSET 40", "LIMIT 60", "LIMIT 3 OFFSET 20"], answer: 0, why: "Skip two pages (40 rows), then take 20. With a stable ORDER BY, or pages can overlap." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "select",
+    goals: [
+      { id: "shape", text: "Shape a result: pick columns, compute and name them, and remove repeated rows.", recap: "SELECT picks columns, and the answer is a table: the result set. <code>AS</code> names a computed column; <code>DISTINCT</code> keeps one copy of each row, NULL included." },
+      { id: "filter", text: "Filter rows with WHERE, and bracket AND/OR so the query means what you say.", recap: "WHERE tests every row and keeps only the true ones. AND binds before OR: Maya's pending-or-refunded query also caught Raj's refund until brackets fixed it." },
+      { id: "sort", text: "Sort and take the top N, and explain the order SQL runs its clauses in.", recap: "ORDER BY, then LIMIT: without a sort, \"top 3\" means any 3. SQL runs FROM, WHERE, SELECT, ORDER BY, LIMIT, which is why an alias works in ORDER BY but not in WHERE." },
+    ],
+    checks: [
+      { id: "distinct-pairs", goal: "shape", prompt: "<code>SELECT DISTINCT city, name FROM customers</code>. Ten customers, seven different cities. How many rows?", options: ["7", "10", "3"], answer: 1, why: "DISTINCT compares whole rows. Every (city, name) pair is different, because every name is, so all 10 stay." },
+      { id: "or-bug", goal: "filter", prompt: "\"Paid orders from Maya or Omar\": <code>WHERE status = 'paid' AND customer_id = 1 OR customer_id = 2</code>. What's wrong?", options: ["Nothing: it's correct", "It also returns Omar's unpaid orders", "It returns no rows"], answer: 1, why: "AND binds first: (paid AND Maya) OR (anything from Omar). Omar's pending order sneaks in. Write <code>status = 'paid' AND customer_id IN (1, 2)</code>." },
+      { id: "alias-order", goal: "sort", prompt: "<code>SELECT name, price * 1.1 AS new_price FROM products ORDER BY new_price DESC LIMIT 2</code> in PostgreSQL:", options: ["Works: the two priciest after the rise", "Fails: new_price doesn't exist yet", "Fails: LIMIT can't follow ORDER BY"], answer: 0, why: "ORDER BY runs after SELECT, so the alias exists there. It's WHERE, which runs before SELECT, that can't see it." },
+    ],
+    warmups: [
+      { id: "select-star", goal: "shape", prompt: "Why is <code>SELECT *</code> discouraged in production code?", options: ["It's slower for the database to parse", "It fetches columns you don't need, and the result changes when the table does", "It isn't standard SQL"], answer: 1, why: "Extra columns cost I/O and network, can't be served by a covering index, and a new column silently changes what the application receives." },
+      { id: "no-order", goal: "sort", prompt: "After a deploy with no query changes, a list page shows rows in a different order. Why?", options: ["The data was corrupted", "The query has no ORDER BY, so the order was never guaranteed", "LIMIT was ignored"], answer: 1, why: "Without ORDER BY, rows come back in whatever order the plan produces. A new index, more data or a different plan changes it." },
+    ],
+    open: {
+      id: "logical-order",
+      goal: "sort",
+      prompt: "Walk me through the order in which SQL evaluates FROM, WHERE, SELECT, ORDER BY and LIMIT, and give one consequence of it.",
+      points: [
+        "<b>FROM</b> first: it decides which rows exist (joins happen here).",
+        "<b>WHERE</b> filters those rows, one at a time.",
+        "<b>SELECT</b> computes the output columns and names aliases.",
+        "<b>ORDER BY</b> sorts the result, and can use those aliases.",
+        "<b>LIMIT</b> cuts last, so without ORDER BY it returns arbitrary rows.",
+        "A consequence: an alias from SELECT can't be used in WHERE.",
+      ],
+      answer: "The database starts FROM the tables, keeps the rows WHERE the condition is true, computes the SELECT list, sorts with ORDER BY, and only then applies LIMIT. So a column alias defined in SELECT isn't visible in WHERE (you repeat the expression), but it is in ORDER BY; and LIMIT without ORDER BY gives you whichever rows came first.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const ORDER = [["FROM", "pick the table"], ["WHERE", "keep rows that pass the test"], ["SELECT", "compute the columns, name aliases"], ["DISTINCT", "drop repeated rows"], ["ORDER BY", "sort (aliases work here)"], ["LIMIT / OFFSET", "cut to a page"]];
   const OPERATORS = [
@@ -72,6 +95,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Ask the tables: <em>SELECT</em>, filter, sort.", "Maya's bakery runs on four tables. Here you'll write the queries every SQL interview starts with: pick columns, keep the right rows, and return them in order.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.goalsMarkup(PRACTICE)}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>Every query here runs for real, on SQLite in your browser, against a fresh copy of the bakery's data. Break anything you like. Tables: <code>customers</code>, <code>products</code>, <code>orders</code>, <code>order_items</code>.</p></div>
@@ -101,10 +125,7 @@
           <p class="sel-footnote">SQLite, the engine in this course, lets an alias slip into WHERE. PostgreSQL and MySQL reject it, so don't rely on it in an interview.</p>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about SELECT</h2><p class="lab-copy">The kind of questions that open a SQL interview.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="select-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "SELECT review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> a query is a description of a table. Name the columns, state the test, fix the order, and let the database choose how.</p></div>
         ${DSL.lessonFooter("select")}
@@ -117,15 +138,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("select-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "SELECT review passed",
-      successCopy: "You can shape, filter and sort a result, and explain why.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.SelectModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.SelectModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("select", renderSelect);
 })(window.DataSystemsLab);

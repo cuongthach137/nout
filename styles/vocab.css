@@ -70,7 +70,7 @@
 .fc-front b { font-size: clamp(26px, 4vw, 38px); letter-spacing: -.03em; }
 .fc-tip { color: var(--muted); font-size: 12.5px; }
 .fc-back { display: none; }
-.fc-back p { margin: 0; max-width: 42ch; font-size: 18px; line-height: 1.5; }
+.fc-back p, .fc-back .fc-def { margin: 0; max-width: 42ch; font-size: 18px; line-height: 1.5; }
 .fc-back a { color: var(--green); font-size: 13px; font-weight: 700; }
 .fc-card.flipped { cursor: default; border-color: var(--green); }
 .fc-card.flipped .fc-front { display: none; }
