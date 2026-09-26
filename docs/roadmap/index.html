@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Data Systems Lab Roadmap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #f5f6f1;
+    --surface: #ffffff;
+    --surface-soft: #eef0e9;
+    --ink: #17211d;
+    --muted: #5d6a64;
+    --line: #d9ded7;
+    --line-strong: #bdc7bf;
+    --green: #1d6f50;
+    --green-deep: #124834;
+    --green-soft: #dcece4;
+    --amber: #a86d12;
+    --amber-soft: #f6ead3;
+    --coral: #d2573a;
+    --coral-soft: #f9e4de;
+    --blue: #3f64a8;
+    --blue-soft: #e1e8f4;
+    --font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "DM Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #111815;
+      --surface: #18211d;
+      --surface-soft: #1f2a25;
+      --ink: #e6ede8;
+      --muted: #97a59e;
+      --line: #2b3832;
+      --line-strong: #3b4a43;
+      --green: #5cc497;
+      --green-deep: #9fe0bf;
+      --green-soft: #1d3a2e;
+      --amber: #e3ac4f;
+      --amber-soft: #3a2f1a;
+      --coral: #f08a6f;
+      --coral-soft: #3d2520;
+      --blue: #8eaee6;
+      --blue-soft: #1e2a3d;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  .wrap { display: grid; gap: 44px; width: min(100%, 980px); margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; }
+  h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.03em; }
+  h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.05; font-weight: 800; }
+  h2 { font-size: 22px; font-weight: 700; }
+  h3 { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  p { margin: 0; }
+  code { font-family: var(--mono); font-size: .9em; }
+  .eyebrow { color: var(--green); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+  .lede { max-width: 62ch; color: var(--muted); font-size: 16.5px; }
+  .section { display: grid; gap: 16px; }
+  .section-head { display: grid; gap: 4px; }
+  .section-head p { color: var(--muted); max-width: 64ch; }
+
+  header { display: grid; gap: 14px; }
+  .summary { display: grid; gap: 10px; margin-top: 8px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .summary-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 18px; }
+  .summary-top b { font-family: var(--mono); font-size: 26px; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
+  .summary-top span { color: var(--muted); font-size: 13px; }
+  .phase-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+  .phase-bar { display: grid; gap: 4px; }
+  .phase-bar small { color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .phase-bar i { display: block; height: 6px; border-radius: 99px; background: var(--surface-soft); overflow: hidden; }
+  .phase-bar i b { display: block; height: 100%; border-radius: inherit; background: var(--green); transition: width .5s ease; }
+  .sync { font-size: 12px; color: var(--muted); }
+  .sync.live::before { content: "● "; color: var(--green); }
+  .sync.stale::before { content: "● "; color: var(--coral); }
+
+  .modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .mode { display: grid; gap: 6px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .mode.primary { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .mode-name { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mode-name span { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--green-deep); background: var(--green-soft); padding: 2px 8px; border-radius: 99px; }
+  .mode p { color: var(--muted); font-size: 13.5px; }
+
+  .levels { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
+  .level { display: grid; gap: 6px; align-content: start; padding: 16px; border-left: 1px solid var(--line); }
+  .level:first-child { border-left: 0; }
+  .level .stage { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  .level p { font-size: 13px; color: var(--muted); }
+  .level em { font-style: normal; color: var(--ink); }
+
+  .phase { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); overflow: hidden; }
+  .phase-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
+  .phase-head h3 { display: flex; align-items: baseline; gap: 10px; }
+  .phase-head h3 small { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+  .phase-head .count { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .item { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; align-items: start; padding: 12px 18px; border-top: 1px solid var(--line); }
+  .item:first-of-type { border-top: 0; }
+  .item-body { display: grid; gap: 2px; }
+  .item-title { font-weight: 600; }
+  .item-id { margin-left: 6px; font-family: var(--mono); font-size: 10.5px; font-weight: 400; color: var(--muted); }
+  .item-detail { color: var(--muted); font-size: 13.5px; }
+  .item-note { margin-top: 4px; font-size: 12.5px; color: var(--ink); padding: 4px 8px; border-radius: 6px; background: var(--surface-soft); justify-self: start; }
+  .item.status-done .item-title { color: var(--muted); }
+  .item.flash { animation: flash 1.6s ease; }
+  @keyframes flash { from { background: var(--blue-soft); } to { background: transparent; } }
+  .tag-new { margin-left: 6px; padding: 1px 6px; border-radius: 99px; background: var(--blue-soft); color: var(--blue); font-family: var(--mono); font-size: 10px; vertical-align: 2px; }
+
+  .pill { display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; min-height: 28px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 99px; background: var(--surface); color: var(--muted); font: 600 11.5px var(--font); }
+  .pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .7; }
+  .pill[data-status="progress"] { color: var(--amber); border-color: var(--amber); background: var(--amber-soft); }
+  .pill[data-status="done"] { color: var(--green-deep); border-color: var(--green); background: var(--green-soft); }
+  .pill[data-status="blocked"] { color: var(--coral); border-color: var(--coral); background: var(--coral-soft); }
+
+  .audio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .audio-card { display: grid; gap: 8px; align-content: start; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .audio-card.pick { border-color: var(--green); box-shadow: inset 0 0 0 1px var(--green); }
+  .audio-card h3 { display: flex; justify-content: space-between; gap: 8px; }
+  .audio-card h3 span { font-family: var(--mono); font-size: 10px; font-weight: 500; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  .audio-card.pick h3 span { color: var(--green-deep); }
+  .audio-card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 13.5px; color: var(--muted); }
+
+  .map { display: grid; gap: 10px; }
+  .module { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+  .module-name { display: grid; gap: 2px; align-content: start; }
+  .module-name small { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+  .lessons { display: flex; flex-wrap: wrap; gap: 6px; align-content: start; }
+  .lesson { display: inline-flex; align-items: center; gap: 7px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; background: var(--surface); text-decoration: none; }
+  a.lesson:hover { border-color: var(--green); }
+  .lesson.new { border-style: dashed; border-color: var(--blue); color: var(--blue); }
+  .lesson code { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .modes-have { display: inline-flex; gap: 3px; }
+  .modes-have i { width: 16px; height: 16px; display: inline-grid; place-items: center; border-radius: 4px; font: 500 9px var(--mono); font-style: normal; background: var(--surface-soft); color: var(--muted); }
+  .modes-have i.on { background: var(--green); color: #fff; }
+  .modes-have i.part { background: var(--amber-soft); color: var(--amber); box-shadow: inset 0 0 0 1px var(--amber); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  @media (max-width: 760px) {
+    .modes, .audio { grid-template-columns: 1fr; }
+    .levels { grid-template-columns: 1fr 1fr; }
+    .level:nth-child(5) { grid-column: 1 / -1; }
+    .level:nth-child(3) { border-left: 0; }
+    .level:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .item { grid-template-columns: 1fr; gap: 6px; }
+    .pill { width: auto; justify-self: start; }
+    .module { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <span class="eyebrow">Interview prep · basic to advanced</span>
+    <h1>Data Systems Lab roadmap</h1>
+    <p class="lede">Where the course is going, in the order we’ll build it. Narrated mode is the course; each lesson is voiced, interactive, and part of one running story.</p>
+    <div class="summary" aria-live="polite">
+      <div class="summary-top"><div><b id="done-count">0</b> <span id="done-of">of 0 items done</span></div><span class="sync" id="sync">Loading data.js…</span></div>
+      <div class="phase-bars" id="phase-bars"></div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-head"><h2>Three modes, three jobs</h2><p>Every lesson shares one set of animated scenes. The modes differ in how they walk you through them.</p></div>
+    <div class="modes">
+      <div class="mode primary"><div class="mode-name"><h3>🎧 Narrated</h3><span>default</span></div><p>The course itself. A voice explains, the visuals move with it, and it stops for your taps and choices. Becomes a lesson’s default once its narration is complete.</p></div>
+      <div class="mode"><div class="mode-name"><h3>▶ Guided</h3><span>later</span></div><p>Silent and self-paced, with more detailed written explanations. Regenerated lesson by lesson after the narration exists.</p></div>
+      <div class="mode"><div class="mode-name"><h3>Explore</h3><span>reference</span></div><p>Free-form labs, cheat sheets, and drill answers for review before an interview.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>One story: the bakery grows up</h2><p>Each level is a stage of Maya’s bakery, so every new concept arrives as the business’s next real problem. Topics are drawn from <em>Designing Data-Intensive Applications</em> (DDIA) and <em>Database Internals</em> (DI); explanations are the course’s own.</p></div>
+    <div class="levels">
+      <div class="level"><span class="stage">Level 1 · the notebook</span><h3>Foundations</h3><p>One shop. <em>SQL, data models, measuring systems</em>: Maya’s two phone numbers, Ana’s lost order.</p></div>
+      <div class="level"><span class="stage">Level 2 · one server</span><h3>Inside one database</h3><p>The bakery goes online. <em>Storage engines, indexes, queries, transactions</em>: slow order history, double-sold pickups.</p></div>
+      <div class="level"><span class="stage">Level 3 · a chain</span><h3>Distributed data</h3><p>Stores in many cities. <em>Replication, sharding, failures, consensus</em>: conflicting edits, clock skew, split brain.</p></div>
+      <div class="level"><span class="stage">Level 4 · the platform</span><h3>Data systems</h3><p>Analytics and a delivery app. <em>Caching, change data capture, streams, batch</em>, ending in the checkout incident.</p></div>
+      <div class="level"><span class="stage">Level 5 · electives</span><h3>Engine depth</h3><p><em>Cross-engine indexing, B-tree variants, latches</em>, for roles that go deep.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Build order</h2><p>Statuses come from <code>docs/roadmap/data.js</code>; edit it and this page updates within a few seconds. Every lesson stays within <b>8–12 minutes, 3 big ideas and 8 keywords</b>. New lessons are tiered by interview value: T1 first.</p></div>
+    <div id="phases" class="map"></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Audio hosting</h2><p>Audio streams one line at a time, with the next two lines prefetched, and lives outside the repository.</p></div>
+    <div class="audio">
+      <div class="audio-card"><h3>GitHub Pages <span>before</span></h3><ul><li>1 GB site, about 100 GB a month</li><li>Audio lived in the main repo, so every clone got heavier</li></ul></div>
+      <div class="audio-card pick"><h3>Cloudflare Worker <span>live</span></h3><ul><li>Assets-only Worker <code>nout-audio</code>, deployed by <code>voice.py deploy</code></li><li>Free: 20,000 files, 25 MiB each</li><li>Voice encoded at 40 kbps mono</li></ul></div>
+      <div class="audio-card"><h3>Cloudflare R2 <span>if it outgrows</span></h3><ul><li>10 GB free, no egress fees</li><li>Usually needs a card on file</li><li>Its free r2.dev address is rate-limited; production needs your own domain</li></ul></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2>Target course map</h2><p>Where every lesson is headed. Existing lessons show their current number (from <code>js/core.js</code>) and open in the course when clicked.</p></div>
+    <div class="legend"><span><span class="modes-have"><i class="on">N</i></span> mode built</span><span><span class="modes-have"><i class="part">N</i></span> in progress</span><span><span class="modes-have"><i>N</i></span> not yet</span><span><span class="lesson new">new</span> lesson to write</span></div>
+    <div id="map" class="map"></div>
+  </section>
+</main>
+
+<!-- core.js gives the current lesson numbers; data.js is the roadmap itself. Both work over file://. -->
+<script src="../../js/core.js"></script>
+<script>
+  const STATUSES = ["planned", "progress", "done", "blocked"];
+  const LABEL = { planned: "Planned", progress: "In progress", done: "Done", blocked: "Blocked" };
+  const POLL_MS = 3000;
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const stateOf = (item) => (STATUSES.includes(item.status) ? item.status : "planned");
+  const lessonNumber = (id) => {
+    try { return window.DataSystemsLab.lessonNumber(id); } catch (error) { return id; }
+  };
+
+  let data = null;
+  let lastJson = "";
+  let previous = {};
+
+  function renderSummary() {
+    const items = data.phases.flatMap((p) => p.items);
+    const done = items.filter((item) => stateOf(item) === "done").length;
+    document.getElementById("done-count").textContent = String(done);
+    document.getElementById("done-of").textContent = `of ${items.length} items done`;
+    document.getElementById("phase-bars").innerHTML = data.phases.map((p) => {
+      const n = p.items.filter((item) => stateOf(item) === "done").length;
+      return `<div class="phase-bar" title="${esc(p.name)}: ${n} of ${p.items.length}"><small>${esc(p.short)} · ${n}/${p.items.length}</small><i><b style="width:${(n / p.items.length) * 100}%"></b></i></div>`;
+    }).join("");
+  }
+
+  function renderPhases() {
+    document.getElementById("phases").innerHTML = data.phases.map((p) => {
+      const n = p.items.filter((item) => stateOf(item) === "done").length;
+      return `<div class="phase" id="${esc(p.id)}">
+        <div class="phase-head"><h3>${esc(p.name)} ${p.id !== "shipped" && p.id !== "later" ? `<small>${esc(p.short)}</small>` : ""}</h3><span class="count">${n} / ${p.items.length}</span></div>
+        ${p.items.map((item) => {
+          const s = stateOf(item);
+          const key = JSON.stringify([s, item.note || ""]);
+          const changed = previous[item.id] !== undefined && previous[item.id] !== key;
+          previous[item.id] = key;
+          return `<div class="item status-${s}${changed ? " flash" : ""}">
+            <span class="pill" data-status="${s}">${LABEL[s]}</span>
+            <div class="item-body"><span class="item-title">${esc(item.title)}${item.isNew ? `<span class="tag-new">new</span>` : ""}<span class="item-id">${esc(item.id)}</span></span>${item.detail ? `<span class="item-detail">${esc(item.detail)}</span>` : ""}${item.note ? `<span class="item-note">${esc(item.note)}</span>` : ""}</div>
+          </div>`;
+        }).join("")}
+      </div>`;
+    }).join("");
+  }
+
+  function renderMap() {
+    const box = (key, value) => `<i class="${value || ""}" title="${{ N: "Narrated", G: "Guided", E: "Explore" }[key]}${value === "on" ? " built" : value === "part" ? " in progress" : " not yet"}">${key}</i>`;
+    document.getElementById("map").innerHTML = data.modules.map((m) => `<div class="module">
+      <div class="module-name"><small>${esc(m.level)}</small><h3>${esc(m.name)}</h3></div>
+      <div class="lessons">${m.lessons.map(([name, id, modes]) => id
+        ? `<a class="lesson" href="../../index.html#/${esc(id)}" title="${esc(id)}"><code>${esc(lessonNumber(id))}</code>${esc(name)}<span class="modes-have">${["N", "G", "E"].map((k) => box(k, (modes || {})[k])).join("")}</span></a>`
+        : `<span class="lesson new">${esc(name)}</span>`).join("")}</div>
+    </div>`).join("");
+  }
+
+  function setSync(text, cls) {
+    const sync = document.getElementById("sync");
+    sync.textContent = text;
+    sync.className = `sync ${cls}`;
+  }
+
+  // Re-read data.js by injecting a fresh script tag; unlike fetch, this also works when the page is opened from disk.
+  function load() {
+    window.ROADMAP = null;
+    const script = document.createElement("script");
+    script.src = `data.js?t=${Date.now()}`;
+    script.onload = () => {
+      script.remove();
+      const json = JSON.stringify(window.ROADMAP || null);
+      const time = new Date().toLocaleTimeString();
+      if (!window.ROADMAP) {
+        setSync("data.js has an error (check its syntax). Showing the last good version.", "stale");
+        return;
+      }
+      if (json !== lastJson) {
+        lastJson = json;
+        data = window.ROADMAP;
+        renderSummary();
+        renderPhases();
+        renderMap();
+      }
+      setSync(`Live from data.js${data.updated ? ` (updated ${data.updated})` : ""} · checked ${time}`, "live");
+    };
+    script.onerror = () => {
+      script.remove();
+      setSync("Can’t read data.js. Showing the last version loaded.", "stale");
+    };
+    document.body.appendChild(script);
+  }
+
+  load();
+  setInterval(load, POLL_MS);
+</script>
+</body>
+</html>

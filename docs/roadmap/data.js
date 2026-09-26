@@ -1,0 +1,107 @@
+// Roadmap data: the single source of truth for docs/roadmap/index.html.
+// Agents: edit this file to change an item's status or note; the open page picks it up within a few seconds.
+// status: "planned" | "progress" | "done" | "blocked". isNew: a lesson that doesn't exist yet. Tiers: T1 > T2 > T3 by interview value.
+// Refer to existing lessons by id (see js/core.js), never by number.
+window.ROADMAP = {
+  updated: "2026-09-26",
+  phases: [
+    { id: "shipped", name: "Shipped so far", short: "Shipped", items: [
+      { id: "s-l01", title: "Lesson 01 as interactive labs", detail: "Copy hunt, animated split, join race, month-long drill.", status: "done", note: "PR #1" },
+      { id: "s-l02", title: "Lesson 02 rebuilt, with the shared lab kit", detail: "Page anatomy, buffer-pool game, read-head race.", status: "done", note: "PR #2" },
+      { id: "s-guided", title: "Guided mode for lessons 01 and 02", detail: "Step engine with concept explainers first.", status: "done", note: "PRs #3 and #4" },
+      { id: "s-narrated", title: "Narrated mode and the Kokoro voice tool", detail: "Voiced chapters that stop for taps and choices.", status: "done", note: "PR #5" },
+      { id: "s-vocab", title: "Keywords and flashcards", detail: "Keywords highlighted as the narrator says them, a Words to keep chapter, and spaced-repetition flashcards.", status: "done", note: "PR #13: keyword highlighting, Words to keep chapter, flashcards. Audio deployed." },
+    ] },
+    { id: "p0", name: "Make narration production-ready", short: "Phase 0", items: [
+      { id: "p0-default", title: "Narrated becomes the default", detail: "Once a lesson’s narration is marked complete; the learner’s own pick still wins.", status: "done", note: "PR #6. Lessons opt in with registerNarrated(id, fn, { complete: true })." },
+      { id: "p0-l02", title: "Finish lesson 02 narration", detail: "The template every later lesson follows.", status: "done", note: "PRs #6 and #7. Narrated is now its default." },
+      { id: "p0-audio", title: "Serve audio from Cloudflare", detail: "Keep mp3s out of the main repo; point the narrator at the audio host.", status: "done", note: "PR #7. Served by an assets-only Cloudflare Worker at nout-audio.yourshirtisajoke.workers.dev (subdomain kept as is)." },
+      { id: "p0-prefetch", title: "Prefetch the next line", detail: "No gap between lines on slow connections.", status: "done", note: "PR #7. Next two lines fetched into memory while one plays." },
+      { id: "p0-bitrate", title: "Encode voice at 40 kbps mono", detail: "About a third smaller than 64 kbps.", status: "done", note: "PR #7. Lesson 02 audio 3.1 MB → 2.0 MB." },
+      { id: "p0-numbers", title: "Generate lesson and lab numbers", detail: "So reordering is a one-line change.", status: "done", note: "PR #8. Numbers come from order in core.js; text refers to lessons by id." },
+      { id: "p0-style", title: "Narration style guide and pronunciation list", detail: "Line length, pacing, recaps, how to say “Postgres” and “MVCC”.", status: "done", note: "PR #9: narration/STYLE.md, lexicon.json, and voice.py lint." },
+      { id: "p0-interviewer", title: "A second voice for the interviewer", detail: "Used by drills and the mock interview.", status: "done", note: "PR #9: interviewer is Kokoro bm_george; lesson 02 quiz questions use it." },
+    ] },
+    { id: "p1", name: "A narrated front door", short: "Phase 1", items: [
+      { id: "p1-map", title: "Narrate the course map", detail: "Introduce the bakery and the path ahead.", status: "done", note: "PR #11: 4 chapters, 28 lines, about 3 minutes; the course's narrated front door." },
+      { id: "p1-l01", title: "Narrate lesson 01", detail: "One fact, one place.", status: "done", note: "PR #10: 12 chapters, 83 lines, about 10 minutes; opens in Narrated by default." },
+    ] },
+    { id: "p2", name: "Reorder the course", short: "Phase 2", items: [
+      { id: "p2-reorder", title: "Move existing lessons into modules", detail: "Deadlocks join transactions, MVCC comes together, joins sit with the planner. Bloom filters and safe index builds stay in Indexes; Protect invariants stays in Transactions.", status: "done", note: "PR #12: modules in dependency order; numbers follow automatically." },
+      { id: "p2-links", title: "Update the course map, README and cross-links", detail: "", status: "done", note: "PR #12: course map cards generated, README reordered, Next links computed; two stale references fixed." },
+    ] },
+    { id: "p3", name: "Level 1 foundations", short: "Phase 3", items: [
+      { id: "p3-sqljs", title: "In-browser SQL engine", detail: "sql.js, with a checker that compares your result to the expected rows.", isNew: true },
+      { id: "p3-select", title: "SELECT, filtering and sorting", detail: "T1", isNew: true },
+      { id: "p3-joins", title: "Join types", detail: "T1 · Inner, left, right, full, and what each drops.", isNew: true },
+      { id: "p3-group", title: "GROUP BY and HAVING", detail: "T1", isNew: true },
+      { id: "p3-sub", title: "Subqueries and CTEs", detail: "T1", isNew: true },
+      { id: "p3-window", title: "Window functions", detail: "T1 · Ranking, running totals, top-N per group.", isNew: true },
+      { id: "p3-null", title: "NULL traps", detail: "T1 · Three-valued logic, COUNT(*) vs COUNT(col), NOT IN.", isNew: true },
+      { id: "p3-rel", title: "Relationships and keys", detail: "T1 · One-to-many, many-to-many, junction tables, foreign keys.", isNew: true },
+      { id: "p3-models", title: "Relational, document, and graph models", detail: "T1 · DDIA ch. 2. When “SQL or NoSQL?” really has an answer.", isNew: true },
+      { id: "p3-latency", title: "Latency, throughput, and percentiles", detail: "T1 · DDIA ch. 1. p50 vs p99, tail latency, load.", isNew: true },
+    ] },
+    { id: "p4", name: "Level 2: inside one database", short: "Phase 4", items: [
+      { id: "p4-storage", title: "Narrate Storage", detail: "Pages, B-tree walk, layout, page splits. DI ch. 1–4." },
+      { id: "p4-lsm", title: "LSM trees in depth", detail: "T1 · DDIA ch. 3, DI ch. 7. SSTables, leveled vs size-tiered compaction, read/write/space amplification. Split from Store by question.", isNew: true },
+      { id: "p4-olap", title: "OLTP vs OLAP and column stores", detail: "T2 · DDIA ch. 3. Star schemas, column compression, materialized views. The other half of Store by question.", isNew: true },
+      { id: "p4-indexes", title: "Narrate Indexes", detail: "Choose an index, scan strategies, safe builds, Bloom filters, design checkpoint." },
+      { id: "p4-exec", title: "Narrate Query execution", detail: "Planner and statistics, join algorithms, memory spills." },
+      { id: "p4-tx", title: "Narrate Transactions and recovery", detail: "DDIA ch. 7, DI ch. 5. Atomicity, locking, deadlocks, MVCC, VACUUM, serializable, WAL." },
+    ] },
+    { id: "p5", name: "Level 3: distributed data", short: "Phase 5", items: [
+      { id: "p5-multileader", title: "Multi-leader replication and conflicts", detail: "T2 · DDIA ch. 5, DI ch. 11. Conflict resolution, last-write-wins, CRDTs.", isNew: true },
+      { id: "p5-quorum", title: "Leaderless replication and quorums", detail: "T1 · DDIA ch. 5, DI ch. 12. w + r > n, read repair, hinted handoff, Merkle trees.", isNew: true },
+      { id: "p5-shard", title: "Sharding and consistent hashing", detail: "T1 · DDIA ch. 6, DI ch. 13. Shard keys, hot spots.", isNew: true },
+      { id: "p5-rebalance", title: "Partitioned indexes and rebalancing", detail: "T2 · DDIA ch. 6. Local vs global secondary indexes, request routing.", isNew: true },
+      { id: "p5-faults", title: "Faults and failure detection", detail: "T1 · DDIA ch. 8, DI ch. 9. Unreliable networks, timeouts, heartbeats.", isNew: true },
+      { id: "p5-clocks", title: "Clocks and ordering", detail: "T1 · DDIA ch. 8–9. Clock skew, Lamport and vector clocks.", isNew: true },
+      { id: "p5-fencing", title: "Leases and fencing tokens", detail: "T2 · DDIA ch. 8. Process pauses, split brain.", isNew: true },
+      { id: "p5-cap", title: "Consistency models and CAP", detail: "T1 · DDIA ch. 9, DI ch. 11. Linearizable, causal, eventual; what PACELC adds.", isNew: true },
+      { id: "p5-consensus", title: "Leader election and Raft", detail: "T1 · DDIA ch. 9, DI ch. 10 and 14. Quorums, terms, what Raft guarantees.", isNew: true },
+      { id: "p5-dtx", title: "2PC, sagas, and idempotency", detail: "T1 · DDIA ch. 9, DI ch. 13. Atomic commit across services, idempotency keys.", isNew: true },
+    ] },
+    { id: "p5b", name: "Level 4: data systems", short: "Phase 5b", items: [
+      { id: "p5-cache", title: "Caching", detail: "T1 · Cache-aside, invalidation, stampedes.", isNew: true },
+      { id: "p5b-cdc", title: "Logs, change data capture, and the outbox pattern", detail: "T1 · DDIA ch. 11. Keeping a cache or search index in sync without dual writes.", isNew: true },
+      { id: "p5b-streams", title: "Stream processing and exactly-once", detail: "T2 · DDIA ch. 11. Event sourcing, stream joins, delivery guarantees.", isNew: true },
+      { id: "p5b-batch", title: "Batch processing", detail: "T2 · DDIA ch. 10. MapReduce-style dataflow, derived datasets.", isNew: true },
+      { id: "p5-capstone", title: "Checkout incident capstone", detail: "Narrate the existing incident as the finale." },
+    ] },
+    { id: "p6", name: "Interview layer", short: "Phase 6", items: [
+      { id: "p6-drills", title: "An interview drill at the end of each module", detail: "The interviewer asks; you pick a response; the tutor explains.", isNew: true },
+      { id: "p6-aloud", title: "“Say it out loud” steps", detail: "Answer aloud against a countdown, then hear a model answer.", isNew: true },
+      { id: "p6-mock", title: "Final mock interview", detail: "A SQL round, rapid-fire concepts, and a system-design walkthrough.", isNew: true },
+      { id: "p6-cheat", title: "A cheat sheet per module", detail: "One page to review the night before.", isNew: true },
+      { id: "p6-reading", title: "“Read more” on every lesson", detail: "Chapter pointers into DDIA and Database Internals.", isNew: true },
+    ] },
+    { id: "later", name: "Later", short: "Later", items: [
+      { id: "l-guided", title: "Regenerate Guided mode per lesson", detail: "With more detailed written explanations." },
+      { id: "l-electives", title: "Narrate the electives", detail: "Partial and expression indexes, specialized indexes, observability, migration." },
+      { id: "l-btree-variants", title: "B-tree variants", detail: "T3 · DI ch. 6. Copy-on-write B-trees, Bw-trees.", isNew: true },
+      { id: "l-latches", title: "Latches and B-link trees", detail: "T3 · DI ch. 5. How many threads share one B-tree.", isNew: true },
+      { id: "l-schema", title: "Encoding and schema evolution", detail: "T2 · DDIA ch. 4. Backward and forward compatibility, zero-downtime migrations.", isNew: true },
+    ] },
+  ],
+
+  // Target course map. Existing lessons: [title, lessonId, modes]; new lessons: [title].
+  // modes: { N: Narrated, G: Guided, E: Explore }, each "on" | "part" | "" (absent = not yet).
+  modules: [
+    { level: "Start", name: "Course map", lessons: [["Course map", "welcome", { N: "on", E: "on" }]] },
+    { level: "Level 1", name: "SQL you’ll be asked to write", lessons: [["SELECT and filtering"], ["Join types"], ["GROUP BY and HAVING"], ["Subqueries and CTEs"], ["Window functions"], ["NULL traps"]] },
+    { level: "Level 1", name: "Data models", lessons: [["One fact, one place", "modeling", { N: "on", G: "on", E: "on" }], ["Relationships and keys"], ["Relational, document, and graph"]] },
+    { level: "Level 1", name: "Measuring systems", lessons: [["Latency, throughput, and percentiles"]] },
+    { level: "Level 2", name: "Storage", lessons: [["Pages, not rows", "pages", { N: "on", G: "on", E: "on" }], ["Walk a B-tree", "btree", { E: "on" }], ["Physical data layout", "index-layout", { E: "on" }], ["Keys and page splits", "btree-writes", { E: "on" }]] },
+    { level: "Level 2", name: "Storage engines", lessons: [["LSM trees in depth"], ["OLTP vs OLAP and column stores"]] },
+    { level: "Level 2", name: "Indexes", lessons: [["Choose an index", "index-types", { E: "on" }], ["Scan strategies", "access-paths", { E: "on" }], ["Build indexes safely", "index-operations", { E: "on" }], ["Bloom filters", "bloom", { E: "on" }], ["Index design challenge", "index-quiz", { E: "on" }]] },
+    { level: "Level 2", name: "Query execution", lessons: [["Think like a planner", "planner", { E: "on" }], ["How joins execute", "join-algorithms", { E: "on" }], ["Memory and disk spills", "memory-spills", { E: "on" }]] },
+    { level: "Level 2", name: "Transactions and recovery", lessons: [["Atomic by design", "acid-foundations", { E: "on" }], ["Transactions collide", "transactions", { E: "on" }], ["Locks and deadlocks", "deadlocks", { E: "on" }], ["Snapshots and phantoms", "mvcc-snapshots", { E: "on" }], ["Updates create versions", "tuple-versions", { E: "on" }], ["VACUUM and bloat", "vacuum", { E: "on" }], ["Serializable, with retries", "serializability", { E: "on" }], ["Protect invariants", "consistency", { E: "on" }], ["Commit, WAL and recovery", "durability", { E: "on" }], ["ACID incident review", "acid-quiz", { E: "on" }]] },
+    { level: "Level 3", name: "Replication", lessons: [["Replication and lag", "replication", { E: "on" }], ["Multi-leader and conflicts"], ["Leaderless quorums"]] },
+    { level: "Level 3", name: "Partitioning", lessons: [["Partitioning and pruning", "partitioning", { E: "on" }], ["Sharding and consistent hashing"], ["Partitioned indexes and rebalancing"]] },
+    { level: "Level 3", name: "When things fail", lessons: [["Faults and failure detection"], ["Clocks and ordering"], ["Leases and fencing tokens"]] },
+    { level: "Level 3", name: "Consistency and consensus", lessons: [["Consistency models and CAP"], ["Leader election and Raft"], ["2PC, sagas, and idempotency"]] },
+    { level: "Level 4", name: "Data systems", lessons: [["Store by question", "columnar-lsm", { E: "on" }], ["Caching"], ["Logs, CDC, and the outbox"], ["Stream processing"], ["Batch processing"], ["Checkout incident", "incident", { E: "on" }]] },
+    { level: "Level 5", name: "Electives: engine depth", lessons: [["Partial and expression indexes", "predicate-indexes", { E: "on" }], ["Specialized index families", "specialized-indexes", { E: "on" }], ["Observe and remove indexes", "index-observability", { E: "on" }], ["Cross-engine migration", "migration-capstone", { E: "on" }], ["B-tree variants"], ["Latches and B-link trees"], ["Encoding and schema evolution"]] },
+  ],
+};
