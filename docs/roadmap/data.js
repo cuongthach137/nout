@@ -37,7 +37,7 @@ window.ROADMAP = {
       { id: "h-docs", title: "How to add a lesson", detail: "docs/adding-a-lesson.md: registering, the three modes, narration, checks.", status: "done", note: "PR #18. Lessons are designed Narrated first, then Guided, then Explore." },
       { id: "h-tests", title: "Tests and CI", detail: "Commit the playthroughs; include a check that audio matches the narration scripts." },
       { id: "h-modules", title: "ES modules and one folder per lesson", detail: "Replace ordered script tags and window globals." },
-      { id: "h-stamp", title: "Stamp ?v= automatically", detail: "A script that bumps cache-busting versions on changed files." },
+      { id: "h-stamp", title: "Stamp ?v= automatically", detail: "A script that bumps cache-busting versions on changed files.", status: "done", note: "PR #34: tools/stamp.py writes content hashes into index.html; a pre-commit hook checks them." },
     ] },
     { id: "p3", name: "Level 1 foundations", short: "Phase 3", items: [
       { id: "p3-sqljs", title: "In-browser SQL engine", detail: "sql.js, with a checker that compares your result to the expected rows.", isNew: true, status: "done", note: "PR #19: js/components/sql.js (worker, checker, lab widget), the bakery dataset, and a SQL sandbox page (#/sql)." },
