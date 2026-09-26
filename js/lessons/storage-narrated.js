@@ -257,7 +257,7 @@
 
   DSL.registerNarrated("pages", () => DSL.Narrator.run({
     lessonId: "pages",
-    title: "02 · Pages, not rows",
+    title: `${DSL.lessonNumber("pages")} · Pages, not rows`,
     chapters: makeChapters(),
     onLab: (id) => DSL.StorageModel.progress.complete(id),
   }), { complete: true });

@@ -2,38 +2,38 @@
   "use strict";
 
   const lessons = [
-    { id: "welcome", module: "Start here", number: "00", title: "Course map", minutes: 3 },
-    { id: "modeling", module: "Start here", number: "01", title: "One fact, one place", minutes: 14 },
-    { id: "pages", module: "Storage fundamentals", number: "02", title: "Pages, not rows", minutes: 18 },
-    { id: "index-layout", module: "Indexes", number: "03", title: "Physical data layout", minutes: 12 },
-    { id: "btree", module: "Indexes", number: "04", title: "Walk a B-tree", minutes: 16 },
-    { id: "index-types", module: "Indexes", number: "05", title: "Choose an index", minutes: 15 },
-    { id: "access-paths", module: "Indexes", number: "06", title: "Scan strategies", minutes: 18 },
-    { id: "index-operations", module: "Indexes", number: "07", title: "Build indexes safely", minutes: 15 },
-    { id: "btree-writes", module: "Indexes", number: "08", title: "Keys and page splits", minutes: 14 },
-    { id: "bloom", module: "Indexes", number: "09", title: "Bloom filters", minutes: 12 },
-    { id: "columnar-lsm", module: "Indexes", number: "10", title: "Store by question", minutes: 16 },
-    { id: "index-quiz", module: "Indexes", number: "11", title: "Index design challenge", minutes: 10 },
-    { id: "planner", module: "Query execution", number: "12", title: "Think like a planner", minutes: 14 },
-    { id: "acid-foundations", module: "ACID transactions", number: "13", title: "Atomic by design", minutes: 15 },
-    { id: "transactions", module: "ACID transactions", number: "14", title: "Transactions collide", minutes: 16 },
-    { id: "mvcc-snapshots", module: "ACID transactions", number: "15", title: "Snapshots & phantoms", minutes: 16 },
-    { id: "serializability", module: "ACID transactions", number: "16", title: "Serializable, with retries", minutes: 15 },
-    { id: "consistency", module: "ACID transactions", number: "17", title: "Protect invariants", minutes: 14 },
-    { id: "durability", module: "ACID transactions", number: "18", title: "Commit, WAL & recovery", minutes: 15 },
-    { id: "acid-quiz", module: "ACID transactions", number: "19", title: "ACID incident review", minutes: 10 },
-    { id: "replication", module: "Distributed data", number: "20", title: "Replication & lag", minutes: 15 },
-    { id: "incident", module: "Production practice", number: "21", title: "Checkout incident", minutes: 12 },
-    { id: "tuple-versions", module: "Performance under load", number: "22", title: "Updates create versions", minutes: 15 },
-    { id: "vacuum", module: "Performance under load", number: "23", title: "VACUUM & bloat", minutes: 16 },
-    { id: "join-algorithms", module: "Performance under load", number: "24", title: "How joins execute", minutes: 17 },
-    { id: "memory-spills", module: "Performance under load", number: "25", title: "Memory & disk spills", minutes: 15 },
-    { id: "deadlocks", module: "Performance under load", number: "26", title: "Locks & deadlocks", minutes: 15 },
-    { id: "partitioning", module: "Performance under load", number: "27", title: "Partitioning & pruning", minutes: 16 },
-    { id: "predicate-indexes", module: "Cross-engine indexing", number: "28", title: "Partial & expression indexes", minutes: 17 },
-    { id: "specialized-indexes", module: "Cross-engine indexing", number: "29", title: "Specialized index families", minutes: 18 },
-    { id: "index-observability", module: "Cross-engine indexing", number: "30", title: "Observe & remove indexes", minutes: 16 },
-    { id: "migration-capstone", module: "Cross-engine indexing", number: "31", title: "Cross-engine migration", minutes: 20 },
+    { id: "welcome", module: "Start here", title: "Course map", minutes: 3 },
+    { id: "modeling", module: "Start here", title: "One fact, one place", minutes: 14 },
+    { id: "pages", module: "Storage fundamentals", title: "Pages, not rows", minutes: 18 },
+    { id: "index-layout", module: "Indexes", title: "Physical data layout", minutes: 12 },
+    { id: "btree", module: "Indexes", title: "Walk a B-tree", minutes: 16 },
+    { id: "index-types", module: "Indexes", title: "Choose an index", minutes: 15 },
+    { id: "access-paths", module: "Indexes", title: "Scan strategies", minutes: 18 },
+    { id: "index-operations", module: "Indexes", title: "Build indexes safely", minutes: 15 },
+    { id: "btree-writes", module: "Indexes", title: "Keys and page splits", minutes: 14 },
+    { id: "bloom", module: "Indexes", title: "Bloom filters", minutes: 12 },
+    { id: "columnar-lsm", module: "Indexes", title: "Store by question", minutes: 16 },
+    { id: "index-quiz", module: "Indexes", title: "Index design challenge", minutes: 10 },
+    { id: "planner", module: "Query execution", title: "Think like a planner", minutes: 14 },
+    { id: "acid-foundations", module: "ACID transactions", title: "Atomic by design", minutes: 15 },
+    { id: "transactions", module: "ACID transactions", title: "Transactions collide", minutes: 16 },
+    { id: "mvcc-snapshots", module: "ACID transactions", title: "Snapshots & phantoms", minutes: 16 },
+    { id: "serializability", module: "ACID transactions", title: "Serializable, with retries", minutes: 15 },
+    { id: "consistency", module: "ACID transactions", title: "Protect invariants", minutes: 14 },
+    { id: "durability", module: "ACID transactions", title: "Commit, WAL & recovery", minutes: 15 },
+    { id: "acid-quiz", module: "ACID transactions", title: "ACID incident review", minutes: 10 },
+    { id: "replication", module: "Distributed data", title: "Replication & lag", minutes: 15 },
+    { id: "incident", module: "Production practice", title: "Checkout incident", minutes: 12 },
+    { id: "tuple-versions", module: "Performance under load", title: "Updates create versions", minutes: 15 },
+    { id: "vacuum", module: "Performance under load", title: "VACUUM & bloat", minutes: 16 },
+    { id: "join-algorithms", module: "Performance under load", title: "How joins execute", minutes: 17 },
+    { id: "memory-spills", module: "Performance under load", title: "Memory & disk spills", minutes: 15 },
+    { id: "deadlocks", module: "Performance under load", title: "Locks & deadlocks", minutes: 15 },
+    { id: "partitioning", module: "Performance under load", title: "Partitioning & pruning", minutes: 16 },
+    { id: "predicate-indexes", module: "Cross-engine indexing", title: "Partial & expression indexes", minutes: 17 },
+    { id: "specialized-indexes", module: "Cross-engine indexing", title: "Specialized index families", minutes: 18 },
+    { id: "index-observability", module: "Cross-engine indexing", title: "Observe & remove indexes", minutes: 16 },
+    { id: "migration-capstone", module: "Cross-engine indexing", title: "Cross-engine migration", minutes: 20 },
   ];
 
   function readCompletedLessons() {
@@ -58,6 +58,26 @@
     nav: document.getElementById("course-nav"),
     toast: document.getElementById("toast"),
   };
+
+  // A lesson's number is its position in the list above, so reordering the list renumbers the
+  // course. Lesson text refers to other lessons by id through the helpers below, never by number.
+  lessons.forEach((lesson, index) => { lesson.number = String(index).padStart(2, "0"); });
+
+  function lessonNumber(id) {
+    const lesson = lessons.find((candidate) => candidate.id === id);
+    if (!lesson) throw new Error(`Unknown lesson: ${id}`);
+    return lesson.number;
+  }
+
+  // "Lesson 03"
+  function lessonRef(id) {
+    return `Lesson ${lessonNumber(id)}`;
+  }
+
+  // "Lab 06" or "Lab 06A"
+  function labLabel(id, suffix = "") {
+    return `Lab ${lessonNumber(id)}${suffix}`;
+  }
 
   function getLesson(id) {
     return lessons.find((lesson) => lesson.id === id);
@@ -192,6 +212,9 @@
     narrated: Object.create(null),
     narratedComplete: new Set(),
     getLesson,
+    lessonNumber,
+    lessonRef,
+    labLabel,
     registerRenderer,
     registerGuided,
     registerNarrated,

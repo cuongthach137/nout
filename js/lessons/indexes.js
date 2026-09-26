@@ -45,7 +45,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Walk a B-tree, page by page.", "A B-tree keeps sorted keys in a shallow hierarchy. Each node is sized to a storage page, so every step represents one page read.")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 04</span><h2>Trace an index lookup</h2><p class="lab-copy">Search for a key. The root narrows the range; one leaf page finishes the lookup. Compare that with reading every row.</p></div><span class="lab-badge">O(log n)</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("btree")}</span><h2>Trace an index lookup</h2><p class="lab-copy">Search for a key. The root narrows the range; one leaf page finishes the lookup. Compare that with reading every row.</p></div><span class="lab-badge">O(log n)</span></div>
         <div class="controls"><div class="control grow"><label for="lookup-key">Search key</label><select id="lookup-key">${[5, 12, 19, 27, 31, 38, 44, 52, 63, 71, 84, 96].map((value) => `<option ${value === 44 ? "selected" : ""}>${value}</option>`).join("")}</select></div><button class="button primary" id="run-lookup">Run lookup</button><button class="button" id="random-key">Random key</button></div>
         <div class="viz-stage" id="tree-stage">${treeMarkup()}</div>
         <div class="viz-caption"><span class="live-status"><i class="pulse" id="tree-pulse"></i><span id="tree-status" aria-live="polite">Choose a key to begin</span></span><span class="io-counter"><strong id="io-count">0</strong> page reads</span></div>
@@ -166,7 +166,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "There is no universally best index.", "An index is a trade: extra space and write work in exchange for faster reads. The right structure depends on the questions your system asks.", "Intermediate")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 05</span><h2>Index workbench</h2><p class="lab-copy">Switch structures and compare what each one preserves: equality, ordering, ranges, or words inside documents.</p></div><span class="lab-badge">workload → structure</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("index-types")}</span><h2>Index workbench</h2><p class="lab-copy">Switch structures and compare what each one preserves: equality, ordering, ranges, or words inside documents.</p></div><span class="lab-badge">workload → structure</span></div>
         <div class="index-picker" role="tablist" aria-label="Index type">${Object.entries(indexTypes).map(([id, item], index) => `<button class="index-option ${index === 0 ? "active" : ""}" data-index="${id}" role="tab" aria-selected="${index === 0}">${item.name}</button>`).join("")}</div>
         <div class="viz-stage"><div class="index-demo"><div class="index-visual" id="index-visual"></div><div><span class="lab-kicker" id="index-name"></span><p class="lab-copy" id="index-note"></p><div class="index-facts" id="index-facts"></div></div></div></div>
       </section>
