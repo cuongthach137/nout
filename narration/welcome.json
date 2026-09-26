@@ -1,9 +1,11 @@
 {
   "lesson": "welcome",
-  "voice": "af_heart",
+  "engine": "minimax",
+  "model": "speech-2.8-hd",
+  "voice": "English_SereneWoman",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+    "interviewer": { "voice": "English_DecentYoungMan", "label": "Interviewer" }
   },
   "lines": {
     "welcome.1": "Hi. This course shows you how databases really work, from the basics to what interviewers ask.",

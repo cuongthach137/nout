@@ -2,7 +2,8 @@
 # requires-python = ">=3.10,<3.13"
 # dependencies = ["kokoro-onnx>=0.4"]
 # ///
-"""Narration voice tool: turns narration scripts into mp3s with Kokoro, a free local neural TTS.
+"""Narration voice tool: turns narration scripts into mp3s with Kokoro, a free local neural TTS,
+or with MiniMax's hosted TTS when a script says "engine": "minimax" (needs MINIMAX_API_KEY).
 
   uv run tools/voice.py say "Hello there."          # preview one line (plays it)
   uv run tools/voice.py voices                     # list voice ids
@@ -40,6 +41,8 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
+import os
 import urllib.request
 from pathlib import Path
 
@@ -52,6 +55,11 @@ SAMPLE_RATE = 24000
 # Speech stays clear at 40 kbps mono; changing this re-renders every line (it's part of the hash).
 BITRATE = "40k"
 AUDIO_PROJECT = "nout-audio"
+# MiniMax (hosted TTS): a script opts in with "engine": "minimax"; its voices are MiniMax voice ids
+# (list them with `voices --engine minimax`). Audio comes back as mp3 and is stored as is.
+MINIMAX_URL = "https://api.minimax.io/v1/t2a_v2"
+MINIMAX_MODEL = "speech-2.8-hd"
+MINIMAX_BITRATE = 64000
 # Cloudflare static-asset headers for audio/: file names are stable but URLs carry ?v=<hash>, so
 # cache hard; CORS lets the site prefetch lines with fetch().
 HEADERS = """/*
@@ -77,6 +85,32 @@ def model():
 def synth(tts, text, voice, speed):
     samples, rate = tts.create(text, voice=voice, speed=speed, lang="en-us")
     return samples.astype("float32"), rate
+
+
+def minimax(text, voice, speed, model_name=MINIMAX_MODEL):
+    """One line through MiniMax T2A. Returns (mp3 bytes, duration in ms)."""
+    key = os.environ.get("MINIMAX_API_KEY")
+    if not key:
+        sys.exit("MINIMAX_API_KEY isn't set (it's in ~/.zshrc: run through `zsh -ic '…'` or export it)")
+    body = {
+        "model": model_name,
+        "text": text,
+        "stream": False,
+        "language_boost": "English",
+        "voice_setting": {"voice_id": voice, "speed": speed, "vol": 1.0, "pitch": 0},
+        "audio_setting": {"sample_rate": 32000, "bitrate": MINIMAX_BITRATE, "format": "mp3", "channel": 1},
+    }
+    request = urllib.request.Request(MINIMAX_URL, data=json.dumps(body).encode(), headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+    for attempt in range(4):
+        with urllib.request.urlopen(request, timeout=120) as response:
+            data = json.loads(response.read())
+        status = data.get("base_resp", {})
+        if status.get("status_code") == 0:
+            return bytes.fromhex(data["data"]["audio"]), int(data["extra_info"]["audio_length"])
+        if status.get("status_code") in (1002, 1039) and attempt < 3:  # rate limited: back off
+            time.sleep(2 ** attempt * 2)
+            continue
+        sys.exit(f"MiniMax error {status.get('status_code')}: {status.get('status_msg')}")
 
 
 def write_mp3(samples, rate, out):
@@ -198,21 +232,36 @@ def cmd_lint(args):
         sys.exit(1)
 
 
-def line_hash(text, voice, speed):
+def line_hash(text, voice, speed, engine="kokoro", model_name=MINIMAX_MODEL):
+    # Kokoro's hash is unchanged from before engines existed, so existing audio isn't re-rendered.
+    if engine == "minimax":
+        return hashlib.sha1(f"minimax|{model_name}|{voice}|{speed}|{MINIMAX_BITRATE}|{text}".encode()).hexdigest()[:12]
     return hashlib.sha1(f"{voice}|{speed}|{BITRATE}|{text}".encode()).hexdigest()[:12]
 
 
 def cmd_say(args):
-    tts = model()
-    samples, rate = synth(tts, args.text, args.voice, args.speed)
     out = Path(args.out) if args.out else Path(tempfile.gettempdir()) / "voice-preview.mp3"
-    write_mp3(samples, rate, out)
+    if args.engine == "minimax":
+        audio, _ms = minimax(pronounce(args.text), args.voice if args.voice != DEFAULT_VOICE else "English_SereneWoman", args.speed)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(audio)
+    else:
+        samples, rate = synth(model(), args.text, args.voice, args.speed)
+        write_mp3(samples, rate, out)
     print(out)
     if not args.out:
         subprocess.run(["afplay", str(out)], check=False)
 
 
-def cmd_voices(_args):
+def cmd_voices(args):
+    if args.engine == "minimax":
+        key = os.environ.get("MINIMAX_API_KEY") or sys.exit("MINIMAX_API_KEY isn't set")
+        request = urllib.request.Request("https://api.minimax.io/v1/get_voice", data=b'{"voice_type":"system"}', headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=60) as response:
+            for voice in json.loads(response.read()).get("system_voice", []):
+                if voice["voice_id"].startswith("English"):
+                    print(voice["voice_id"])
+        return
     for voice in sorted(model().get_voices()):
         print(voice)
 
@@ -226,16 +275,25 @@ def cmd_build(args):
     lines = {line_id: spoken(line_id, line) for line_id, line in script["lines"].items()}
     voices = {line_id: voice_for(script, line) for line_id, line in script["lines"].items()}
     speed = float(script.get("speed", 1.0))
+    engine = script.get("engine", "kokoro")
+    model_name = script.get("model", MINIMAX_MODEL)
+    hashed = lambda i: line_hash(lines[i], voices[i], speed, engine, model_name)
     folder = ROOT / "audio" / lesson
     manifest_path = folder / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
 
-    stale = [i for i, text in lines.items() if manifest.get(i, {}).get("hash") != line_hash(text, voices[i], speed) or not (folder / f"{i}.mp3").exists()]
-    tts = model() if stale else None
+    stale = [i for i in lines if manifest.get(i, {}).get("hash") != hashed(i) or not (folder / f"{i}.mp3").exists()]
+    tts = model() if stale and engine == "kokoro" else None
     for n, line_id in enumerate(stale, 1):
-        samples, rate = synth(tts, lines[line_id], voices[line_id], speed)
-        write_mp3(samples, rate, folder / f"{line_id}.mp3")
-        manifest[line_id] = {"hash": line_hash(lines[line_id], voices[line_id], speed), "ms": round(len(samples) / rate * 1000)}
+        if engine == "minimax":
+            audio, ms = minimax(lines[line_id], voices[line_id], speed, model_name)
+            folder.mkdir(parents=True, exist_ok=True)
+            (folder / f"{line_id}.mp3").write_bytes(audio)
+        else:
+            samples, rate = synth(tts, lines[line_id], voices[line_id], speed)
+            write_mp3(samples, rate, folder / f"{line_id}.mp3")
+            ms = round(len(samples) / rate * 1000)
+        manifest[line_id] = {"hash": hashed(line_id), "ms": ms}
         print(f"[{n}/{len(stale)}] {line_id}  {manifest[line_id]['ms']} ms")
 
     for line_id in [i for i in manifest if i not in lines]:
@@ -275,10 +333,13 @@ def main():
     say = sub.add_parser("say", help="preview one line")
     say.add_argument("text")
     say.add_argument("--voice", default=DEFAULT_VOICE)
+    say.add_argument("--engine", choices=["kokoro", "minimax"], default="kokoro")
     say.add_argument("--speed", type=float, default=1.0)
     say.add_argument("--out", help="save instead of playing")
     say.set_defaults(run=cmd_say)
-    sub.add_parser("voices", help="list voice ids").set_defaults(run=cmd_voices)
+    voices = sub.add_parser("voices", help="list voice ids")
+    voices.add_argument("--engine", choices=["kokoro", "minimax"], default="kokoro")
+    voices.set_defaults(run=cmd_voices)
     check = sub.add_parser("lint", help="check a narration file against narration/STYLE.md")
     check.add_argument("file")
     check.set_defaults(run=cmd_lint)
