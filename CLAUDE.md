@@ -7,7 +7,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - `app.js`: router (`#/<id>`, `?mode=` saves a pick, `?view=` one visit), sidebar, Back up / Restore.
 - `js/components/`: `lab-kit.js` (asides, progress checklist, `setStatus`, motion helpers), `guided.js` (step engine, storyboard, quiz/finish beats), `narrator.js` (narrated film engine, keywords panel, `story()`, `quizChapter()`, `throttled()`), `vocab.js` (keywords, flashcards, spaced repetition). `sql.js`: in-browser SQLite (vendored `vendor/sql.js`, run in a Web Worker, fresh database per query, 3 s timeout), the `bakery` dataset, `compare()` checker, and `DSL.Sql.lab()` exercise widget for all three modes.
 - Practice pages (`DSL.registerPage`): `#/flashcards` (vocab.js), `#/sql` sandbox (`js/pages/sql-sandbox.js`).
-- Per lesson: `js/lessons/<name>.js` (Explore), `-guided.js`, `-narrated.js`, `narration/<lesson>.json` (script: lines, speakers, keywords), generated `narration/<lesson>.js`. Narrated lessons reuse scenes exposed by the guided file (`DSL.StorageScenes`, `DSL.ModelingScenes`).
+- Per lesson: `js/lessons/<name>.js` (Explore), `-guided.js`, `-narrated.js`, `narration/<lesson>.json` (script: lines, speakers, keywords), generated `narration/<lesson>.js`. Narrated lessons reuse scenes exposed by the guided file (`DSL.StorageScenes`, `DSL.ModelingScenes`, `DSL.SelectScenes`).
 - Script and style tags in `index.html` load in dependency order; bump `?v=` on changed files.
 - New lessons: see `docs/adding-a-lesson.md`. Design Narrated first (the focused lesson), then Guided (more explanation), then Explore (most detail). Existing lesson content isn't a constraint: when porting a lesson, fix what's inaccurate or unclear and list the fixes in the PR.
 
@@ -23,5 +23,5 @@ Interactive database course for interview prep, basics to advanced. Static site,
 
 ## Open work (handoff)
 - Code health (roadmap phase `health`): refactor merged in PR #15; course map, keywords/flashcards and lesson 02 quizzes (all modes) re-verified by headless playthrough. How to add a lesson: `docs/adding-a-lesson.md`. Later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
-- Next roadmap phase: Phase 3, in-browser SQL (sql.js) and Tier 1 SQL lessons, narrated with keywords.
+- Phase 3 (Level 1 SQL): engine `p3-sqljs` in PR #19; first lesson `select` (`p3-select`) stacked on it. The Writing SQL module sits after Data modeling. Next: `p3-joins`, then GROUP BY, subqueries/CTEs, window functions, NULL traps. When a new SQL lesson follows `select`, update `select`'s `finish.2` "Next up" line and rebuild its audio.
 - Welcome narration still describes 4 levels; the roadmap now has 5 (update `narration/welcome.json` story lines when Level 4 lessons exist).

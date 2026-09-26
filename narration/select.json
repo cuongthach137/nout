@@ -1,0 +1,178 @@
+{
+  "lesson": "select",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "keywords": {
+    "declarative": {
+      "term": "Declarative",
+      "def": "You describe the result you want, and the database works out how to get it. SQL is declarative."
+    },
+    "result-set": {
+      "term": "Result set",
+      "def": "The table a query returns. It has its own columns and rows, like any other table."
+    },
+    "alias": {
+      "term": "Alias",
+      "def": "A name given with AS to a column or table inside a query, like price * 1.1 AS new_price."
+    },
+    "distinct": {
+      "term": "DISTINCT",
+      "def": "Removes duplicate rows from a result, keeping one copy of each."
+    },
+    "predicate": {
+      "term": "Predicate",
+      "def": "A test that is true or false for each row, like city = 'Lisbon'. WHERE keeps the rows where it's true."
+    },
+    "order-by": {
+      "term": "ORDER BY",
+      "def": "Sorts the result, ascending unless you add DESC. Without it, the row order isn't guaranteed."
+    },
+    "limit": {
+      "term": "LIMIT",
+      "def": "Keeps only the first N rows of the result. Sort first, or you get any N rows."
+    },
+    "logical-order": {
+      "term": "Logical query order",
+      "def": "The order the clauses are evaluated: FROM, WHERE, SELECT, ORDER BY, then LIMIT. It's why an alias works in ORDER BY but not in WHERE."
+    }
+  },
+  "lines": {
+    "hook.1": "Remember Maya's notebook? It's four tables now: customers, products, orders, and the items in each order.",
+    "hook.2": "Ten customers, eight products, sixteen orders. And the bakery has questions.",
+    "hook.3": "Who lives in Lisbon? What costs the most? You could scroll. Instead, you'll ask the database.",
+
+    "query.1": "Here's the customers table. Each row is a customer. Each column is one fact about them.",
+    "query.2": {
+      "caption": "A question in SQL looks like this: <b>SELECT</b> the columns you want, <b>FROM</b> a table.",
+      "voice": "A question in S Q L looks like this. SELECT the columns you want, FROM a table."
+    },
+    "query.3": "SELECT picks columns. Every row still comes back, with only the facts you asked for.",
+    "query.4": "And the answer is a table too. It's called the <k>result set</k>.",
+    "query.5": "Notice what you didn't say: how to find the rows. You describe the result, and the database works out the steps.",
+    "query.6": "That's what makes SQL <k>declarative</k>.",
+
+    "pick.1": "The bakery wants to text every customer. Which columns does it need?",
+    "pick.ask": "Fill in the blank to run the query.",
+    "pick.hint": "A text needs a name to say hello to, and a number to send it to.",
+    "pick.star": {
+      "caption": "<b>*</b> means every column. Handy for a quick look, but it drags along data you don't need.",
+      "voice": "Star means every column. Handy for a quick look, but it drags along data you don't need."
+    },
+    "pick.name": "Names alone won't reach anyone. Try again.",
+    "pick.done": "Ten customers, two columns. A few phones say NULL. That means the bakery never got the number.",
+    "pick.2": "In real code, list your columns rather than using star. Then a new column can't break or slow your query.",
+
+    "shape.1": "You can compute new columns, too. The bakery is planning a ten percent price rise.",
+    "shape.2": {
+      "caption": "Multiply in the SELECT, and name the new column with <b>AS</b>. That name is an <k>alias</k>.",
+      "voice": "Multiply in the SELECT, and name the new column with AS. That name is an alias."
+    },
+    "shape.3": "Next question: which cities do we deliver to? Asking for the city column repeats Lisbon three times.",
+    "shape.ask": "Add DISTINCT, and repeats collapse. How many rows come back?",
+    "shape.seven": "Seven. Six cities, plus one more you might not expect.",
+    "shape.six": "Close. It's seven.",
+    "shape.ten": "DISTINCT removes repeats, so it's fewer than ten. It's seven.",
+    "shape.4": "<k id=\"distinct\">DISTINCT</k> keeps one copy of each row. Raj never gave his city, so NULL gets a row of its own.",
+
+    "where.1": "Now a new pastry launches in Lisbon. Only Lisbon customers should get the text.",
+    "where.2": "<b>WHERE</b> holds a test. The database checks it against every row, one by one.",
+    "where.3": "Rows that pass stay. The rest are dropped before anything comes back.",
+    "where.4": {
+      "caption": "A test like <code>city = 'Lisbon'</code> is a <k>predicate</k>: true or false, for each row.",
+      "voice": "A test like city equals Lisbon is called a predicate. It's true or false, for each row."
+    },
+    "where.5": "You can compare with equals, not equals, less than, greater than, and a few more. They're all on the card.",
+    "where.6": "Text goes in single quotes. Numbers don't.",
+
+    "filter.1": "Your turn. Get the name and phone of every customer in Lisbon.",
+    "filter.ask": "Finish the query, then press Run.",
+    "filter.hint": {
+      "caption": "After WHERE, compare <b>city</b> with <b>'Lisbon'</b>, in single quotes.",
+      "voice": "After WHERE, compare city with Lisbon, in single quotes."
+    },
+    "filter.error": "The database couldn't run that. Read the message under the editor, fix it, and run it again.",
+    "filter.extra": "Too many rows. Is the WHERE test there?",
+    "filter.missing": "Some Lisbon customers are missing. Check the spelling, with a capital L.",
+    "filter.columns": "Check the columns. Just the name and the phone.",
+    "filter.done": "Three customers. Ines has no phone, so she'll hear about the pastry at the counter.",
+
+    "andor.1": "Maya calls. She paid for an order that never came. Find her orders that are pending or refunded.",
+    "andor.2": "Here's a first try. Maya is customer one.",
+    "andor.ask": "How many rows will it return?",
+    "andor.one": "That's what we meant. But it's not what we wrote.",
+    "andor.two": "Two. You spotted the trap.",
+    "andor.3": "Two rows, and one of them is Raj's.",
+    "andor.4": "AND binds tighter than OR. So SQL read it as: Maya's pending orders, or anybody's refunded order.",
+    "andor.5": "Brackets say what you mean. Now it's only Maya's order.",
+    "andor.6": {
+      "caption": "Even clearer: <code>status IN ('pending', 'refunded')</code>. <b>IN</b> checks against a list.",
+      "voice": "Even clearer: status IN pending, refunded. IN checks against a list."
+    },
+    "andor.7": "Whenever you mix AND with OR, add brackets. Interviewers look for it.",
+
+    "order.1": "The menu board needs the three most expensive products.",
+    "order.2": "Rows come back in no promised order. Today it looks like ID order. After some updates, it might not be.",
+    "order.3": {
+      "caption": "<k id=\"order-by\">ORDER BY</k> sorts the result. <b>DESC</b> puts the biggest first. Ascending is the default.",
+      "voice": "ORDER BY sorts the result. DESC puts the biggest first. Ascending is the default."
+    },
+    "order.4": "<k id=\"limit\">LIMIT</k> keeps the first few rows and drops the rest. Top three, done.",
+    "order.5": "Without ORDER BY, LIMIT three means any three rows. Always sort before you cut.",
+
+    "recent.1": "The bakery wants its three most recent orders, newest first. Just the ID and the date.",
+    "recent.ask": "Write the whole query this time.",
+    "recent.hint": {
+      "caption": "Sort by <b>ordered_at</b>, newest first, then keep three.",
+      "voice": "Sort by the order date, newest first, then keep three."
+    },
+    "recent.error": "The database couldn't run that. The message under the editor says where it got stuck.",
+    "recent.order": "Right orders, wrong order. Newest first means descending.",
+    "recent.extra": "More than three rows. Add a LIMIT.",
+    "recent.missing": "Not the right three. Are you sorting by the date?",
+    "recent.columns": "Check the columns. The ID and the date.",
+    "recent.done": "Orders sixteen, fifteen and fourteen. Sort, then cut. You'll use that pattern constantly.",
+
+    "logic.1": "One more thing interviewers love. You write SELECT first, but the database doesn't run it first.",
+    "logic.2": "It starts FROM the table, keeps the rows WHERE the test passes, then SELECTs columns, sorts, and cuts.",
+    "logic.3": "That's the <k id=\"logical-order\">logical query order</k>. And it explains a classic mistake.",
+    "logic.4": "An alias made in SELECT doesn't exist yet when WHERE runs. ORDER BY runs later, so it can use it.",
+    "logic.5": {
+      "caption": "Postgres and MySQL reject that WHERE. <b>SQLite</b>, the engine in this course, lets it slide. Don't count on it.",
+      "voice": "Postgres and My S Q L reject that WHERE. S Q Lite, the engine in this course, lets it slide. Don't count on it."
+    },
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": { "caption": "Which query returns each city exactly once?", "speaker": "interviewer" },
+    "quiz.q1-why": "DISTINCT collapses repeated rows. LIMIT would just cut the list short.",
+    "quiz.q2": {
+      "caption": "How does SQL read <code>WHERE a = 1 AND b = 2 OR c = 3</code>?",
+      "voice": "Where a equals one, and b equals two, or c equals three. How does SQL read that?",
+      "speaker": "interviewer"
+    },
+    "quiz.q2-why": "AND binds tighter than OR, so it's grouped first. Add brackets to say what you mean.",
+    "quiz.q3": { "caption": "A query ends in LIMIT 10, with no ORDER BY. Which ten rows come back?", "voice": "A query ends in limit ten, with no order by. Which ten rows come back?", "speaker": "interviewer" },
+    "quiz.q3-why": "With no ORDER BY, there's no promised order. Sort first, then cut.",
+    "quiz.q4": {
+      "caption": "<code>SELECT price * 2 AS doubled FROM products WHERE doubled &gt; 10</code> fails in Postgres. Why?",
+      "voice": "Select price times two as doubled, from products, where doubled is over ten. Postgres rejects it. Why?",
+      "speaker": "interviewer"
+    },
+    "quiz.q4-why": "WHERE runs before SELECT, so the alias doesn't exist yet. Repeat the expression in WHERE instead.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
+    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
+
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
+
+    "finish.1": "That's the lesson. SELECT shapes the answer, WHERE keeps the rows you want, and ORDER BY with LIMIT picks the top.",
+    "finish.2": "Next up: how a database actually reads those rows from disk."
+  }
+}

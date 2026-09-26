@@ -138,7 +138,7 @@ window.DataSystemsLab.Narrator.register("modeling", {
    "voice": "Not quite there. Replay a chapter or two, then try again."
   },
   "finish.1": "That's the lesson. One fact, one place. Pointers instead of copies. And copies only when someone owns them.",
-  "finish.2": "Next up: how a database actually reads those rows from disk.",
+  "finish.2": "Next up: asking those tables questions, in SQL.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -249,8 +249,8 @@ window.DataSystemsLab.Narrator.register("modeling", {
    "ms": 6699
   },
   "finish.2": {
-   "hash": "555b915c7e66",
-   "ms": 3712
+   "hash": "7d1c5283f55a",
+   "ms": 3413
   },
   "fix.1": {
    "hash": "46d2ea04c6df",

@@ -400,5 +400,71 @@ INSERT INTO order_items VALUES
     };
   }
 
-  DSL.Sql = Object.freeze({ datasets, run, compare, friendly, tableMarkup, describe, lab });
+  // ---------- Code display ----------
+
+  const KEYWORDS = /\b(SELECT|DISTINCT|FROM|WHERE|AND|OR|NOT|IN|IS|NULL|LIKE|BETWEEN|AS|ORDER|GROUP|BY|HAVING|ASC|DESC|LIMIT|OFFSET|JOIN|LEFT|RIGHT|FULL|INNER|OUTER|ON|WITH|UNION|ALL|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MIN|MAX|OVER|PARTITION)\b/g;
+
+  // SQL as highlighted HTML (keywords, strings, numbers). Not a parser: good enough for display.
+  function highlight(sql) {
+    return String(sql).split(/('(?:[^']|'')*')/).map((part, i) => {
+      if (i % 2) return `<span class="sq-str">${escapeHtml(part)}</span>`;
+      return escapeHtml(part)
+        .replace(KEYWORDS, `<b class="sq-kw">$1</b>`)
+        .replace(/(^|[^\w.])(\d+(?:\.\d+)?)(?!\w)/g, `$1<span class="sq-num">$2</span>`);
+    }).join("");
+  }
+
+  // ---------- Challenge sets ----------
+
+  // A numbered set of SQL exercises sharing one lab area (Explore pages).
+  // challenges = [{ id, prompt, starter, solution, ordered?, hint? }]
+  // options = { dataset, storageKey, onPass(id), onAllDone() }
+  function challenges(container, list, { dataset = "bakery", storageKey, onPass, onAllDone } = {}) {
+    const passed = new Set(storageKey ? DSL.store.get(storageKey, []) : []);
+    let current = Math.max(0, list.findIndex((challenge) => !passed.has(challenge.id)));
+    container.innerHTML = `<div class="sql-set">
+      <div class="sql-set-tabs" role="tablist">${list.map((challenge, i) => `<button type="button" role="tab" data-i="${i}">${i + 1}</button>`).join("")}</div>
+      <p class="sql-set-prompt"></p>
+      <details class="sql-hint" hidden><summary>Hint</summary><p></p></details>
+      <div class="sql-set-lab"></div>
+    </div>`;
+    const root = container.firstElementChild;
+
+    function paintTabs() {
+      root.querySelectorAll(".sql-set-tabs button").forEach((tab, i) => {
+        tab.setAttribute("aria-selected", String(i === current));
+        tab.classList.toggle("done", passed.has(list[i].id));
+        tab.textContent = passed.has(list[i].id) ? "✓" : String(i + 1);
+      });
+    }
+
+    function show(i) {
+      current = i;
+      const challenge = list[i];
+      root.querySelector(".sql-set-prompt").innerHTML = challenge.prompt;
+      const hint = root.querySelector(".sql-hint");
+      hint.hidden = !challenge.hint;
+      hint.open = false;
+      hint.querySelector("p").innerHTML = challenge.hint || "";
+      paintTabs();
+      const exercise = lab(root.querySelector(".sql-set-lab"), { dataset, starter: challenge.starter, solution: challenge.solution, ordered: challenge.ordered });
+      exercise.passed.then(() => {
+        if (passed.has(challenge.id)) return;
+        passed.add(challenge.id);
+        if (storageKey) DSL.store.set(storageKey, [...passed]);
+        paintTabs();
+        if (onPass) onPass(challenge.id);
+        if (list.every((c) => passed.has(c.id)) && onAllDone) onAllDone();
+      });
+    }
+
+    root.querySelector(".sql-set-tabs").addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-i]");
+      if (tab) show(Number(tab.dataset.i));
+    });
+    show(current);
+    return { show };
+  }
+
+  DSL.Sql = Object.freeze({ datasets, run, compare, friendly, tableMarkup, describe, lab, highlight, challenges });
 })(window.DataSystemsLab);
