@@ -30,11 +30,7 @@
     { prompt: "Why does keeping each chunk sorted help a lookup that misses?", options: ["Sorted data cannot contain errors", "The search can stop early — once past where the key would be", "Sorted chunks stay in memory"], answer: 1, why: ("A sorted column lets the search bail out the moment it passes the target — and " + DSL.lessonRef("bloom") + "’s bloom filters skip whole chunks before that search starts.") },
   ];
 
-  function setStatus(el, message, tone) {
-    el.textContent = message;
-    el.classList.remove("warn", "ok");
-    if (tone) el.classList.add(tone);
-  }
+  const { setStatus } = DSL.LabKit;
 
   function renderColumnarLsm() {
     const lesson = DSL.getLesson("columnar-lsm");

@@ -15,6 +15,13 @@
     el.classList.add(className);
   }
 
+  // A lab's status line: message text, plus an optional "warn" or "ok" tone.
+  function setStatus(el, message, tone) {
+    el.textContent = message;
+    el.classList.remove("warn", "ok");
+    if (tone) el.classList.add(tone);
+  }
+
   function wonder(question, answer) {
     return `<details class="wonder"><summary><span>Wait, what?</span>${question}</summary><p>${answer}</p></details>`;
   }
@@ -30,28 +37,19 @@
   // Per-lab progress: a checklist under the header, a stamp on each lab section (#lab-<id>),
   // saved per browser, and a nudge on "Mark complete" once every lab is done.
   function createProgress({ lessonId, labs, storageKey }) {
-    const key = storageKey || `dsl-labs-${lessonId}`;
+    // DSL.store adds the "dsl-" prefix; older call sites pass the full key.
+    const key = (storageKey || `labs-${lessonId}`).replace(/^dsl-/, "");
     const ids = labs.map((lab) => lab.id);
     const names = Object.fromEntries(labs.map((lab) => [lab.id, lab.name]));
     let done = new Set();
     let root = null;
 
     function read() {
-      try {
-        const stored = JSON.parse(localStorage.getItem(key) || "[]");
-        return new Set(Array.isArray(stored) ? stored.filter((id) => ids.includes(id)) : []);
-      } catch (error) {
-        return new Set();
-      }
+      const stored = DSL.store.get(key, []);
+      return new Set(Array.isArray(stored) ? stored.filter((id) => ids.includes(id)) : []);
     }
 
-    function save() {
-      try {
-        localStorage.setItem(key, JSON.stringify([...done]));
-      } catch (error) {
-        // Progress is a convenience; lessons work without storage.
-      }
-    }
+    const save = () => DSL.store.set(key, [...done]);
 
     function completeButton() {
       return document.querySelector(`[data-complete="${lessonId}"]`);
@@ -203,5 +201,5 @@
     requestAnimationFrame(step);
   }
 
-  DSL.LabKit = Object.freeze({ reducedMotion, retrigger, wonder, stamp, labSide, createProgress, fly, burst, floater, countTo });
+  DSL.LabKit = Object.freeze({ setStatus, reducedMotion, retrigger, wonder, stamp, labSide, createProgress, fly, burst, floater, countTo });
 })(window.DataSystemsLab);

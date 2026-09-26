@@ -14,15 +14,7 @@
     "Electives: engine depth": ["Indexes that survive a migration", "Compare predicates, expressions, specialized families, removal runbooks, and physical assumptions across PostgreSQL, InnoDB, and SQLite."],
   };
 
-  function modules() {
-    const groups = [];
-    DSL.lessons.filter((lesson) => lesson.id !== "welcome").forEach((lesson) => {
-      let group = groups[groups.length - 1];
-      if (!group || group.name !== lesson.module) groups.push((group = { name: lesson.module, lessons: [] }));
-      group.lessons.push(lesson);
-    });
-    return groups;
-  }
+  const modules = () => DSL.modules(DSL.lessons.filter((lesson) => lesson.id !== "welcome"));
 
   function cardMarkup(group) {
     const first = group.lessons[0];

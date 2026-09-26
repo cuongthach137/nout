@@ -14,16 +14,8 @@
     ["⚙️", "Level 4", "Engine depth", "Electives on specific engines"],
   ];
 
-  // The course as it stands: consecutive lessons that share a module form one stop.
-  function stops() {
-    const groups = [];
-    DSL.lessons.filter((lesson) => lesson.id !== "welcome").forEach((lesson) => {
-      let group = groups[groups.length - 1];
-      if (!group || group.name !== lesson.module) groups.push((group = { name: lesson.module, lessons: [] }));
-      group.lessons.push(lesson);
-    });
-    return groups;
-  }
+  // The course as it stands: one stop per module.
+  const stops = () => DSL.modules(DSL.lessons.filter((lesson) => lesson.id !== "welcome"));
 
   // Draw the eye to a control outside the stage (the transport or the mode switch).
   function attention(selector, on) {

@@ -5,24 +5,8 @@
   // Lines live in narration/modeling.json.
 
   const S = DSL.ModelingScenes;
-  const { retrigger, burst } = DSL.LabKit;
 
-  // Put a storyboard on stage; frame(line, i) speaks a line while frame i animates.
-  function storyStage(n, scene, story) {
-    scene.innerHTML = `<div class="gd-story-stage"></div>`;
-    const ctx = story.build(scene.firstElementChild);
-    return (line, i) => Promise.all([n.say(line), n.show(() => story.frames[i].enter(ctx, n))]);
-  }
 
-  // React to repeated mistakes without talking over every tap.
-  function throttled(n, line, gap = 4000) {
-    let last = 0;
-    return () => {
-      if (Date.now() - last < gap) return;
-      last = Date.now();
-      n.react(line);
-    };
-  }
 
   function makeChapters() {
     const M = DSL.ModelingModel;
@@ -33,7 +17,7 @@
         id: "teach-copies",
         title: "What goes wrong with copies?",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.copiesStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.copiesStory(M));
           await frame("teach-copies.1", 0);
           await frame("teach-copies.2", 1);
           await n.say("teach-copies.ask");
@@ -50,7 +34,7 @@
         title: "Fix every copy",
         async script(n) {
           let result = { found: false, missed: 0 };
-          const wrong = throttled(n, "hunt.wrong");
+          const wrong = DSL.Narrator.throttled(n, "hunt.wrong");
           const done = n.mount(B.hunt, {
             onEvent(name, data) {
               if (name === "wrong-ticket") wrong();
@@ -80,7 +64,7 @@
         id: "teach-lists",
         title: "One list per kind of thing",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.listsStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.listsStory(M));
           await frame("teach-lists.1", 0);
           await frame("teach-lists.2", 1);
           await frame("teach-lists.3", 2);
@@ -96,7 +80,7 @@
         id: "sort",
         title: "Sort the facts",
         async script(n) {
-          const wrong = throttled(n, "sort.wrong");
+          const wrong = DSL.Narrator.throttled(n, "sort.wrong");
           const done = n.mount(B.sort, { onEvent: (name) => { if (name === "sort-wrong") wrong(); } });
           await n.say("sort.1");
           await n.say("sort.ask");
@@ -119,7 +103,7 @@
         id: "teach-join",
         title: "Reading it back: joins",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.joinStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.joinStory(M));
           for (let i = 0; i < 4; i += 1) await frame(`teach-join.${i + 1}`, i);
           await n.say("teach-join.ask");
           const reply = await n.choose([["yes", "Yes. The data is always right"], ["slow", "Sounds slow"]]);
@@ -130,7 +114,7 @@
         id: "assemble",
         title: "Join by hand",
         async script(n) {
-          const wrong = throttled(n, "assemble.wrong");
+          const wrong = DSL.Narrator.throttled(n, "assemble.wrong");
           const done = n.mount(B.assemble, {
             onEvent(name, data) {
               if (name === "wrong-row") wrong();
@@ -147,7 +131,7 @@
         id: "teach-owner",
         title: "Copies, on purpose",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.ownerStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.ownerStory(M));
           for (let i = 0; i < 5; i += 1) await frame(`teach-owner.${i + 1}`, i);
           await n.say("teach-owner.6");
         },
@@ -163,41 +147,7 @@
           await n.say("fix.outro");
         },
       },
-      {
-        id: "quiz",
-        title: "Quick check",
-        async script(n, scene) {
-          scene.innerHTML = `<div class="gd-quiz nr-quiz">
-            <span class="gd-q-count"></span>
-            <div class="nr-marks">${M.QUIZ.map(() => "<i></i>").join("")}</div>
-          </div>`;
-          const count = scene.querySelector(".gd-q-count");
-          const marks = [...scene.querySelectorAll(".nr-marks i")];
-          let right = 0;
-          await n.say("quiz.intro");
-          for (const [i, question] of M.QUIZ.entries()) {
-            count.textContent = `Question ${i + 1} of ${M.QUIZ.length}`;
-            marks[i].className = "current";
-            await n.say(`quiz.q${i + 1}`);
-            const pick = await n.choose(question.options.map((option, j) => [String(j), option]), { label: "Your answer" });
-            const correct = Number(pick) === question.answer;
-            marks[i].className = correct ? "ok" : "bad";
-            marks[i].textContent = correct ? "✓" : "✗";
-            retrigger(marks[i], "gd-pop");
-            if (correct) {
-              right += 1;
-              burst(marks[i], { count: 12 });
-              await n.say(`quiz.right${(i % 3) + 1}`);
-            } else {
-              await n.say(`quiz.q${i + 1}-why`);
-            }
-          }
-          count.textContent = `${right} / ${M.QUIZ.length}`;
-          const passed = right >= 3;
-          if (passed) M.progress.complete("quiz");
-          await n.say(passed ? "quiz.pass" : "quiz.retry", { right });
-        },
-      },
+      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
       DSL.Vocab.reviewChapter("modeling"),
       {
         id: "finish",

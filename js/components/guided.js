@@ -11,25 +11,15 @@
   let active = null;
 
   function readSaved(key) {
-    try {
-      const saved = JSON.parse(localStorage.getItem(key) || "{}");
-      return { index: Number(saved.index) || 0, seen: Number(saved.seen) || 0, done: Array.isArray(saved.done) ? saved.done : [] };
-    } catch (error) {
-      return { index: 0, seen: 0, done: [] };
-    }
+    const saved = DSL.store.get(key, {}) || {};
+    return { index: Number(saved.index) || 0, seen: Number(saved.seen) || 0, done: Array.isArray(saved.done) ? saved.done : [] };
   }
 
-  function writeSaved(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (error) {
-      // Resume is a convenience.
-    }
-  }
+  const writeSaved = (key, value) => DSL.store.set(key, value);
 
   function run({ lessonId, title, beats, onLab }) {
     const root = DSL.elements.root;
-    const key = `dsl-guided-${lessonId}`;
+    const key = `guided-${lessonId}`;
     const saved = readSaved(key);
     const done = new Set(saved.done.filter((id) => beats.some((beat) => beat.id === id)));
     const state = {};

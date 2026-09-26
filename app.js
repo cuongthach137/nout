@@ -1,14 +1,6 @@
 (function bootCourse(DSL) {
   "use strict";
 
-  function groupLessonsByModule() {
-    return DSL.lessons.reduce((groups, lesson) => {
-      if (!groups[lesson.module]) groups[lesson.module] = [];
-      groups[lesson.module].push(lesson);
-      return groups;
-    }, {});
-  }
-
   function updateProgress() {
     const completable = DSL.lessons.filter((lesson) => lesson.id !== "welcome");
     const completed = completable.filter((lesson) => DSL.state.completed.has(lesson.id)).length;
@@ -22,7 +14,7 @@
     const practice = `<section class="nav-module"><p class="nav-module-title">Practice</p>
         <a href="#/flashcards" class="nav-link ${DSL.state.current === "flashcards" ? "active" : ""}"><span class="nav-number"><span>🗂</span></span><span>Flashcards</span>${due ? `<em class="nav-due" aria-label="${due} to review">${due}</em>` : ""}</a>
       </section>`;
-    DSL.elements.nav.innerHTML = practice + Object.entries(groupLessonsByModule()).map(([module, lessons]) => `
+    DSL.elements.nav.innerHTML = practice + DSL.modules().map(({ name: module, lessons }) => `
       <section class="nav-module">
         <p class="nav-module-title">${module}</p>
         ${lessons.map((lesson) => `
@@ -89,7 +81,7 @@
     if (completeButton) {
       const id = completeButton.dataset.complete;
       DSL.state.completed.add(id);
-      localStorage.setItem("dsl-completed", JSON.stringify([...DSL.state.completed]));
+      DSL.store.set("completed", [...DSL.state.completed]);
       completeButton.textContent = "✓ Completed";
       completeButton.classList.add("done");
       renderNavigation();
@@ -106,6 +98,30 @@
   });
 
   document.getElementById("menu-button").addEventListener("click", () => setNav(!navIsOpen()));
+
+  // Back up / Restore: progress lives in one browser, so let learners carry it elsewhere.
+  document.querySelector("[data-backup]").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(DSL.store.exportAll(), null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `data-systems-lab-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+    DSL.showToast("Progress backed up. Keep the file somewhere safe.");
+  });
+
+  document.querySelector("[data-restore]").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      const count = DSL.store.importAll(JSON.parse(await file.text()));
+      DSL.showToast(`Restored ${count} saved item${count === 1 ? "" : "s"}. Reloading…`);
+      setTimeout(() => window.location.reload(), 900);
+    } catch (error) {
+      DSL.showToast(error.message.startsWith("That file") ? error.message : "Couldn't read that file. Choose a backup made with Back up.");
+    }
+  });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && navIsOpen()) setNav(false);
