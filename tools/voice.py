@@ -6,14 +6,20 @@
 
   uv run tools/voice.py say "Hello there."          # preview one line (plays it)
   uv run tools/voice.py voices                     # list voice ids
+  uv run tools/voice.py lint narration/pages.json  # check a script against narration/STYLE.md
   uv run tools/voice.py build narration/pages.json # render a lesson's lines
   uv run tools/voice.py deploy                     # publish audio/ to Cloudflare
 
 A narration file looks like:
-  {"lesson": "pages", "voice": "af_heart", "speed": 1.0, "lines": {
+  {"lesson": "pages", "voice": "af_heart", "speed": 1.0,
+   "speakers": {"interviewer": {"voice": "bm_george", "label": "Interviewer"}},
+   "lines": {
     "intro.1": "Caption, <b>markup</b> stripped before speaking.",
-    "intro.2": {"caption": "You wanted <b>{bytes} B</b>.", "voice": "What the narrator says instead."}}}
-Captions with {placeholders} need a "voice" text, since audio can't fill them in.
+    "intro.2": {"caption": "You wanted <b>{bytes} B</b>.", "voice": "What the narrator says instead."},
+    "quiz.q1": {"caption": "A question.", "speaker": "interviewer"}}}
+Captions with {placeholders} need a "voice" text, since audio can't fill them in. Lines without
+a speaker use the script's own voice. narration/lexicon.json respells terms in the voice text
+only (InnoDB -> "Inno D B"), so captions keep the real names.
 
 build writes audio/<lesson>/<id>.mp3, audio/<lesson>/manifest.json ({id: {hash, ms}}), and
 narration/<lesson>.js: the captions plus that manifest as a plain script, so the site can load
@@ -82,16 +88,81 @@ def write_mp3(samples, rate, out):
     )
 
 
+def load_lexicon():
+    path = ROOT / "narration" / "lexicon.json"
+    lexicon = json.loads(path.read_text()) if path.exists() else {}
+    return lexicon.get("words", {}), [(re.compile(pattern), repl) for pattern, repl in lexicon.get("patterns", [])]
+
+
+LEXICON = load_lexicon()
+
+
+def pronounce(text):
+    words, patterns = LEXICON
+    for term, said in sorted(words.items(), key=lambda item: -len(item[0])):
+        text = re.sub(rf"(?<![\w/-]){re.escape(term)}(?![\w/-])", said, text)
+    for pattern, repl in patterns:
+        text = pattern.sub(repl, text)
+    return text
+
+
+def caption_of(line):
+    return line["caption"] if isinstance(line, dict) else line
+
+
 def spoken(line_id, line):
-    if isinstance(line, dict):
-        caption, text = line["caption"], line.get("voice")
-    else:
-        caption, text = line, None
+    caption, text = caption_of(line), line.get("voice") if isinstance(line, dict) else None
     if text is None:
         if re.search(r"\{\w+\}", caption):
             sys.exit(f"{line_id}: caption has placeholders, so it needs a \"voice\" text")
         text = re.sub(r"<[^>]+>", "", caption).replace("&nbsp;", " ")
-    return text
+    return pronounce(text)
+
+
+def voice_for(script, line):
+    speaker = line.get("speaker") if isinstance(line, dict) else None
+    if speaker:
+        return script["speakers"][speaker]["voice"]
+    return script.get("voice", DEFAULT_VOICE)
+
+
+# Rules from narration/STYLE.md that a script can be checked against. Errors stop a build.
+MAX_WORDS = 30
+LESSON_NUMBER = re.compile(r"\b(lesson|lab)s?\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\b", re.I)
+LINE_ID = re.compile(r"^[a-z0-9-]+\.[a-z0-9-]+$")
+
+
+def lint(script):
+    errors, warnings = [], []
+    speakers = script.get("speakers", {})
+    for line_id, line in script["lines"].items():
+        caption = caption_of(line)
+        said = line.get("voice") if isinstance(line, dict) else None
+        plain = re.sub(r"<[^>]+>", "", caption)
+        if isinstance(line, dict) and line.get("speaker") and line["speaker"] not in speakers:
+            errors.append(f"{line_id}: unknown speaker {line['speaker']!r}")
+        if re.search(r"\{\w+\}", caption) and not said:
+            errors.append(f"{line_id}: caption has placeholders, so it needs a \"voice\" text")
+        for text in filter(None, (plain, said)):
+            if LESSON_NUMBER.search(text):
+                errors.append(f"{line_id}: mentions a lesson or lab number; numbers change when the course is reordered, so name the idea instead")
+                break
+        if len((said or plain).split()) > MAX_WORDS:
+            warnings.append(f"{line_id}: {len((said or plain).split())} words; keep lines to {MAX_WORDS} or split them")
+        if not LINE_ID.match(line_id):
+            warnings.append(f"{line_id}: ids look like chapter.name (lowercase, digits, dashes)")
+    return errors, warnings
+
+
+def cmd_lint(args):
+    errors, warnings = lint(json.loads(Path(args.file).read_text()))
+    for message in warnings:
+        print(f"warning  {message}")
+    for message in errors:
+        print(f"error    {message}")
+    print(f"{len(errors)} errors, {len(warnings)} warnings")
+    if errors:
+        sys.exit(1)
 
 
 def line_hash(text, voice, speed):
@@ -115,19 +186,23 @@ def cmd_voices(_args):
 
 def cmd_build(args):
     script = json.loads(Path(args.file).read_text())
+    errors, _warnings = lint(script)
+    if errors:
+        sys.exit("\n".join(errors) + f"\n{len(errors)} errors; fix them (see lint) before building")
     lesson = script["lesson"]
     lines = {line_id: spoken(line_id, line) for line_id, line in script["lines"].items()}
-    voice, speed = script.get("voice", DEFAULT_VOICE), float(script.get("speed", 1.0))
+    voices = {line_id: voice_for(script, line) for line_id, line in script["lines"].items()}
+    speed = float(script.get("speed", 1.0))
     folder = ROOT / "audio" / lesson
     manifest_path = folder / "manifest.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
 
-    stale = [i for i, text in lines.items() if manifest.get(i, {}).get("hash") != line_hash(text, voice, speed) or not (folder / f"{i}.mp3").exists()]
+    stale = [i for i, text in lines.items() if manifest.get(i, {}).get("hash") != line_hash(text, voices[i], speed) or not (folder / f"{i}.mp3").exists()]
     tts = model() if stale else None
     for n, line_id in enumerate(stale, 1):
-        samples, rate = synth(tts, lines[line_id], voice, speed)
+        samples, rate = synth(tts, lines[line_id], voices[line_id], speed)
         write_mp3(samples, rate, folder / f"{line_id}.mp3")
-        manifest[line_id] = {"hash": line_hash(lines[line_id], voice, speed), "ms": round(len(samples) / rate * 1000)}
+        manifest[line_id] = {"hash": line_hash(lines[line_id], voices[line_id], speed), "ms": round(len(samples) / rate * 1000)}
         print(f"[{n}/{len(stale)}] {line_id}  {manifest[line_id]['ms']} ms")
 
     for line_id in [i for i in manifest if i not in lines]:
@@ -138,7 +213,8 @@ def cmd_build(args):
     folder.mkdir(parents=True, exist_ok=True)
     (folder.parent / "_headers").write_text(HEADERS)
     manifest_path.write_text(json.dumps(dict(sorted(manifest.items())), indent=1) + "\n")
-    bundle = {"lines": script["lines"], "audio": {i: manifest[i] for i in sorted(manifest)}}
+    speakers = {name: {"label": info.get("label", name.title())} for name, info in script.get("speakers", {}).items()}
+    bundle = {"lines": script["lines"], "speakers": speakers, "audio": {i: manifest[i] for i in sorted(manifest)}}
     Path(args.file).with_suffix(".js").write_text(
         f"// Generated by tools/voice.py from {Path(args.file).name}. Edit that file, then rebuild.\n"
         f"window.DataSystemsLab.Narrator.register({json.dumps(lesson)}, {json.dumps(bundle, indent=1)});\n"
@@ -170,6 +246,9 @@ def main():
     say.add_argument("--out", help="save instead of playing")
     say.set_defaults(run=cmd_say)
     sub.add_parser("voices", help="list voice ids").set_defaults(run=cmd_voices)
+    check = sub.add_parser("lint", help="check a narration file against narration/STYLE.md")
+    check.add_argument("file")
+    check.set_defaults(run=cmd_lint)
     build = sub.add_parser("build", help="render a narration file")
     build.add_argument("file")
     build.set_defaults(run=cmd_build)

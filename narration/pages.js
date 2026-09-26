@@ -164,22 +164,26 @@ window.DataSystemsLab.Narrator.register("pages", {
   "quiz.intro": "Four quick questions.",
   "quiz.q1": {
    "caption": "You ask for customer #11, a 70-byte row. What does the engine read from storage?",
-   "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?"
+   "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?",
+   "speaker": "interviewer"
   },
   "quiz.q1-why": "Storage moves whole pages. The row you wanted arrives with every neighbour on its page.",
   "quiz.q2": {
    "caption": "#12 sits on the same page as #11, which you fetched a moment ago. Fetching #12 next is most likely\u2026",
-   "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?"
+   "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?",
+   "speaker": "interviewer"
   },
   "quiz.q2-why": "The page came into memory with eleven, so twelve is a buffer hit. Neighbours ride along for free.",
   "quiz.q3": {
    "caption": "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
-   "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?"
+   "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
+   "speaker": "interviewer"
   },
   "quiz.q3-why": "LRU refreshes a page every time it's used, so a hot page never becomes the oldest. FIFO evicts by arrival, even if the page was just used.",
   "quiz.q4": {
    "caption": "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?",
-   "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?"
+   "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?",
+   "speaker": "interviewer"
   },
   "quiz.q4-why": "The rows are few, but scattered. An index in the query's order, holding the columns it shows, turns ten random pages into a few neighbouring ones.",
   "quiz.right1": "Right.",
@@ -195,6 +199,11 @@ window.DataSystemsLab.Narrator.register("pages", {
   },
   "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
   "finish.2": "Next up: how tables and indexes are actually laid out on disk."
+ },
+ "speakers": {
+  "interviewer": {
+   "label": "Interviewer"
+  }
  },
  "audio": {
   "bet.1": {
@@ -414,32 +423,32 @@ window.DataSystemsLab.Narrator.register("pages", {
    "ms": 1579
   },
   "quiz.q1": {
-   "hash": "ef37801421da",
-   "ms": 5333
+   "hash": "f69cb27bfb28",
+   "ms": 5931
   },
   "quiz.q1-why": {
    "hash": "d96ce06d47cb",
    "ms": 5248
   },
   "quiz.q2": {
-   "hash": "621bdbfa04cb",
-   "ms": 6997
+   "hash": "11a488d82d5d",
+   "ms": 7808
   },
   "quiz.q2-why": {
    "hash": "802c12e4ae85",
    "ms": 5760
   },
   "quiz.q3": {
-   "hash": "273d40129f4b",
-   "ms": 6848
+   "hash": "4f1f9a8248cc",
+   "ms": 7275
   },
   "quiz.q3-why": {
    "hash": "36d53aefdf3b",
    "ms": 9621
   },
   "quiz.q4": {
-   "hash": "eeb96b73a7a8",
-   "ms": 7211
+   "hash": "f43a59f72036",
+   "ms": 7957
   },
   "quiz.q4-why": {
    "hash": "b8accf47226d",
@@ -590,8 +599,8 @@ window.DataSystemsLab.Narrator.register("pages", {
    "ms": 1472
   },
   "teach-page.why": {
-   "hash": "19ba1a742b26",
-   "ms": 10048
+   "hash": "4a6a84f03947",
+   "ms": 10133
   },
   "teach-page.why-2": {
    "hash": "a524298d8baa",
