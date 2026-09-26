@@ -2,7 +2,19 @@
 
 How a new lesson gets into the course, from a stub to a narrated lesson with audio. Lesson 02 (`pages`) and lesson 01 (`modeling`) are the reference: copy their shape, not their content.
 
-A lesson can offer three modes. **Explore** is required (every lesson registers a renderer). **Guided** and **Narrated** are optional; Narrated becomes the lesson's default once it's registered as `complete`. New lessons from Phase 3 on are narrated, so plan for all three.
+## 0. Plan it: Narrated first
+
+Every lesson has three modes, and they are written in this order:
+
+1. **Narrated**: the focused lesson and the course's default. It sets what the lesson teaches: 3 big ideas, 8 to 12 minutes, at most 8 keywords (`narration/STYLE.md`). Write its chapter outline and script first.
+2. **Guided**: the same ideas, silent and self-paced, with more written explanation (a `why` on beats, fuller captions).
+3. **Explore**: the most detail: free-form labs, deeper asides, edge cases and engine differences, the quiz, a cheat sheet.
+
+Each mode goes deeper than the one before, but none may contradict it. If something only fits in Explore, it isn't one of the 3 big ideas.
+
+**Existing lessons are not a constraint.** When giving an existing lesson a Narrated or Guided version, check its content first: rewrite anything inaccurate, outdated or hard for a learner to follow instead of carrying it over, and fix the Explore page to match. List the corrections in the PR.
+
+The sections below follow the order the files **load** in (Explore defines the lesson's model, Guided builds the scenes, Narrated plays them), not the order you design them in. A lesson must always register an Explore renderer, because the router uses it to find the lesson; a thin one is fine until the full Explore page is written.
 
 ## 1. Register it
 

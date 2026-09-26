@@ -8,6 +8,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - `js/components/`: `lab-kit.js` (asides, progress checklist, `setStatus`, motion helpers), `guided.js` (step engine, storyboard, quiz/finish beats), `narrator.js` (narrated film engine, keywords panel, `story()`, `quizChapter()`, `throttled()`), `vocab.js` (keywords, flashcards, spaced repetition).
 - Per lesson: `js/lessons/<name>.js` (Explore), `-guided.js`, `-narrated.js`, `narration/<lesson>.json` (script: lines, speakers, keywords), generated `narration/<lesson>.js`. Narrated lessons reuse scenes exposed by the guided file (`DSL.StorageScenes`, `DSL.ModelingScenes`).
 - Script and style tags in `index.html` load in dependency order; bump `?v=` on changed files.
+- New lessons: see `docs/adding-a-lesson.md`. Design Narrated first (the focused lesson), then Guided (more explanation), then Explore (most detail). Existing lesson content isn't a constraint: when porting a lesson, fix what's inaccurate or unclear and list the fixes in the PR.
 
 ## Narration and audio
 - Rules: `narration/STYLE.md` (lesson budget 8-12 min, 3 big ideas, 8 keywords; `<k>` keyword marks; tutor vs interviewer voices).
