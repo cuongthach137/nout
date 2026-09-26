@@ -15,7 +15,8 @@ There are no committed tests yet. The working setup:
   S(('', 8765), functools.partial(http.server.SimpleHTTPRequestHandler, directory='.')).serve_forever()
   " >/dev/null 2>&1 &)
   ```
-  Start it detached like this; a plain background `&` in a one-shot shell can exit with the shell. Stop it with `lsof -ti tcp:8765 | xargs kill`.
+  Start it detached like this; a plain background `&` in a one-shot shell can exit with the shell.
+- **Check the port is free first** (`lsof -i tcp:8765`). The user runs other projects' dev servers on this machine; if the port is taken, your server silently fails to start and the tests load someone else's site ("DataSystemsLab is not defined"). Pick another port, pass `directory=` as an absolute path, and only ever kill a PID you started (`lsof -p <pid> | grep cwd` shows what a server serves).
 - The SQL engine (`vendor/sql.js` loaded by our own worker, `js/components/sql-worker.js`, plus WASM) needs HTTP. Don't switch to sql.js's bundled worker or `db.exec`: they return no column names for a query that matches no rows, which breaks the checker's messages. It doesn't work from `file://`.
 
 Driving the app:
@@ -44,7 +45,9 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 ## Narration
 
 - `uv run tools/voice.py build` needs the Kokoro models in `~/.cache/kokoro-onnx` and ffmpeg (both installed on this machine). The first build downloads about 340 MB.
-- Audio is not in git. After a PR that changes narration merges, run `uv run tools/voice.py deploy`. Never run `wrangler pages ...`.
+- Audio is not in git. Run `uv run tools/voice.py deploy` when you open a PR that changes narration, before it merges. Never run `wrangler pages ...`.
+- Why before: `audio/_headers` sets `Cache-Control: public, max-age=31536000, immutable` on everything the audio host serves, **including 404s**. If GitHub Pages publishes the lesson before its audio exists, a visitor's browser caches a 404 for that line for a year ("404 Not Found (from disk cache)" in DevTools). The narrator now retries a failed line once with `fetch(..., { cache: "reload" })`, which also overwrites the cached 404, but deploying first avoids the window entirely. To clear it by hand: DevTools open → right-click reload → Empty Cache and Hard Reload.
+- Deploying early overwrites the files of lines that changed (paths don't include the hash). The live site then briefly plays the new take of those lines; harmless.
 - Right after a deploy, new files can return 404 for a few seconds while the Worker version rolls out; re-check before assuming it failed. Check URLs with `curl`: Cloudflare answers Python's default `urllib` user agent with 403.
 - Changing the course order changes what comes "next". Each lesson's `finish.2` line names the next lesson's idea, so re-check it (and rebuild that line's audio) when a lesson is inserted before or after it.
 - Known story inconsistency: `narration/modeling.json` says "Maya runs a busy bakery" and then treats Maya as a customer (STYLE.md calls her a regular customer). The SQL dataset has Maya as customer #1. Treat the bakery as Maya's favourite shop, not hers, when writing new lines, and fix lesson 01's opening when it's next revised.
