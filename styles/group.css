@@ -1,0 +1,34 @@
+/* GROUP BY lesson: the pile board (chips sorted into one pile per group) and the hook. */
+
+.gp-board { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; }
+.gp-board > * { flex: none; }
+.gp-field { display: grid; gap: 14px; }
+.gp-field[hidden], .gp-out[hidden] { display: none; }
+.gp-source { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; min-height: 30px; }
+.gp-chip { display: inline-grid; place-items: center; min-width: 44px; height: 28px; padding: 0 8px; border: 1.5px solid var(--line-strong); border-radius: 8px; background: var(--surface); font-family: var(--mono); font-size: 12px; animation: sqIn .3s backwards; animation-delay: calc(var(--i) * 30ms); }
+.gp-chip[data-status="paid"] { border-color: var(--green); background: var(--green-soft); }
+.gp-chip[data-status="pending"] { border-color: var(--amber); background: var(--amber-soft); }
+.gp-chip[data-status="refunded"] { border-color: var(--coral); background: var(--coral-soft); }
+.gp-piles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; opacity: .35; transition: opacity .3s; }
+.gp-sorted .gp-piles { opacity: 1; }
+.gp-pile { position: relative; display: grid; align-content: start; gap: 8px; min-height: 120px; padding: 10px; border: 2px dashed var(--line-strong); border-radius: 14px; }
+.gp-pile-label { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.gp-pile-chips { display: flex; flex-wrap: wrap; gap: 5px; transition: opacity .35s, transform .35s; }
+.gp-pile-count { display: none; justify-self: center; font-family: var(--mono); font-size: 34px; letter-spacing: -.04em; }
+.gp-collapsed .gp-pile-chips { opacity: 0; transform: scale(.5); }
+.gp-collapsed .gp-pile-count { display: grid; place-items: center; position: absolute; inset: 24px 0 0; font-size: 44px; }
+.gp-collapsed .gp-pile { border-style: solid; border-color: var(--green); background: var(--surface); }
+.gp-out { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
+
+.gp-hook { display: grid; gap: 12px; width: 100%; max-width: 520px; }
+.gp-question { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border: 1.5px solid var(--line-strong); border-radius: 16px; background: var(--surface); font-size: 18px; animation: sqIn .45s backwards; animation-delay: calc(var(--i) * 180ms); }
+.gp-question code { padding: 3px 10px; border-radius: 8px; color: var(--lime); background: var(--sidebar); font-family: var(--mono); font-size: 13px; }
+
+.sq-grid:has(> .sq-clauses) { border: 0; background: none; overflow: visible; }
+
+@media (max-width: 760px) {
+  .gp-chip { min-width: 38px; height: 24px; font-size: 11px; }
+  .gp-piles { gap: 6px; }
+  .gp-pile { min-height: 100px; padding: 6px; }
+  .gp-question { font-size: 15px; }
+}
