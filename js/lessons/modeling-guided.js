@@ -11,6 +11,11 @@
     return `<div class="model-board paper gm-notebook"><small>Order notebook</small><table class="model-table"><thead><tr><th>Order</th><th>Customer</th><th>Phone</th><th>Item</th>${trash ? "<th></th>" : ""}</tr></thead><tbody>${body}</tbody></table></div>`;
   }
 
+  // Beats report moments worth reacting to; Narrated mode listens, Guided mode ignores them.
+  function emit(api, name, data = {}) {
+    if (api.event) api.event(name, data);
+  }
+
   const roster = (names) => `<div class="gm-roster"><span>People the bakery knows</span>${names.map((name) => `<b data-name="${name}">${name}</b>`).join("")}</div>`;
 
   // The notebook at each reshaping step, with keyed values so they can slide between lists.
@@ -54,6 +59,7 @@
     const stage = root.querySelector(".gm-join-stage");
     const svg = stage.querySelector(".join-arrows");
     return {
+      root,
       row: (key) => stage.querySelector(`[data-pick="${key}"]`),
       chip: (ref) => stage.querySelector(`[data-ref="${ref}"]`),
       fill(key, text) {
@@ -114,6 +120,213 @@
 
   const monthMarkup = `<div class="gm-month"><div class="timeline"></div><div class="timeline-legend"><span class="ok">correct</span><span class="lag">stale until tonight</span><span class="bad">wrong, nobody fixes it</span><span class="ev">a customer changed</span></div></div>`;
 
+  // Explainers, shared by Guided and Narrated mode: { build(stage) → ctx, frames: [{ caption, enter }] }.
+  function copiesStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gm-t1">${notebook(M, M.ORDERS)}${roster(["Maya", "Omar", "Ana"])}</div>`;
+        const cell = (id) => stage.querySelector(`tr[data-id="${id}"] [data-phone]`);
+        return { stage, cell, row: (id) => stage.querySelector(`tr[data-id="${id}"]`), person: (name) => stage.querySelector(`.gm-roster [data-name="${name}"]`) };
+      },
+      frames: [
+        { caption: "A bakery keeps <b>one notebook</b> of orders.", async enter(ctx, a) { retrigger(ctx.stage.querySelector(".gm-t1"), "gm-rows-in"); await a.wait(700); } },
+        {
+          caption: "Maya ordered twice, so her phone is written <b>twice</b>.",
+          async enter(ctx, a) {
+            ["#101", "#103"].forEach((id) => {
+              ctx.cell(id).classList.add("gm-copy");
+              floater(ctx.cell(id), "copy", "warn");
+            });
+            await a.wait(600);
+          },
+        },
+        {
+          caption: "Maya gets a new number. Someone updates <b>one</b> row…",
+          async enter(ctx, a) {
+            const cell = ctx.cell("#101");
+            cell.classList.remove("gm-copy");
+            cell.textContent = M.PHONE_NEW;
+            cell.classList.add("gm-fresh");
+            retrigger(ctx.row("#101"), "hot");
+            await a.wait(600);
+          },
+        },
+        {
+          caption: "…and now the notebook <b>disagrees with itself</b>.",
+          async enter(ctx, a) {
+            const cell = ctx.cell("#103");
+            cell.classList.remove("gm-copy");
+            cell.classList.add("stale-cell");
+            retrigger(ctx.row("#103"), "hot-bad");
+            floater(cell, "≠ 555-0199", "bad");
+            await a.wait(600);
+          },
+        },
+        {
+          caption: "Cancel Ana’s only order, and her phone number <b>vanishes</b> with it.",
+          async enter(ctx, a) {
+            ctx.row("#104").classList.add("gone");
+            const ana = ctx.person("Ana");
+            floater(ana, "gone", "bad");
+            ana.classList.add("gm-leave");
+            await a.wait(700);
+          },
+        },
+      ],
+    };
+  }
+
+  function listsStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gm-shape">
+          <div class="gm-legend"><span class="k-person">people</span><span class="k-item">cakes</span><span class="k-order">orders</span></div>
+          <div class="gm-split">${shapeMarkup(M, 0)}</div>
+        </div>`;
+        return { shape: stage.querySelector(".gm-shape"), split: stage.querySelector(".gm-split") };
+      },
+      frames: [
+        { caption: "This notebook mixes <b>three kinds</b> of facts.", async enter(ctx, a) { await a.wait(300); } },
+        { caption: "Facts about <b>people</b>, about <b>cakes</b>, and about <b>orders</b>.", async enter(ctx, a) { ctx.shape.classList.add("gm-kinds"); await a.wait(500); } },
+        {
+          caption: "People get their own list. Orders keep a pointer instead: <b>→ C1</b>.",
+          async enter(ctx, a) {
+            const before = M.captureFlip(ctx.split);
+            ctx.split.innerHTML = shapeMarkup(M, 1);
+            M.playFlip(ctx.split, before);
+            await a.wait(1300);
+          },
+        },
+        {
+          caption: "Cakes get their own list too. Orders become <b>pure pointers</b>.",
+          async enter(ctx, a) {
+            const before = M.captureFlip(ctx.split);
+            ctx.split.innerHTML = shapeMarkup(M, 2);
+            M.playFlip(ctx.split, before);
+            await a.wait(1300);
+          },
+        },
+        {
+          caption: "Every fact now lives in <b>one place</b>. IDs, called <b>keys</b>, link the lists.",
+          async enter(ctx, a) {
+            [...ctx.split.querySelectorAll(".key-chip, .ref-chip")].forEach((chip, i) => DSL.setTimer(() => retrigger(chip, "ping"), i * 60));
+            await a.wait(900);
+          },
+        },
+      ],
+    };
+  }
+
+  function joinStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = joinMarkup(M);
+        return joinTools(stage);
+      },
+      frames: [
+        {
+          caption: "The screen needs order #103 as <b>one line</b>.",
+          async enter(t, a) {
+            t.row("#103").classList.add("lit");
+            t.fill("id", "#103");
+            await a.wait(400);
+          },
+        },
+        {
+          caption: "Its pointer <b>→ C1</b> leads to the Customers list.",
+          async enter(t, a) {
+            t.arrow(t.chip("#103-c"), t.row("C1").querySelector(".key-chip"));
+            await a.wait(450);
+            t.row("C1").classList.add("lit");
+            t.fill("name", "Maya");
+            t.fill("phone", M.PHONE_NEW);
+          },
+        },
+        {
+          caption: "Its pointer <b>→ I3</b> leads to the Items list.",
+          async enter(t, a) {
+            t.arrow(t.chip("#103-i"), t.row("I3").querySelector(".key-chip"));
+            await a.wait(450);
+            t.row("I3").classList.add("lit");
+            t.fill("item", M.dish("Sourdough"));
+            t.fill("price", "$9");
+          },
+        },
+        {
+          caption: "Stitching lists back together is a <b>join</b>: a few lookups, always-current data.",
+          async enter(t, a) {
+            burst(t.root.querySelector(".assembled"), { count: 18, spread: 90 });
+            await a.wait(400);
+          },
+        },
+      ],
+    };
+  }
+
+  function ownerStory(M) {
+    return {
+      build(stage) {
+        stage.innerHTML = `<div class="gm-report">
+          <div class="gm-pipeline">
+            <div class="gm-lists">${["Customers", "Orders", "Items", "Stores", "Staff", "Payments"].map((name, i) => `<span style="--i:${i}">${name}</span>`).join("")}</div>
+            <span class="gm-pipe">→</span>
+            <div class="gm-out"><small>Nightly revenue report</small><b class="gm-clock">—</b></div>
+          </div>
+          ${monthMarkup}
+          <div class="gm-wrong">wrong facts in the report: <b>0</b></div>
+        </div>`;
+        return {
+          lists: stage.querySelector(".gm-lists"),
+          clock: stage.querySelector(".gm-clock"),
+          wrong: stage.querySelector(".gm-wrong b"),
+          month: monthTools(M, stage),
+        };
+      },
+      frames: [
+        {
+          caption: "A nightly report joins <b>6 lists</b>. It takes <b>40 minutes</b>.",
+          async enter(ctx, a) {
+            retrigger(ctx.lists, "gm-in");
+            ctx.clock.className = "gm-clock slow";
+            countTo(ctx.clock, 40, { duration: 900, format: (n) => `${Math.round(n)} min` });
+            await a.wait(900);
+          },
+        },
+        {
+          caption: "Shortcut: copy everything into <b>one wide table</b>. Fast!",
+          async enter(ctx, a) {
+            ctx.lists.classList.add("merged");
+            ctx.clock.className = "gm-clock fast";
+            countTo(ctx.clock, 3, { duration: 600, format: (n) => `${Math.round(n)} min` });
+            await a.wait(700);
+          },
+        },
+        {
+          caption: "But customers keep changing, and nobody owns the copy. It <b>drifts</b>.",
+          async enter(ctx, a) {
+            await ctx.month.play(a, "wide", (d, wrong) => { ctx.wrong.textContent = String(wrong); });
+            retrigger(ctx.wrong, "ping");
+          },
+        },
+        {
+          caption: "Give the copy an <b>owner</b>, a nightly refresh, and drift lasts a day at most.",
+          async enter(ctx, a) {
+            await ctx.month.play(a, "refresh", (d, wrong) => { ctx.wrong.textContent = wrong ? `${wrong} until tonight` : "0"; });
+          },
+        },
+        {
+          caption: "Or skip the copy: make the joins fast with <b>indexes</b>.",
+          async enter(ctx, a) {
+            ctx.lists.classList.remove("merged");
+            ctx.clock.className = "gm-clock fast";
+            countTo(ctx.clock, 4, { duration: 600, format: (n) => `${Math.round(n)} min` });
+            await ctx.month.play(a, "repair", () => { ctx.wrong.textContent = "0"; });
+          },
+        },
+      ],
+    };
+  }
+
   function makeBeats() {
     const M = DSL.ModelingModel;
 
@@ -122,58 +335,7 @@
         id: "teach-copies",
         prompt: "What goes wrong with copies?",
         mount(scene, api) {
-          DSL.Guided.storyboard(scene, api, {
-            build(stage) {
-              stage.innerHTML = `<div class="gm-t1">${notebook(M, M.ORDERS)}${roster(["Maya", "Omar", "Ana"])}</div>`;
-              const cell = (id) => stage.querySelector(`tr[data-id="${id}"] [data-phone]`);
-              return { stage, cell, row: (id) => stage.querySelector(`tr[data-id="${id}"]`), person: (name) => stage.querySelector(`.gm-roster [data-name="${name}"]`) };
-            },
-            frames: [
-              { caption: "A bakery keeps <b>one notebook</b> of orders.", async enter(ctx, a) { retrigger(ctx.stage.querySelector(".gm-t1"), "gm-rows-in"); await a.wait(700); } },
-              {
-                caption: "Maya ordered twice, so her phone is written <b>twice</b>.",
-                async enter(ctx, a) {
-                  ["#101", "#103"].forEach((id) => {
-                    ctx.cell(id).classList.add("gm-copy");
-                    floater(ctx.cell(id), "copy", "warn");
-                  });
-                  await a.wait(600);
-                },
-              },
-              {
-                caption: "Maya gets a new number. Someone updates <b>one</b> row…",
-                async enter(ctx, a) {
-                  const cell = ctx.cell("#101");
-                  cell.classList.remove("gm-copy");
-                  cell.textContent = M.PHONE_NEW;
-                  cell.classList.add("gm-fresh");
-                  retrigger(ctx.row("#101"), "hot");
-                  await a.wait(600);
-                },
-              },
-              {
-                caption: "…and now the notebook <b>disagrees with itself</b>.",
-                async enter(ctx, a) {
-                  const cell = ctx.cell("#103");
-                  cell.classList.remove("gm-copy");
-                  cell.classList.add("stale-cell");
-                  retrigger(ctx.row("#103"), "hot-bad");
-                  floater(cell, "≠ 555-0199", "bad");
-                  await a.wait(600);
-                },
-              },
-              {
-                caption: "Cancel Ana’s only order, and her phone number <b>vanishes</b> with it.",
-                async enter(ctx, a) {
-                  ctx.row("#104").classList.add("gone");
-                  const ana = ctx.person("Ana");
-                  floater(ana, "gone", "bad");
-                  ana.classList.add("gm-leave");
-                  await a.wait(700);
-                },
-              },
-            ],
-          });
+          DSL.Guided.storyboard(scene, api, copiesStory(M));
         },
       },
       {
@@ -221,6 +383,7 @@
               });
               api.done(`Missed <b>${stale().length} of ${total}</b>. Maya now has two phone numbers, and nobody would notice.`, "warn");
             }
+            emit(api, "hunt", { found, missed: stale().length, total });
             api.lab("copies");
             start.textContent = "Try again";
             start.style.visibility = "visible";
@@ -258,6 +421,7 @@
             const row = rows.find((r) => r.id === ticket.dataset.id);
             if (row.customer !== "Maya") {
               retrigger(ticket, "gd-wrong");
+              emit(api, "wrong-ticket", { name: row.customer });
               api.say(`That’s ${row.customer}. Only Maya’s copies need the change.`, "warn");
               return;
             }
@@ -290,6 +454,7 @@
             const ana = scene.querySelector('.gm-roster [data-name="Ana"]');
             floater(ana, "Ana’s phone: gone", "bad");
             ana.classList.add("gm-leave");
+            emit(api, "cancelled");
             api.done("Ana vanished too. Her phone only lived on that order.", "warn");
           });
         },
@@ -298,44 +463,7 @@
         id: "teach-lists",
         prompt: "One list per kind of thing.",
         mount(scene, api) {
-          DSL.Guided.storyboard(scene, api, {
-            build(stage) {
-              stage.innerHTML = `<div class="gm-shape">
-                <div class="gm-legend"><span class="k-person">people</span><span class="k-item">cakes</span><span class="k-order">orders</span></div>
-                <div class="gm-split">${shapeMarkup(M, 0)}</div>
-              </div>`;
-              return { shape: stage.querySelector(".gm-shape"), split: stage.querySelector(".gm-split") };
-            },
-            frames: [
-              { caption: "This notebook mixes <b>three kinds</b> of facts.", async enter(ctx, a) { await a.wait(300); } },
-              { caption: "Facts about <b>people</b>, about <b>cakes</b>, and about <b>orders</b>.", async enter(ctx, a) { ctx.shape.classList.add("gm-kinds"); await a.wait(500); } },
-              {
-                caption: "People get their own list. Orders keep a pointer instead: <b>→ C1</b>.",
-                async enter(ctx, a) {
-                  const before = M.captureFlip(ctx.split);
-                  ctx.split.innerHTML = shapeMarkup(M, 1);
-                  M.playFlip(ctx.split, before);
-                  await a.wait(1300);
-                },
-              },
-              {
-                caption: "Cakes get their own list too. Orders become <b>pure pointers</b>.",
-                async enter(ctx, a) {
-                  const before = M.captureFlip(ctx.split);
-                  ctx.split.innerHTML = shapeMarkup(M, 2);
-                  M.playFlip(ctx.split, before);
-                  await a.wait(1300);
-                },
-              },
-              {
-                caption: "Every fact now lives in <b>one place</b>. IDs, called <b>keys</b>, link the lists.",
-                async enter(ctx, a) {
-                  [...ctx.split.querySelectorAll(".key-chip, .ref-chip")].forEach((chip, i) => DSL.setTimer(() => retrigger(chip, "ping"), i * 60));
-                  await a.wait(900);
-                },
-              },
-            ],
-          });
+          DSL.Guided.storyboard(scene, api, listsStory(M));
         },
       },
       {
@@ -368,6 +496,7 @@
             const [text, home, hint] = FACTS[i];
             if (bin.dataset.bin !== home) {
               retrigger(bin, "gd-wrong");
+              emit(api, "sort-wrong", { fact: text, home });
               api.say(`Not quite. ${hint}`, "warn");
               return;
             }
@@ -410,6 +539,7 @@
             burst(edit, { count: 10 });
             const pointers = [...scene.querySelectorAll('[data-ref="C1"]')];
             pointers.forEach((chip, n) => DSL.setTimer(() => { retrigger(chip, "ping"); floater(chip, PHONE_NEWER, ""); }, 350 + n * 220));
+            emit(api, "edited");
             api.say("<b>1 edit</b>, and both of Maya’s orders see it.", "ok");
             await api.wait(1500);
             api.prompt("Now cancel order #104.");
@@ -424,6 +554,7 @@
             const ana = scene.querySelector('tr[data-c="C3"]');
             ana.classList.add("lit");
             floater(ana, "Ana is still here", "");
+            emit(api, "cancelled");
             api.done("Ana stays on the Customers list. Deleting an order no longer erases a person.");
             api.lab("split");
           });
@@ -433,49 +564,7 @@
         id: "teach-join",
         prompt: "Reading it back: joins.",
         mount(scene, api) {
-          DSL.Guided.storyboard(scene, api, {
-            build(stage) {
-              stage.innerHTML = joinMarkup(M);
-              return joinTools(stage);
-            },
-            frames: [
-              {
-                caption: "The screen needs order #103 as <b>one line</b>.",
-                async enter(t, a) {
-                  t.row("#103").classList.add("lit");
-                  t.fill("id", "#103");
-                  await a.wait(400);
-                },
-              },
-              {
-                caption: "Its pointer <b>→ C1</b> leads to the Customers list.",
-                async enter(t, a) {
-                  t.arrow(t.chip("#103-c"), t.row("C1").querySelector(".key-chip"));
-                  await a.wait(450);
-                  t.row("C1").classList.add("lit");
-                  t.fill("name", "Maya");
-                  t.fill("phone", M.PHONE_NEW);
-                },
-              },
-              {
-                caption: "Its pointer <b>→ I3</b> leads to the Items list.",
-                async enter(t, a) {
-                  t.arrow(t.chip("#103-i"), t.row("I3").querySelector(".key-chip"));
-                  await a.wait(450);
-                  t.row("I3").classList.add("lit");
-                  t.fill("item", M.dish("Sourdough"));
-                  t.fill("price", "$9");
-                },
-              },
-              {
-                caption: "Stitching lists back together is a <b>join</b>: a few lookups, always-current data.",
-                async enter(t, a) {
-                  burst(scene.querySelector(".assembled"), { count: 18, spread: 90 });
-                  await a.wait(400);
-                },
-              },
-            ],
-          });
+          DSL.Guided.storyboard(scene, api, joinStory(M));
         },
       },
       {
@@ -497,6 +586,7 @@
             const expected = STEPS[step];
             if (row.dataset.pick !== expected.key) {
               retrigger(row, "gd-wrong");
+              emit(api, "wrong-row", { step });
               api.say(step === 0 ? "Find the order numbered #102." : `Look for <b>${expected.key}</b>, the ID the pointer names.`, "warn");
               return;
             }
@@ -507,6 +597,7 @@
             }
             row.classList.add("lit");
             expected.fill();
+            emit(api, "lookup", { n: step + 1 });
             api.say(`Lookup ${step + 1} of 3.`);
             step += 1;
             busy = false;
@@ -536,67 +627,7 @@
         id: "teach-owner",
         prompt: "Copies, on purpose.",
         mount(scene, api) {
-          DSL.Guided.storyboard(scene, api, {
-            build(stage) {
-              stage.innerHTML = `<div class="gm-report">
-                <div class="gm-pipeline">
-                  <div class="gm-lists">${["Customers", "Orders", "Items", "Stores", "Staff", "Payments"].map((name, i) => `<span style="--i:${i}">${name}</span>`).join("")}</div>
-                  <span class="gm-pipe">→</span>
-                  <div class="gm-out"><small>Nightly revenue report</small><b class="gm-clock">—</b></div>
-                </div>
-                ${monthMarkup}
-                <div class="gm-wrong">wrong facts in the report: <b>0</b></div>
-              </div>`;
-              return {
-                lists: stage.querySelector(".gm-lists"),
-                clock: stage.querySelector(".gm-clock"),
-                wrong: stage.querySelector(".gm-wrong b"),
-                month: monthTools(M, stage),
-              };
-            },
-            frames: [
-              {
-                caption: "A nightly report joins <b>6 lists</b>. It takes <b>40 minutes</b>.",
-                async enter(ctx, a) {
-                  retrigger(ctx.lists, "gm-in");
-                  ctx.clock.className = "gm-clock slow";
-                  countTo(ctx.clock, 40, { duration: 900, format: (n) => `${Math.round(n)} min` });
-                  await a.wait(900);
-                },
-              },
-              {
-                caption: "Shortcut: copy everything into <b>one wide table</b>. Fast!",
-                async enter(ctx, a) {
-                  ctx.lists.classList.add("merged");
-                  ctx.clock.className = "gm-clock fast";
-                  countTo(ctx.clock, 3, { duration: 600, format: (n) => `${Math.round(n)} min` });
-                  await a.wait(700);
-                },
-              },
-              {
-                caption: "But customers keep changing, and nobody owns the copy. It <b>drifts</b>.",
-                async enter(ctx, a) {
-                  await ctx.month.play(a, "wide", (d, wrong) => { ctx.wrong.textContent = String(wrong); });
-                  retrigger(ctx.wrong, "ping");
-                },
-              },
-              {
-                caption: "Give the copy an <b>owner</b>, a nightly refresh, and drift lasts a day at most.",
-                async enter(ctx, a) {
-                  await ctx.month.play(a, "refresh", (d, wrong) => { ctx.wrong.textContent = wrong ? `${wrong} until tonight` : "0"; });
-                },
-              },
-              {
-                caption: "Or skip the copy: make the joins fast with <b>indexes</b>.",
-                async enter(ctx, a) {
-                  ctx.lists.classList.remove("merged");
-                  ctx.clock.className = "gm-clock fast";
-                  countTo(ctx.clock, 4, { duration: 600, format: (n) => `${Math.round(n)} min` });
-                  await ctx.month.play(a, "repair", () => { ctx.wrong.textContent = "0"; });
-                },
-              },
-            ],
-          });
+          DSL.Guided.storyboard(scene, api, ownerStory(M));
         },
       },
       {
@@ -632,6 +663,7 @@
               stat("wrong").className = wrong && key === "wide" ? "bad" : "";
             });
             tried.add(key);
+            emit(api, "month", { key, tried: tried.size });
             busy = false;
             if (tried.size >= 2) {
               api.done(VERDICT[key], key === "wide" ? "warn" : "ok");
@@ -651,6 +683,8 @@
       }),
     ];
   }
+
+  DSL.ModelingScenes = Object.freeze({ copiesStory, listsStory, joinStory, ownerStory, beats: makeBeats });
 
   DSL.registerGuided("modeling", () => DSL.Guided.run({
     lessonId: "modeling",

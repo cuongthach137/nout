@@ -1,0 +1,159 @@
+{
+  "lesson": "modeling",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "lines": {
+    "teach-copies.1": "Maya runs a busy bakery. Every order goes into <b>one notebook</b>.",
+    "teach-copies.2": "Maya ordered twice, so her phone number is written down <b>twice</b>.",
+    "teach-copies.ask": "Now she gets a new number. What could go wrong?",
+    "teach-copies.one": "Exactly. Watch.",
+    "teach-copies.fine": "Let's see.",
+    "teach-copies.3": "Someone updates <b>one</b> row, and moves on.",
+    "teach-copies.4": "Now the notebook <b>disagrees with itself</b>. Which number is right? Nobody knows.",
+    "teach-copies.5": "It gets worse. Cancel Ana's only order, and her phone number <b>vanishes</b> with it.",
+    "teach-copies.6": "Two bugs, one cause: facts copied onto rows that don't own them.",
+
+    "hunt.1": "Your turn to do the updating. Twenty-four orders. Ten seconds.",
+    "hunt.ask": {
+      "caption": "Press start, then tap every <b>555-0101</b> on Maya's tickets.",
+      "voice": "Press start, then tap every copy of Maya's old number."
+    },
+    "hunt.hint": "Look for Maya's name on each ticket.",
+    "hunt.wrong": "Not Maya. Keep looking.",
+    "hunt.found": "All of them. This time. Nothing told you how many there were.",
+    "hunt.missed": {
+      "caption": "You missed <b>{missed}</b>. Maya now has two phone numbers.",
+      "voice": "You missed some. Maya now has two phone numbers, and nobody would notice."
+    },
+    "hunt.outro": "With millions of rows, somebody misses a copy every time.",
+
+    "cancel.1": {
+      "caption": "Now the second bug. Ana placed exactly one order: <b>#104</b>.",
+      "voice": "Now the second bug. Ana placed exactly one order. Number one oh four."
+    },
+    "cancel.ask": "Cancel it. Tap the bin on her row.",
+    "cancel.hint": {
+      "caption": "The 🗑 on order <b>#104</b>.",
+      "voice": "The bin on order one oh four."
+    },
+    "cancel.gone": "Ana's gone. Her phone number only ever lived on that order.",
+    "cancel.2": "Databases call these the <b>update anomaly</b> and the <b>deletion anomaly</b>.",
+
+    "teach-lists.1": "The fix starts with one question: what is each fact <b>about</b>?",
+    "teach-lists.2": "Some facts are about <b>people</b>, some about <b>cakes</b>, and some about the <b>order</b> itself.",
+    "teach-lists.3": {
+      "caption": "Give people their own list. Orders keep a <b>pointer</b> instead: <b>→ C1</b> means Maya.",
+      "voice": "Give people their own list. Orders keep a pointer instead. C one means Maya."
+    },
+    "teach-lists.4": "Cakes get their own list too. Now every order is just pointers.",
+    "teach-lists.ask": "Maya changes her number again. How many places do you edit now?",
+    "teach-lists.one": "One. Her number lives in exactly one place.",
+    "teach-lists.two": "Just one, actually. The orders only point at her.",
+    "teach-lists.5": "Every fact lives in <b>one place</b>. The IDs that link the lists are called <b>keys</b>.",
+    "teach-lists.6": "This reshaping has a name: <b>normalization</b>.",
+
+    "sort.1": "A new order just came in, written the old way.",
+    "sort.ask": "Sort each fact onto the list of the thing it describes.",
+    "sort.hint": "Ask yourself: is it about a person, a cake, or the order?",
+    "sort.wrong": "Not quite. What is that fact about?",
+    "sort.done": "Every fact on its own list. That's normalization, in six taps.",
+
+    "edit.1": "Here's the reshaped bakery: a Customers list, and orders that point to it.",
+    "edit.ask": "Maya has a new number. Change it, once.",
+    "edit.hint": "Tap Maya's phone number on the Customers list.",
+    "edit.edited": {
+      "caption": "One edit, and both of Maya's orders see it. Now cancel order <b>#104</b>.",
+      "voice": "One edit, and both of Maya's orders see it. Now cancel Ana's order again."
+    },
+    "edit.kept": "Ana stays. Deleting an order no longer deletes a person.",
+
+    "teach-join.1": "Splitting has a cost. The screen still needs each order as <b>one line</b>.",
+    "teach-join.2": {
+      "caption": "Order <b>#103</b> points to <b>→ C1</b>. Follow it to the Customers list.",
+      "voice": "Order one oh three points to C one. Follow it to the Customers list."
+    },
+    "teach-join.3": {
+      "caption": "Then follow <b>→ I3</b> to the Items list.",
+      "voice": "Then follow I three to the Items list."
+    },
+    "teach-join.4": "Stitching lists back together is called a <b>join</b>. A few lookups, and the data is always current.",
+    "teach-join.ask": "Three lookups instead of one. Worth it?",
+    "teach-join.yes": "That's the trade. And indexes make each lookup fast. You'll see how soon.",
+    "teach-join.slow": "Each lookup is fast with an index. You'll see how soon.",
+
+    "assemble.1": {
+      "caption": "Your turn. Rebuild order <b>#102</b> for the screen.",
+      "voice": "Your turn. Rebuild order one oh two for the screen."
+    },
+    "assemble.ask": "Tap the order, then follow each pointer.",
+    "assemble.hint": {
+      "caption": "Start with order <b>#102</b> on the Orders list.",
+      "voice": "Start with order one oh two on the Orders list."
+    },
+    "assemble.l1": "Found it. Now follow its customer pointer.",
+    "assemble.l2": "That's Omar. Now the cake.",
+    "assemble.wrong": "Not that one. Look for the ID the pointer names.",
+    "assemble.done": "Three lookups, one complete order. You just did a join by hand.",
+
+    "teach-owner.1": {
+      "caption": "The bakery grew. A nightly report now joins six lists, and takes <b>40 minutes</b>.",
+      "voice": "The bakery grew. A nightly report now joins six lists, and takes forty minutes."
+    },
+    "teach-owner.2": "Tempting shortcut: copy everything into <b>one wide table</b>. Three minutes!",
+    "teach-owner.3": "But customers keep changing, and nobody updates the copy. It <b>drifts</b>, and the report starts lying.",
+    "teach-owner.4": "Give the copy an <b>owner</b>, like a nightly refresh, and it's stale for a day at most.",
+    "teach-owner.5": "Or skip the copy, and make the joins fast with <b>indexes</b>.",
+    "teach-owner.6": "Copies aren't the problem. Copies <b>nobody owns</b> are. On purpose, it's called <b>denormalization</b>.",
+
+    "fix.1": "Your call. The report is slow. Pick a fix, then watch a month go by.",
+    "fix.ask": "Try at least two fixes.",
+    "fix.hint": "Tap one of the three cards.",
+    "fix.repair": "Zero wrong facts all month, with one copy of everything.",
+    "fix.refresh": "Stale for a day at most, then its owner fixes it.",
+    "fix.wide": "Thirteen wrong facts, and climbing. Nobody owns that copy.",
+    "fix.outro": "In an interview, lead with fast joins. Reach for an owned copy only when you must.",
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": {
+      "caption": "Maya’s phone number is copied onto every one of her order rows. What breaks first?",
+      "voice": "Maya's phone number is copied onto every one of her order rows. What breaks first?",
+      "speaker": "interviewer"
+    },
+    "quiz.q1-why": "Copies drift. Every edit becomes a search for every copy, and a missed one is silent.",
+    "quiz.q2": {
+      "caption": "A cell holds “Maya · 555-0101”. Splitting it into separate cells is the move databases call…",
+      "voice": "One cell holds Maya's name and her phone number. Splitting them into separate cells is called what?",
+      "speaker": "interviewer"
+    },
+    "quiz.q2-why": "That's first normal form: one value per cell, so the database can filter and index it.",
+    "quiz.q3": {
+      "caption": "Cancelling a customer’s only order also erases her phone number. The cheapest structural fix?",
+      "voice": "Cancelling a customer's only order also erases her phone number. What's the cheapest structural fix?",
+      "speaker": "interviewer"
+    },
+    "quiz.q3-why": "The phone is a fact about the person. Move it to a Customers list, and orders can come and go.",
+    "quiz.q4": {
+      "caption": "A nightly report joins six lists and takes 40 minutes. The safest first move?",
+      "voice": "A nightly report joins six lists and takes forty minutes. What's the safest first move?",
+      "speaker": "interviewer"
+    },
+    "quiz.q4-why": "Slow joins usually lack indexes. Fix those first, and add an owned copy only if it's still slow.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": {
+      "caption": "<b>{right} / 4</b>. Passed.",
+      "voice": "Nicely done. You passed."
+    },
+    "quiz.retry": {
+      "caption": "<b>{right} / 4</b>. Worth another pass.",
+      "voice": "Not quite there. Replay a chapter or two, then try again."
+    },
+
+    "finish.1": "That's the lesson. One fact, one place. Pointers instead of copies. And copies only when someone owns them.",
+    "finish.2": "Next up: how a database actually reads those rows from disk."
+  }
+}
