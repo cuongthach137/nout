@@ -48,7 +48,7 @@ window.ROADMAP = {
       { id: "p3-window", title: "Window functions", detail: "T1 · Ranking, running totals, top-N per group.", isNew: true, status: "done", note: "PR #25: all three modes; OVER / PARTITION BY, ROW_NUMBER vs RANK vs DENSE_RANK, top N per group, running totals, LAG, frames in Explore." },
       { id: "p3-null", title: "NULL traps", detail: "T1 · Three-valued logic, COUNT(*) vs COUNT(col), NOT IN.", isNew: true, status: "done", note: "PR #26: all three modes; three-valued logic, <> dropping NULLs, IS DISTINCT FROM, the NOT IN trap on the walk-in orders, NULL propagation, COALESCE, NULL in averages. Completes the Writing SQL module." },
       { id: "p3-rel", title: "Relationships and keys", detail: "T1 · One-to-many, many-to-many, junction tables, foreign keys.", isNew: true, status: "done", note: "PR #28: all three modes; primary/surrogate/unique keys, foreign keys and ON DELETE, cardinality, junction tables, composite keys; schema exercises checked by probe queries." },
-      { id: "p3-models", title: "Relational, document, and graph models", detail: "T1 · DDIA ch. 2. When “SQL or NoSQL?” really has an answer.", isNew: true },
+      { id: "p3-models", title: "Relational, document, and graph models", detail: "T1 · DDIA ch. 2. When “SQL or NoSQL?” really has an answer.", isNew: true, status: "done", note: "PR #29: all three modes on SQLite: order_docs as JSON documents, a referral graph traversed with a recursive CTE; embedding, locality, schema on read vs write." },
       { id: "p3-latency", title: "Latency, throughput, and percentiles", detail: "T1 · DDIA ch. 1. p50 vs p99, tail latency, load.", isNew: true },
     ] },
     { id: "p4", name: "Level 2: inside one database", short: "Phase 4", items: [
@@ -101,7 +101,7 @@ window.ROADMAP = {
     { level: "Start", name: "Course map", lessons: [["Course map", "welcome", { N: "on", E: "on" }]] },
     { level: "Level 1", name: "Data models", lessons: [["One fact, one place", "modeling", { N: "on", G: "on", E: "on" }]] },
     { level: "Level 1", name: "SQL you’ll be asked to write", lessons: [["SELECT, filter, sort", "select", { N: "on", G: "on", E: "on" }], ["Join types", "joins", { N: "on", G: "on", E: "on" }], ["GROUP BY and HAVING", "group", { N: "on", G: "on", E: "on" }], ["Subqueries and CTEs", "sub", { N: "on", G: "on", E: "on" }], ["Window functions", "window", { N: "on", G: "on", E: "on" }], ["NULL traps", "null", { N: "on", G: "on", E: "on" }]] },
-    { level: "Level 1", name: "Keys and data models", lessons: [["Relationships and keys", "keys", { N: "on", G: "on", E: "on" }], ["Relational, document, and graph"]] },
+    { level: "Level 1", name: "Keys and data models", lessons: [["Relationships and keys", "keys", { N: "on", G: "on", E: "on" }], ["Tables, documents, graphs", "models", { N: "on", G: "on", E: "on" }]] },
     { level: "Level 1", name: "Measuring systems", lessons: [["Latency, throughput, and percentiles"]] },
     { level: "Level 2", name: "Storage", lessons: [["Pages, not rows", "pages", { N: "on", G: "on", E: "on" }], ["Walk a B-tree", "btree", { E: "on" }], ["Physical data layout", "index-layout", { E: "on" }], ["Keys and page splits", "btree-writes", { E: "on" }]] },
     { level: "Level 2", name: "Storage engines", lessons: [["LSM trees in depth"], ["OLTP vs OLAP and column stores"]] },

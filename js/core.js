@@ -11,6 +11,7 @@
     { id: "window", module: "Writing SQL", title: "Window functions", minutes: 12 },
     { id: "null", module: "Writing SQL", title: "NULL traps", minutes: 12 },
     { id: "keys", module: "Keys and data models", title: "Relationships and keys", minutes: 12 },
+    { id: "models", module: "Keys and data models", title: "Tables, documents, graphs", minutes: 12 },
     { id: "pages", module: "Storage", title: "Pages, not rows", minutes: 18 },
     { id: "btree", module: "Storage", title: "Walk a B-tree", minutes: 16 },
     { id: "index-layout", module: "Storage", title: "Physical data layout", minutes: 12 },

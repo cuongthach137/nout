@@ -102,8 +102,30 @@ INSERT INTO order_items VALUES
 
   // bakeryStrict enforces foreign keys (SQLite leaves them off unless asked); bakeryOrphan has
   // one order whose customer doesn't exist, for data-quality checks; strict is empty and enforcing.
+  // The same orders as JSON documents (customer and items embedded; order 8 has an extra "note"),
+  // and a referral graph (who brought whom), for the data models lesson.
+  const MODELS = `
+CREATE TABLE referrals (
+  referrer_id INTEGER NOT NULL REFERENCES customers (id),
+  referred_id INTEGER NOT NULL REFERENCES customers (id),
+  PRIMARY KEY (referrer_id, referred_id)
+);
+INSERT INTO referrals VALUES (1, 3), (1, 2), (3, 8), (2, 7), (7, 10), (6, 5), (4, 9);
+CREATE TABLE order_docs (id INTEGER PRIMARY KEY, doc TEXT NOT NULL);
+INSERT INTO order_docs
+SELECT o.id, json_object(
+  'id', o.id, 'date', o.ordered_at, 'status', o.status,
+  'customer', json(CASE WHEN c.id IS NULL THEN 'null' ELSE json_object('id', c.id, 'name', c.name, 'phone', c.phone) END),
+  'items', json((SELECT json_group_array(json_object('product', p.name, 'price', p.price, 'quantity', i.quantity))
+                 FROM order_items i JOIN products p ON p.id = i.product_id WHERE i.order_id = o.id))
+)
+FROM orders o LEFT JOIN customers c ON c.id = o.customer_id;
+UPDATE order_docs SET doc = json_set(doc, '$.note', 'Leave at the door') WHERE id = 8;
+`;
+
   const datasets = {
     bakery: BAKERY,
+    bakeryModels: `${BAKERY}\n${MODELS}`,
     bakeryStrict: `PRAGMA foreign_keys = ON;\n${BAKERY}`,
     bakeryOrphan: `${BAKERY}\nINSERT INTO orders VALUES (17, 42, '2024-09-26', 'paid');`,
     strict: "PRAGMA foreign_keys = ON;",

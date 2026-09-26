@@ -1,0 +1,41 @@
+/* Data models lesson: pretty-printed documents, the referral graph, and the model picker. */
+
+.md-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; width: 100%; max-width: 900px; max-height: 100%; min-height: 0; overflow: auto; }
+@media (min-width: 900px) { .md-board { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; } }
+.md-doc { margin: 0; padding: 14px 16px; border-radius: 12px; color: #e8efe9; background: var(--sidebar); font-family: var(--mono); font-size: 12.5px; line-height: 1.5; white-space: pre; overflow: auto; }
+.md-key { color: #9cc3ff; }
+.md-null { color: #b9c6bf; font-style: italic; }
+.md-part { transition: background .3s; border-radius: 4px; }
+.md-part.on { background: rgba(200, 237, 118, .22); }
+.md-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.md-side:empty { display: none; }
+.md-stat { display: grid; justify-items: center; padding: 14px; border: 1.5px solid var(--green); border-radius: 14px; background: var(--surface); animation: sqIn .4s backwards; }
+.md-stat b { font-family: var(--mono); font-size: 40px; letter-spacing: -.04em; }
+.md-stat span { color: var(--muted); font-size: 12px; }
+
+.md-graph { position: relative; width: 100%; max-width: 640px; height: min(46vh, 340px); margin: 0 auto; }
+.md-graph svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.md-graph line { stroke: var(--line-strong); stroke-width: .5; vector-effect: non-scaling-stroke; stroke-width: 2px; opacity: .35; transition: stroke .3s, opacity .3s; }
+.md-graph line.on { opacity: 1; animation: sqIn .4s backwards; }
+.md-graph line.hop { stroke: var(--green); stroke-width: 3px; }
+.md-node { position: absolute; transform: translate(-50%, -50%); padding: 5px 12px; border: 1.5px solid var(--line-strong); border-radius: 99px; background: var(--surface); font-family: var(--mono); font-size: 13px; white-space: nowrap; transition: background .3s, border-color .3s; }
+.md-node.start { color: #fff; border-color: var(--green-deep); background: var(--green-deep); }
+.md-node.hop { border-color: var(--green); background: var(--lime); font-weight: 600; }
+.md-graph-out { width: 100%; max-width: 420px; margin: 8px auto 0; }
+.md-graph-out:empty { display: none; }
+
+.md-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; width: 100%; max-width: 760px; }
+.md-pick { display: grid; justify-items: center; gap: 6px; padding: 20px 14px; border: 1.5px solid var(--line-strong); border-radius: 18px; background: var(--surface); text-align: center; opacity: .35; transition: opacity .3s, border-color .3s, transform .3s; animation: sqIn .4s backwards; animation-delay: calc(var(--i) * 120ms); }
+.md-pick.on { opacity: 1; }
+.md-pick.current { border-color: var(--green); background: var(--lime); transform: translateY(-4px); }
+.md-pick span { font-size: 34px; }
+.md-pick b { font-size: 16px; }
+.md-pick small { color: var(--muted); font-size: 12.5px; }
+
+@media (max-width: 760px) {
+  .md-doc { font-size: 10.5px; padding: 10px; }
+  .md-node { font-size: 10.5px; padding: 3px 7px; }
+  .md-picks { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .md-pick { grid-template-columns: auto 1fr; justify-items: start; padding: 10px 14px; text-align: left; }
+  .md-pick span { grid-row: span 2; font-size: 24px; }
+}
