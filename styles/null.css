@@ -1,0 +1,5 @@
+/* NULL traps lesson: result chips ("0 rows", "Missing: Raj"). Truth columns reuse the row tints. */
+
+.nl-chip { align-self: flex-start; margin-top: 8px; padding: 3px 12px; border-radius: 99px; color: var(--green-deep); background: var(--lime); font-family: var(--mono); font-size: 12px; }
+.nl-chip.bad { color: var(--coral); background: var(--coral-soft); }
+.nl-chip b { font-weight: 700; }

@@ -104,7 +104,7 @@ window.DataSystemsLab.Narrator.register("window", {
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
   "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
   "finish.1": "That's the lesson. Window functions keep every row. PARTITION BY groups them, ORDER BY lines them up, and ranks, totals and LAG read along the line.",
-  "finish.2": "Next up: how a database actually reads those rows from disk."
+  "finish.2": "Next up: NULL, and the quiet ways it breaks queries."
  },
  "speakers": {
   "interviewer": {
@@ -179,8 +179,8 @@ window.DataSystemsLab.Narrator.register("window", {
    "ms": 9707
   },
   "finish.2": {
-   "hash": "555b915c7e66",
-   "ms": 3712
+   "hash": "4c0540843f21",
+   "ms": 3136
   },
   "gap.1": {
    "hash": "814a1bb85c60",
