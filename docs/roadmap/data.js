@@ -80,7 +80,7 @@ window.ROADMAP = {
     ] },
     { id: "p6", name: "Interview layer", short: "Phase 6", items: [
       { id: "p6-drills", title: "An interview drill at the end of each module", detail: "The interviewer asks; you pick a response; the tutor explains.", isNew: true },
-      { id: "p6-aloud", title: "“Say it out loud” steps", detail: "Answer aloud against a countdown, then hear a model answer.", isNew: true },
+      { id: "p6-aloud", title: "“Say it out loud” steps", detail: "Answer aloud against a countdown, then hear a model answer.", isNew: true, status: "progress", note: "Each lesson now ends with goals, checks and an interview round whose open question has a one-minute timer, a model answer to read and a self-rating (js/components/practice.js). Piloted on SELECT (PR #33); rolled out to Data modeling and Join types. Still to do: the other lessons, and a spoken model answer." },
       { id: "p6-mock", title: "Final mock interview", detail: "A SQL round, rapid-fire concepts, and a system-design walkthrough.", isNew: true },
       { id: "p6-cheat", title: "A cheat sheet per module", detail: "One page to review the night before.", isNew: true },
       { id: "p6-reading", title: "“Read more” on every lesson", detail: "Chapter pointers into DDIA and Database Internals.", isNew: true },

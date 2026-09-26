@@ -2,14 +2,14 @@
   "use strict";
 
   // Join types: what each join keeps, what it drops, and when it multiplies rows. Explore mode is
-  // the full reference: three labs of graded exercises, notes, a cheat sheet, and a quiz.
+  // the full reference: three labs of graded exercises, notes, a cheat sheet, and the practice ending.
   // Narrated (joins-narrated.js) is the focused version; Guided (joins-guided.js) sits in between.
 
   const { wonder, labSide } = DSL.LabKit;
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "joins",
-    labs: [{ id: "match", name: `${DSL.labLabel("joins", "A")} Match` }, { id: "keep", name: `${DSL.labLabel("joins", "B")} Keep a side` }, { id: "multiply", name: `${DSL.labLabel("joins", "C")} Multiply` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "match", name: `${DSL.labLabel("joins", "A")} Match` }, { id: "keep", name: `${DSL.labLabel("joins", "B")} Keep a side` }, { id: "multiply", name: `${DSL.labLabel("joins", "C")} Multiply` }, { id: "quiz", name: "Practice" }],
   });
 
   const CHALLENGES = {
@@ -32,16 +32,73 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "customers has 10 rows, orders has 16, and 2 orders have no customer. How many rows does an inner join on the customer ID return?", options: ["10", "14", "16"], answer: 1, why: "Each order with a customer matches exactly one row, so 14. The walk-ins, and customers who never ordered, are dropped." },
-    { prompt: "Which query finds customers who have never ordered?", options: ["customers c JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL", "customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL", "customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NOT NULL"], answer: 1, why: "A left join keeps every customer. Those with no order have NULL on the order side, so test for that." },
-    { prompt: "<code>LEFT JOIN orders o ON … WHERE o.status = 'paid'</code>. What happens to customers with no paid orders?", options: ["They show up with NULLs", "They disappear: the WHERE undoes the left join", "The query fails"], answer: 1, why: "WHERE runs after the join, and NULL isn't 'paid', so those rows fail. Put the condition in ON." },
-    { prompt: "A report's revenue doubled right after someone added a join. What's the likely cause?", options: ["The new join repeats each order once per matching row", "The left join added NULL rows", "The table's statistics are stale"], answer: 0, why: "The new join matches several rows per order, so each order is repeated, and added up, more than once." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "<code>SELECT * FROM a, b</code> with no condition. <code>a</code> has 3 rows, <code>b</code> has 4. How many rows?", options: ["4", "7", "12"], answer: 2, why: "No condition means a cross join: every row of a with every row of b, 3 × 4." },
-    { prompt: "Two rows both have NULL in the join column. Does an inner join match them?", options: ["Yes, NULL equals NULL", "No: NULL = NULL isn't true", "Only in a left join"], answer: 1, why: "Comparing NULL with anything, even NULL, is unknown, never true. That's why walk-in orders never match a customer." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "joins",
+    goals: [
+      {
+        id: "match", icon: "🔗", title: "Match rows", snippet: "JOIN customers c ON c.id = o.customer_id",
+        text: "Join tables on a key, and predict which rows an inner join drops.",
+        recap: "The join condition after ON says which rows belong together. An <b>inner join</b> keeps only matched pairs: 16 orders in, 14 rows out, because the walk-ins have no customer.",
+        example: {
+          before: "SELECT id, customer_id FROM orders ORDER BY id",
+          sql: "SELECT o.id, c.name FROM orders o JOIN customers c ON c.id = o.customer_id ORDER BY o.id",
+          show: 5,
+          mark: (row, phase) => (phase === "before" && row[1] === null ? "bad" : ""),
+          note: "Walk-in #5 has no partner, so it's gone.",
+        },
+      },
+      {
+        id: "keep", icon: "🫱", title: "Keep a side", snippet: "LEFT JOIN orders o\n  ON … AND o.status = 'paid'",
+        text: "Keep every row with LEFT JOIN, find rows with no match, and put right-side filters in ON.",
+        recap: "A <b>left join</b> keeps every row of the first table, with NULLs where nothing matched: test for them to find who never ordered. Filter the right table in ON, or WHERE drops Lena.",
+        example: {
+          before: "SELECT c.name, o.id FROM customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.status = 'paid' ORDER BY c.name, o.id",
+          sql: "SELECT c.name, o.id FROM customers c LEFT JOIN orders o ON o.customer_id = c.id AND o.status = 'paid' ORDER BY c.name, o.id",
+          show: 5,
+          mark: (row, phase) => (phase === "after" && row[1] === null ? "good" : ""),
+          note: "Moved into ON, the test keeps Lena, with a NULL order.",
+        },
+      },
+      {
+        id: "multiply", icon: "✖️", title: "Count before you trust", snippet: "16 orders → 22 rows",
+        text: "Predict how many rows a join makes, and spot fan-out and cross joins before they inflate a total.",
+        recap: "Join orders to their items and each order repeats once per item: 16 orders become 22 rows. That's <b>fan-out</b>. With no condition at all, it's a <b>cross join</b>: 10 × 16 rows.",
+        example: {
+          before: "SELECT id, ordered_at FROM orders ORDER BY id",
+          sql: "SELECT o.id, o.ordered_at, i.product_id FROM orders o JOIN order_items i ON i.order_id = o.id ORDER BY o.id, i.product_id",
+          show: 5,
+          mark: (row, phase) => (phase === "after" && (row[0] === 1 || row[0] === 3) ? "hot" : ""),
+          note: "Orders #1 and #3 appear twice: once per item.",
+        },
+      },
+    ],
+    checks: [
+      { id: "items-products", goal: "match", prompt: "<code>order_items</code> has 22 rows, <code>products</code> has 8, and Rye loaf has never sold. An inner join on <code>product_id</code> returns how many rows?", options: ["8", "22", "176"], answer: 1, why: "Each item points at exactly one product, so all 22 match. Rye loaf has no items, so it drops out without costing a row." },
+      { id: "unsold-bug", goal: "keep", prompt: "\"Every product, with its order lines, including unsold ones\": <code>products p LEFT JOIN order_items i ON i.product_id = p.id WHERE i.quantity &gt; 0</code>. What's wrong?", options: ["Nothing: it's correct", "Rye loaf disappears: WHERE throws away its NULL-padded row", "It fails: you can't compare NULL"], answer: 1, why: "WHERE runs after the join, and a NULL quantity isn't greater than 0, so the left join turns back into an inner join. Put the test in ON." },
+      { id: "maya-rows", goal: "multiply", prompt: "Maya has 4 orders, with 2, 2, 1 and 2 items. <code>customers JOIN orders JOIN order_items</code>: how many rows for Maya?", options: ["1", "4", "7"], answer: 2, why: "Every join repeats the rows before it once per match: 1 customer becomes 4 orders, and those become 2 + 2 + 1 + 2 = 7 rows." },
+    ],
+    warmups: [
+      { id: "never-ordered", goal: "keep", prompt: "How would you find customers who have never placed an order?", options: ["<code>customers c JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL</code>", "<code>customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL</code>", "<code>customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id = NULL</code>"], answer: 1, why: "A left join keeps every customer; those with no order have NULL on the order side. <code>= NULL</code> is never true, and an inner join has no NULL rows to find. <code>NOT EXISTS</code> works too." },
+      { id: "doubled", goal: "multiply", prompt: "A report's revenue doubled right after someone added a join. What's the likely cause?", options: ["The new join repeats each order once per matching row", "The left join added NULL rows", "The table's statistics are stale"], answer: 0, why: "A one-to-many join repeats each order per match, so its amount is added up more than once. Aggregate before joining, or count rows per key." },
+    ],
+    open: {
+      id: "join-types",
+      goal: "match",
+      prompt: "Using customers and orders, explain what INNER, LEFT and FULL OUTER JOIN each return, and one mistake people make with joins.",
+      points: [
+        "<b>INNER</b>: only matched pairs. Customers with no orders and orders with no customer are both dropped.",
+        "<b>LEFT</b>: every customer; the order columns are NULL where nothing matched.",
+        "<b>FULL OUTER</b>: both sides whole, NULLs on whichever side has no partner. (RIGHT is LEFT mirrored.)",
+        "NULL keys never match: <code>NULL = NULL</code> isn't true.",
+        "A mistake: filtering the right table in WHERE turns a LEFT JOIN into an inner join; put it in ON.",
+        "Another: a one-to-many join repeats rows (fan-out), so totals come out too big.",
+      ],
+      answer: "An inner join returns only customer–order pairs that match on the key, so customers who never ordered and orders with no customer both disappear. A left join from customers keeps every customer, with NULL order columns where there's no match; a full outer join keeps both sides, padding whichever is missing. A classic mistake is a left join followed by WHERE o.status = 'paid': the NULL-padded rows fail the test, so it silently becomes an inner join, and the fix is to move the condition into ON. Another is summing after a one-to-many join, where each order repeats once per item.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const TYPES = [
     ["JOIN (INNER)", "only matched pairs", "rows with no partner, on both sides"],
@@ -64,6 +121,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Join types: what each one <em>keeps</em>, and what it drops.", "Orders point at customers by ID. A join follows those pointers. Every join type keeps some rows, drops others, and sometimes repeats them; interviews check that you know which.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>The bakery data has the edge cases on purpose: <b>Lena</b> and <b>Theo</b> never ordered, orders <b>#5</b> and <b>#14</b> are walk-ins with no customer, and <b>Rye loaf</b> has never sold.</p></div>
@@ -91,10 +149,7 @@
           <div class="sel-ops"><table class="sel-table"><thead><tr><th>Join</th><th>Keeps</th><th>Drops</th></tr></thead><tbody>${TYPES.map(([join, keeps, drops]) => `<tr><td><code>${join}</code></td><td>${keeps}</td><td>${drops}</td></tr>`).join("")}</tbody></table></div>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about joins</h2><p class="lab-copy">Row counts, missing rows, and doubled totals: the join questions interviews actually ask.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="joins-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Joins review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> before trusting a joined result, ask two questions. Which rows can this join drop? How many rows per key can it create?</p></div>
         ${DSL.lessonFooter("joins")}
@@ -107,15 +162,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("joins-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Joins review passed",
-      successCopy: "You can say what a join keeps, drops, and repeats.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.JoinsModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.JoinsModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("joins", renderJoins);
 })(window.DataSystemsLab);
