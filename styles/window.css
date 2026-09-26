@@ -1,0 +1,9 @@
+/* Window functions lesson: partition bands and revealed window columns. */
+
+.sq-row.wn-p0 { background: var(--surface); }
+.sq-row.wn-p1 { background: var(--blue-soft); }
+.sq-row.wn-p2 { background: var(--amber-soft); }
+.sq-row > span.wn-hidden { opacity: 0; }
+.sq-row > span { transition: opacity .25s, background .25s; }
+.wn-q { margin: 10px 0 0; color: var(--muted); font-family: var(--mono); font-size: 13px; text-align: center; }
+.wn-q b { color: var(--amber); }

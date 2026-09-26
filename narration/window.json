@@ -1,0 +1,141 @@
+{
+  "lesson": "window",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "keywords": {
+    "window-function": {
+      "term": "Window function",
+      "def": "A function computed over a set of rows related to the current row, written with OVER. Unlike GROUP BY, every row stays."
+    },
+    "partition-by": {
+      "term": "PARTITION BY",
+      "def": "Splits the rows into groups inside OVER. The window function restarts for each partition, and no rows are collapsed."
+    },
+    "row-number": {
+      "term": "ROW_NUMBER",
+      "def": "Numbers rows 1, 2, 3 in the window's order, with no ties. Tied rows get different numbers, in no promised order."
+    },
+    "dense-rank": {
+      "term": "RANK and DENSE_RANK",
+      "def": "Both give tied rows the same number. RANK then skips numbers, like 5, 5, 7; DENSE_RANK doesn't, like 5, 5, 6."
+    },
+    "top-n-per-group": {
+      "term": "Top N per group",
+      "def": "Number rows within each group with ROW_NUMBER, then keep numbers 1 to N in an outer query, since WHERE runs before window functions."
+    },
+    "running-total": {
+      "term": "Running total",
+      "def": "SUM over the rows so far, in order: SUM(x) OVER (ORDER BY day). Each row shows the total up to and including it."
+    },
+    "lag": {
+      "term": "LAG and LEAD",
+      "def": "Read a value from the previous row, or the next one, in the window's order. The first row's LAG is NULL."
+    }
+  },
+  "lines": {
+    "hook.1": "GROUP BY squeezes each group into one row. Sometimes you want to keep every row, with the group's number beside it.",
+    "hook.2": "Each product next to its category's average. Each order ranked. A running total, day by day.",
+    "hook.3": "That's what window functions do. Every row stays.",
+
+    "over.1": "Here are the eight products, with their categories.",
+    "over.2": "GROUP BY category gives three rows, one per category. The products are gone.",
+    "over.3": "AVG of price, OVER, partition by category, keeps all eight rows, and writes each category's average beside every product.",
+    "over.4": "A function with OVER is a <k id=\"window-function\">window function</k>. <k id=\"partition-by\">PARTITION BY</k> splits the rows into groups, without collapsing them.",
+
+    "avg.1": "Your turn. Show each product's name, category and price, with its category's average price beside it.",
+    "avg.ask": "Add the window function to the SELECT.",
+    "avg.hint": {
+      "caption": "<b>AVG(price) OVER (PARTITION BY category)</b>",
+      "voice": "Average of price, over, partition by category."
+    },
+    "avg.error": "The database couldn't run that. Check the brackets after OVER.",
+    "avg.extra": "Too many rows. There should be one per product.",
+    "avg.missing": "Rows or averages are off. Partition by category, and don't add a GROUP BY.",
+    "avg.columns": "Four columns: name, category, price, and the average.",
+    "avg.done": "Eight rows, every product kept. Compare with the correlated subquery from last time: same numbers, one pass.",
+
+    "rank.1": "Now ranking. Here are the products by units sold. Carrot cake and cinnamon roll are tied, at four each.",
+    "rank.2": "<k id=\"row-number\">ROW_NUMBER</k> numbers the rows one, two, three. The tie gets two different numbers, in no promised order.",
+    "rank.3": "RANK gives the tie the same number, five and five, then skips to seven.",
+    "rank.ask": "Lemon tart comes after the tie. What does DENSE_RANK give it?",
+    "rank.six": "Six. DENSE_RANK doesn't skip.",
+    "rank.seven": "That's RANK. DENSE_RANK doesn't skip, so it's six.",
+    "rank.five": "Five is the tie. Lemon tart comes next: six.",
+    "rank.4": "<k id=\"dense-rank\">RANK and DENSE_RANK</k>: the same number for a tie, with or without a gap after it. Interviewers ask this one a lot.",
+
+    "top.1": "A classic: the most expensive product in each category.",
+    "top.2": "ROW_NUMBER, partitioned by category and ordered by price, descending. Each category counts from one again.",
+    "top.3": "Now keep row number one. But WHERE can't see it: window functions are computed after WHERE.",
+    "top.4": "So number the rows in a CTE, and filter in the outer query. That's <k id=\"top-n-per-group\">top N per group</k>.",
+
+    "top2.1": "Your turn. The two most expensive products in each category.",
+    "top2.ask": "Finish the window function, then filter the numbered rows.",
+    "top2.hint": {
+      "caption": "<b>ROW_NUMBER() OVER (PARTITION BY category ORDER BY price DESC) AS rn</b>, then <b>WHERE rn &lt;= 2</b>.",
+      "voice": "Row number, over, partition by category, order by price descending, as r n. Then keep r n up to two."
+    },
+    "top2.error": "The database couldn't run that. Is the window function inside the CTE?",
+    "top2.extra": "Too many rows. Keep row numbers one and two.",
+    "top2.missing": "Some products are missing. Partition by category, and order by price, descending.",
+    "top2.columns": "Three columns: name, category, price.",
+    "top2.done": "Six products, two per category. Top N per group, done.",
+
+    "run.1": "Window functions can also look back along the rows. Here's the bakery's revenue, day by day.",
+    "run.2": "SUM of revenue, over, order by day. Each row adds itself to everything before it.",
+    "run.3": {
+      "caption": "That's a <k id=\"running-total\">running total</k>. By the 25th it reaches <b>161.25</b>.",
+      "voice": "That's a running total. By the twenty-fifth, it reaches a hundred and sixty-one twenty-five."
+    },
+
+    "lag.1": "And LAG reads the previous row. Here are Maya's four orders.",
+    "lag.2": "LAG of ordered at puts her previous order's date beside each one. Her first order has none, so it's NULL.",
+    "lag.3": "Subtract, and you get the gaps: three days, seven, then thirteen. Maya's slowing down.",
+    "lag.4": "<k id=\"lag\">LAG and LEAD</k> read the row before or after. Handy for gaps, changes and streaks.",
+
+    "gap.1": "Last one. For each of Maya's orders, show the date of her previous order.",
+    "gap.ask": "Use LAG, ordered by date.",
+    "gap.hint": {
+      "caption": "<b>LAG(ordered_at) OVER (ORDER BY ordered_at)</b>",
+      "voice": "Lag of ordered at, over, order by ordered at."
+    },
+    "gap.error": "The database couldn't run that. Check the brackets after OVER.",
+    "gap.extra": "Too many rows. Only Maya's orders: customer one.",
+    "gap.missing": "Some rows or dates are off. Order the window by the order date.",
+    "gap.columns": "Three columns: the order's ID, its date, and the previous date.",
+    "gap.done": "Four orders, and the first has no previous one. That's LAG.",
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": {
+      "caption": "<code>GROUP BY category</code> returns 3 rows. How many does <code>AVG(price) OVER (PARTITION BY category)</code> return, on 8 products?",
+      "voice": "Group by category returns three rows. How many does average price over partition by category return, on eight products?",
+      "speaker": "interviewer"
+    },
+    "quiz.q1-why": "A window function keeps every row. Eight products in, eight rows out.",
+    "quiz.q2": { "caption": "Scores 90, 80, 80, 70. What does DENSE_RANK give the 70?", "voice": "Scores ninety, eighty, eighty, seventy. What does dense rank give the seventy?", "speaker": "interviewer" },
+    "quiz.q2-why": "The eighties share rank two, and DENSE_RANK doesn't skip, so seventy is three. RANK would say four.",
+    "quiz.q3": {
+      "caption": "Why can't you write <code>WHERE ROW_NUMBER() OVER (…) = 1</code>?",
+      "voice": "Why can't you filter on row number over something in the WHERE clause?",
+      "speaker": "interviewer"
+    },
+    "quiz.q3-why": "Window functions are computed after WHERE. Number the rows in a CTE or subquery, then filter outside.",
+    "quiz.q4": { "caption": "What does <code>LAG(ordered_at)</code> return on a customer's first order?", "voice": "What does lag of ordered at return on a customer's first order?", "speaker": "interviewer" },
+    "quiz.q4-why": "There's no previous row, so it's NULL, unless you give LAG a default.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
+    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
+
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
+
+    "finish.1": "That's the lesson. Window functions keep every row. PARTITION BY groups them, ORDER BY lines them up, and ranks, totals and LAG read along the line.",
+    "finish.2": "Next up: how a database actually reads those rows from disk."
+  }
+}
