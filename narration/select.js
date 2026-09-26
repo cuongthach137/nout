@@ -178,352 +178,352 @@ window.DataSystemsLab.Narrator.register("select", {
  },
  "audio": {
   "andor.1": {
-   "hash": "0606e68ffe45",
-   "ms": 5973
+   "hash": "d2ff1809c6e5",
+   "ms": 6480
   },
   "andor.2": {
-   "hash": "75079b6a6c70",
-   "ms": 2645
+   "hash": "814e94b8e571",
+   "ms": 3420
   },
   "andor.3": {
-   "hash": "98cb8dee03a9",
-   "ms": 2112
+   "hash": "81fd11bda847",
+   "ms": 2664
   },
   "andor.4": {
-   "hash": "b97e61566337",
-   "ms": 6699
+   "hash": "2a977b68e7ca",
+   "ms": 8892
   },
   "andor.5": {
-   "hash": "7a91e2416933",
-   "ms": 3093
+   "hash": "e670d3e84a25",
+   "ms": 3816
   },
   "andor.6": {
-   "hash": "c0f4885a96bf",
-   "ms": 4288
+   "hash": "e2bb99699cc7",
+   "ms": 5940
   },
   "andor.7": {
-   "hash": "3a1512ede46b",
-   "ms": 3819
+   "hash": "52a32c9490a4",
+   "ms": 4392
   },
   "andor.ask": {
-   "hash": "d03d4ad5defd",
-   "ms": 1621
+   "hash": "ec6dab35afa4",
+   "ms": 1872
   },
   "andor.one": {
-   "hash": "bd08def788e4",
-   "ms": 2347
+   "hash": "104822dfc37f",
+   "ms": 2988
   },
   "andor.two": {
-   "hash": "871f8f53bac2",
-   "ms": 1515
+   "hash": "0bc10e016906",
+   "ms": 2268
   },
   "filter.1": {
-   "hash": "b79c6fc89a44",
-   "ms": 3733
+   "hash": "ad3a788b476d",
+   "ms": 4572
   },
   "filter.ask": {
-   "hash": "4a825ac561af",
-   "ms": 1963
+   "hash": "6e9c2b0ed835",
+   "ms": 2448
   },
   "filter.columns": {
-   "hash": "d3b9a0e05832",
-   "ms": 2560
+   "hash": "1ded8ee88999",
+   "ms": 2916
   },
   "filter.done": {
-   "hash": "fd783a8cfc1b",
-   "ms": 4992
+   "hash": "3dfe3108a7be",
+   "ms": 5508
   },
   "filter.error": {
-   "hash": "a186282e2a85",
-   "ms": 5120
+   "hash": "736a77e94443",
+   "ms": 5508
   },
   "filter.extra": {
-   "hash": "3b4330e24c35",
-   "ms": 2112
+   "hash": "758dd34e3901",
+   "ms": 2592
   },
   "filter.hint": {
-   "hash": "ef4b0942c055",
-   "ms": 3136
+   "hash": "e0785f6e37bb",
+   "ms": 4320
   },
   "filter.missing": {
-   "hash": "e5083d0b7495",
-   "ms": 4139
+   "hash": "b1364b045a11",
+   "ms": 4680
   },
   "finish.1": {
-   "hash": "e3bd7615a582",
-   "ms": 6379
+   "hash": "afa9d00392c7",
+   "ms": 7164
   },
   "finish.2": {
-   "hash": "36241408a441",
-   "ms": 4821
+   "hash": "ddcab87e85d6",
+   "ms": 5940
   },
   "hook.1": {
-   "hash": "19118fd24cf6",
-   "ms": 6507
+   "hash": "59e4c583273d",
+   "ms": 7056
   },
   "hook.2": {
-   "hash": "937818aa6fc8",
-   "ms": 4651
+   "hash": "018394d27289",
+   "ms": 5832
   },
   "hook.3": {
-   "hash": "fee87ad91613",
-   "ms": 5312
+   "hash": "238770faf8ee",
+   "ms": 6588
   },
   "keywords.1": {
-   "hash": "6e8f6ec7dc0f",
-   "ms": 2603
+   "hash": "52c9899fd888",
+   "ms": 2952
   },
   "keywords.ask": {
-   "hash": "b9f053603353",
-   "ms": 3115
+   "hash": "9e5d200f6173",
+   "ms": 3996
   },
   "keywords.done": {
-   "hash": "050256c0adfd",
-   "ms": 4096
+   "hash": "b410b19a541a",
+   "ms": 4680
   },
   "keywords.hint": {
-   "hash": "bb3638fa922e",
-   "ms": 2688
+   "hash": "520960a4916d",
+   "ms": 3168
   },
   "logic.1": {
-   "hash": "61f975755e68",
-   "ms": 5461
+   "hash": "83360badbb50",
+   "ms": 6444
   },
   "logic.2": {
-   "hash": "b0a70ab9a2e5",
-   "ms": 5909
+   "hash": "241bc0b136f9",
+   "ms": 7020
   },
   "logic.3": {
-   "hash": "20c038ac43bd",
-   "ms": 3904
+   "hash": "93d7f3eaa7c1",
+   "ms": 4067
   },
   "logic.4": {
-   "hash": "0099bbccb1aa",
-   "ms": 5909
+   "hash": "52a12639b632",
+   "ms": 7272
   },
   "logic.5": {
-   "hash": "d19b0d25a52c",
-   "ms": 7275
+   "hash": "d16eea53f963",
+   "ms": 8784
   },
   "order.1": {
-   "hash": "184c35327ff6",
-   "ms": 3371
+   "hash": "4a631d372882",
+   "ms": 3060
   },
   "order.2": {
-   "hash": "4c23db369f89",
-   "ms": 6549
+   "hash": "b4eaaffdc5b3",
+   "ms": 7524
   },
   "order.3": {
-   "hash": "33d23ddf5a13",
-   "ms": 5120
+   "hash": "665231d602f0",
+   "ms": 5832
   },
   "order.4": {
-   "hash": "e3bf12591f8c",
-   "ms": 4032
+   "hash": "352b20758052",
+   "ms": 5040
   },
   "order.5": {
-   "hash": "b78a3fb110d8",
-   "ms": 4779
+   "hash": "f1eabb8b7aa0",
+   "ms": 5544
   },
   "pick.1": {
-   "hash": "6cb9c65b425b",
-   "ms": 3989
+   "hash": "a137671895ab",
+   "ms": 4284
   },
   "pick.2": {
-   "hash": "f6923bdc3fe1",
-   "ms": 6528
+   "hash": "62535ff5c673",
+   "ms": 6732
   },
   "pick.ask": {
-   "hash": "f350f2f9f6fb",
-   "ms": 1792
+   "hash": "d9664e2d82c5",
+   "ms": 2232
   },
   "pick.done": {
-   "hash": "dbea6a99ba91",
-   "ms": 5931
+   "hash": "eea3daf1f622",
+   "ms": 6876
   },
   "pick.hint": {
-   "hash": "e1200bceb1f2",
-   "ms": 3840
+   "hash": "f01424a745e4",
+   "ms": 4104
   },
   "pick.name": {
-   "hash": "af9f1c3e4dc4",
-   "ms": 2603
+   "hash": "7e11cdd00c45",
+   "ms": 2448
   },
   "pick.star": {
-   "hash": "eb16636c1042",
-   "ms": 5291
+   "hash": "0de46c38cf8a",
+   "ms": 6228
   },
   "query.1": {
-   "hash": "97986013ba4f",
-   "ms": 5547
+   "hash": "631e8658a892",
+   "ms": 5508
   },
   "query.2": {
-   "hash": "019076b66377",
-   "ms": 4949
+   "hash": "de693a739c18",
+   "ms": 5796
   },
   "query.3": {
-   "hash": "6e5662e76364",
-   "ms": 4971
+   "hash": "81618abe3e5d",
+   "ms": 5400
   },
   "query.4": {
-   "hash": "c68cc6154378",
-   "ms": 3179
+   "hash": "4e1fdbaaca16",
+   "ms": 5076
   },
   "query.5": {
-   "hash": "56446d48addc",
-   "ms": 6443
+   "hash": "11722ac89328",
+   "ms": 7020
   },
   "query.6": {
-   "hash": "bf8ad37be54e",
-   "ms": 2155
+   "hash": "6a5905c5aac2",
+   "ms": 2700
   },
   "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+   "hash": "08fdf9d19fee",
+   "ms": 1584
   },
   "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+   "hash": "1e2c41acf108",
+   "ms": 2412
   },
   "quiz.q1": {
-   "hash": "6ff00381931f",
-   "ms": 3136
+   "hash": "b0bae7e4f2d8",
+   "ms": 3204
   },
   "quiz.q1-why": {
-   "hash": "a38e402fb7c0",
-   "ms": 3989
+   "hash": "981347b7cebc",
+   "ms": 4428
   },
   "quiz.q2": {
-   "hash": "01a9f8c202ea",
-   "ms": 5696
+   "hash": "1eb0d44cf195",
+   "ms": 6660
   },
   "quiz.q2-why": {
-   "hash": "c2e5a7e38493",
-   "ms": 4715
-  },
-  "quiz.q3": {
-   "hash": "2aafaa21d9b0",
-   "ms": 5141
-  },
-  "quiz.q3-why": {
-   "hash": "6a7e6c53beed",
-   "ms": 3904
-  },
-  "quiz.q4": {
-   "hash": "ee57b6a8dc66",
-   "ms": 6912
-  },
-  "quiz.q4-why": {
-   "hash": "250747415b6d",
+   "hash": "fc59055c28be",
    "ms": 5760
   },
+  "quiz.q3": {
+   "hash": "65b9c64806bc",
+   "ms": 5112
+  },
+  "quiz.q3-why": {
+   "hash": "338bc2ed3746",
+   "ms": 5256
+  },
+  "quiz.q4": {
+   "hash": "cc36f1f5884f",
+   "ms": 7740
+  },
+  "quiz.q4-why": {
+   "hash": "6936cb2fce83",
+   "ms": 6696
+  },
   "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
+   "hash": "674b74cededc",
+   "ms": 3852
   },
   "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
+   "hash": "5df4176b3959",
+   "ms": 900
   },
   "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
+   "hash": "e99e52b00ddc",
+   "ms": 1152
   },
   "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+   "hash": "bbb1d6dfd81d",
+   "ms": 972
   },
   "recent.1": {
-   "hash": "2c6c73ef895d",
-   "ms": 5333
+   "hash": "6e4d02107a35",
+   "ms": 5976
   },
   "recent.ask": {
-   "hash": "63596885c66e",
-   "ms": 1664
+   "hash": "1167a26bba38",
+   "ms": 1980
   },
   "recent.columns": {
-   "hash": "85e91b02f936",
-   "ms": 2453
+   "hash": "7cc444b3001d",
+   "ms": 2700
   },
   "recent.done": {
-   "hash": "9e74014db3f9",
-   "ms": 5376
+   "hash": "dc3fa88f67b1",
+   "ms": 6912
   },
   "recent.error": {
-   "hash": "34e54d83cc55",
-   "ms": 4437
+   "hash": "00a8985f7513",
+   "ms": 4824
   },
   "recent.extra": {
-   "hash": "1e92c76f3b85",
-   "ms": 2048
+   "hash": "647f78a975a9",
+   "ms": 2664
   },
   "recent.hint": {
-   "hash": "0d71d1407a38",
-   "ms": 2816
+   "hash": "d0e1dae2768c",
+   "ms": 3996
   },
   "recent.missing": {
-   "hash": "f97991041073",
-   "ms": 2581
+   "hash": "4a84320e1238",
+   "ms": 2988
   },
   "recent.order": {
-   "hash": "0eb114c662cd",
-   "ms": 3243
+   "hash": "7f37735ae46f",
+   "ms": 4824
   },
   "shape.1": {
-   "hash": "bb132632cc67",
-   "ms": 4821
+   "hash": "be18080d1607",
+   "ms": 4788
   },
   "shape.2": {
-   "hash": "009f11292c73",
-   "ms": 4715
+   "hash": "e4560c043f8b",
+   "ms": 5940
   },
   "shape.3": {
-   "hash": "62ba9aefcdf4",
-   "ms": 6293
+   "hash": "69c522f5f0fd",
+   "ms": 7596
   },
   "shape.4": {
-   "hash": "37fda8329f7b",
-   "ms": 6016
+   "hash": "306cd82ac212",
+   "ms": 6228
   },
   "shape.ask": {
-   "hash": "e4630ba48733",
-   "ms": 3413
+   "hash": "f808ffb60905",
+   "ms": 4284
   },
   "shape.seven": {
-   "hash": "e81094886ffe",
-   "ms": 3136
+   "hash": "2b41f8b93148",
+   "ms": 4572
   },
   "shape.six": {
-   "hash": "cde261f54211",
-   "ms": 1280
+   "hash": "2b6d45c09567",
+   "ms": 1620
   },
   "shape.ten": {
-   "hash": "fbc6321637a8",
-   "ms": 3648
+   "hash": "f27c3e271559",
+   "ms": 4284
   },
   "where.1": {
-   "hash": "8afb0635c8ce",
-   "ms": 4928
+   "hash": "bd92b1332e18",
+   "ms": 4824
   },
   "where.2": {
-   "hash": "b4f81a06e4c3",
-   "ms": 4501
+   "hash": "3f99537963b6",
+   "ms": 5292
   },
   "where.3": {
-   "hash": "209830ccda94",
-   "ms": 3861
+   "hash": "8a9517732386",
+   "ms": 4392
   },
   "where.4": {
-   "hash": "c76f86db4a57",
-   "ms": 5504
+   "hash": "5c396f0e2905",
+   "ms": 5652
   },
   "where.5": {
-   "hash": "5c03ee9bebe3",
-   "ms": 5547
+   "hash": "1047f5bc7229",
+   "ms": 7416
   },
   "where.6": {
-   "hash": "6e6fdd857dc2",
-   "ms": 2496
+   "hash": "0ebad4c7a60d",
+   "ms": 3168
   }
  }
 });
