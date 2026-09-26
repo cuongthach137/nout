@@ -18,7 +18,8 @@
   }
 
   // build(stage) → board: { code(sql), async show(sql, opts) → result, grid, rows(), col(name) }
-  function board(stage, { label = "" } = {}) {
+  // dataset: which DSL.Sql dataset queries run against (default "bakery").
+  function board(stage, { label = "", dataset = "bakery" } = {}) {
     stage.innerHTML = `<div class="sq-board">
       <pre class="sq-code" aria-label="Query" hidden></pre>
       <div class="sq-result"><span class="sq-label">${label}</span><div class="sq-grid" role="table"></div></div>
@@ -58,7 +59,7 @@
     }
 
     async function show(sql, options = {}) {
-      const result = await run(sql);
+      const result = await DSL.Sql.run(dataset, sql);
       if (result.error) {
         grid.innerHTML = `<p class="sq-err">${result.error}</p>`;
         return result;
@@ -129,7 +130,7 @@
   }
 
   // A written exercise. Events: result { reason }; done when it matches.
-  function challengeBeat({ id, prompt, why, task, starter, solution, ordered = false }) {
+  function challengeBeat({ id, prompt, why, task, starter, solution, ordered = false, dataset = "bakery", probe = null }) {
     return {
       id,
       prompt,
@@ -137,10 +138,11 @@
       mount(scene, api) {
         scene.innerHTML = `<div class="sq-challenge"><p class="sq-task">${task}</p><div class="sq-challenge-lab"></div></div>`;
         const lab = DSL.Sql.lab(scene.querySelector(".sq-challenge-lab"), {
-          dataset: "bakery",
+          dataset,
           starter,
           solution,
           ordered,
+          probe,
           showGoal: false,
           onResult: (result, verdict) => api.event("result", { reason: verdict ? verdict.reason : "none" }),
         });

@@ -1,0 +1,13 @@
+/* Relationships and keys lesson: cardinality diagram. */
+
+.ky-card { display: grid; gap: 14px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; overflow: auto; }
+.ky-shapes { display: grid; gap: 12px; }
+.ky-shape { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 14px 16px; border: 1.5px solid var(--line-strong); border-radius: 16px; background: var(--surface); animation: sqIn .4s backwards; animation-delay: calc(var(--i) * 120ms); }
+.ky-shape small { grid-column: 1 / -1; color: var(--muted); font-family: var(--mono); font-size: 12px; text-align: center; }
+.ky-shape small .sq-kw { color: var(--green-deep); }
+.ky-table { justify-self: center; padding: 6px 14px; border-radius: 10px; color: #e8efe9; background: var(--sidebar); font-family: var(--mono); font-size: 14px; }
+.ky-link { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--green-deep); }
+.ky-link i { font-style: normal; }
+.ky-link em { width: clamp(40px, 10vw, 120px); height: 2px; background: var(--green); }
+.ky-shape.ky-hot { border-color: var(--green); background: var(--lime); }
+.ky-out:empty { display: none; }

@@ -100,7 +100,14 @@ INSERT INTO order_items VALUES
   (16, 5, 1), (16, 3, 1);
 `;
 
-  const datasets = { bakery: BAKERY };
+  // bakeryStrict enforces foreign keys (SQLite leaves them off unless asked); bakeryOrphan has
+  // one order whose customer doesn't exist, for data-quality checks; strict is empty and enforcing.
+  const datasets = {
+    bakery: BAKERY,
+    bakeryStrict: `PRAGMA foreign_keys = ON;\n${BAKERY}`,
+    bakeryOrphan: `${BAKERY}\nINSERT INTO orders VALUES (17, 42, '2024-09-26', 'paid');`,
+    strict: "PRAGMA foreign_keys = ON;",
+  };
   const schemaOf = (dataset) => datasets[dataset] || dataset;
 
   // ---------- Worker ----------
@@ -178,6 +185,11 @@ INSERT INTO order_items VALUES
       [/incomplete input/, () => "The query ends too early. Is a bracket or a quote left open?"],
       [/misuse of aggregate/, () => "An aggregate like COUNT or SUM is used where it can't be. Filter groups with HAVING, not WHERE."],
       [/must appear in the GROUP BY|not an aggregate/, () => "Every selected column must be in the GROUP BY, or inside an aggregate like COUNT or SUM."],
+      [/FOREIGN KEY constraint failed/, () => "That breaks a foreign key: the row points at something that doesn't exist, or other rows still point at it."],
+      [/UNIQUE constraint failed: (.+)/, (m) => `That would duplicate a value that must be unique: ${m[1]}.`],
+      [/NOT NULL constraint failed: (.+)/, (m) => `${m[1]} can't be empty (NOT NULL).`],
+      [/CHECK constraint failed: (.+)/, (m) => `That value fails a CHECK rule: ${m[1]}.`],
+      [/table (\w+) already exists/, (m) => `There's already a table called ${m[1]}.`],
       [/SELECTs to the left and right of (\w+) do not have the same number of result columns/, (m) => `Both sides of ${m[1]} must return the same number of columns.`],
     ];
     for (const [pattern, reword] of rules) {
@@ -285,10 +297,13 @@ INSERT INTO order_items VALUES
   // ---------- Lab ----------
 
   // A SQL exercise: schema, editor, result, verdict.
-  // options = { dataset, starter, solution?, ordered?, showGoal?, placeholder?, onResult?(result, verdict), storageKey? }
+  // options = { dataset, starter, solution?, ordered?, showGoal?, placeholder?, onResult?(result, verdict), storageKey?, probe? }
+  // probe: SQL run after the learner's SQL (and after the solution) whose result is compared, for
+  // exercises that build something (a table, a constraint) rather than query.
   // Without a solution it's a free sandbox. Returns { passed: Promise, run(), setSql(sql), element }.
   function lab(container, options) {
-    const { dataset = "bakery", starter = "", solution = null, ordered = false, showGoal = Boolean(solution), placeholder = "SELECT …", onResult, storageKey } = options;
+    const { dataset = "bakery", starter = "", solution = null, ordered = false, showGoal = Boolean(solution) && !options.probe, placeholder = "SELECT …", onResult, storageKey, probe = null } = options;
+    const withProbe = (sql) => (probe ? `${sql.replace(/;\s*$/, "")};\n${probe}` : sql);
     const saved = storageKey ? DSL.store.get(storageKey, null) : null;
     container.innerHTML = `<div class="sql-lab">
       <div class="sql-schema" aria-label="Tables"><span class="sql-loading">Loading tables…</span></div>
@@ -313,7 +328,7 @@ INSERT INTO order_items VALUES
 
     let finish;
     const passed = new Promise((resolve) => { finish = resolve; });
-    const expected = solution ? run(dataset, solution) : Promise.resolve(null);
+    const expected = solution ? run(dataset, withProbe(solution)) : Promise.resolve(null);
 
     describe(dataset).then((tables) => { root.querySelector(".sql-schema").innerHTML = schemaMarkup(tables); })
       .catch((error) => { root.querySelector(".sql-schema").innerHTML = `<span class="sql-error-text">${escapeHtml(error.message)}</span>`; });
@@ -334,7 +349,7 @@ INSERT INTO order_items VALUES
       if (storageKey) DSL.store.set(storageKey, sql);
       runButton.disabled = true;
       setVerdict("Running…");
-      const [result, goal] = await Promise.all([run(dataset, sql), expected]);
+      const [result, goal] = await Promise.all([run(dataset, withProbe(sql)), expected]);
       runButton.disabled = false;
       if (!root.isConnected) return;
       if (result.error) {
@@ -352,7 +367,7 @@ INSERT INTO order_items VALUES
       }
       const verdict = compare(result, goal, { ordered });
       const mark = new Map(verdict.extra.map((row) => [rowKey(row), "sql-extra"]));
-      out.innerHTML = tableMarkup(result, { mark })
+      out.innerHTML = (probe ? `<p class="sql-probe-note">The check, run after your SQL:</p>` : "") + tableMarkup(result, { mark })
         + (verdict.missing.length ? `<div class="sql-missing"><b>Missing from your result</b>${tableMarkup({ columns: goal.columns, rows: verdict.missing })}</div>` : "");
       setVerdict(verdict.ok ? `✓ ${verdict.message}` : verdict.message, verdict.ok ? "ok" : "warn");
       root.classList.toggle("is-passed", verdict.ok);
@@ -395,7 +410,7 @@ INSERT INTO order_items VALUES
 
   // ---------- Code display ----------
 
-  const KEYWORDS = /\b(SELECT|DISTINCT|FROM|WHERE|AND|OR|NOT|IN|IS|NULL|LIKE|BETWEEN|AS|ORDER|GROUP|BY|HAVING|ASC|DESC|LIMIT|OFFSET|JOIN|LEFT|RIGHT|FULL|INNER|OUTER|ON|WITH|UNION|ALL|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MIN|MAX|OVER|PARTITION|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|FIRST_VALUE|LAST_VALUE|ROWS|RANGE|PRECEDING|FOLLOWING|CURRENT|ROW|UNBOUNDED|RECURSIVE|EXISTS|CROSS)\b/g;
+  const KEYWORDS = /\b(SELECT|DISTINCT|FROM|WHERE|AND|OR|NOT|IN|IS|NULL|LIKE|BETWEEN|AS|ORDER|GROUP|BY|HAVING|ASC|DESC|LIMIT|OFFSET|JOIN|LEFT|RIGHT|FULL|INNER|OUTER|ON|WITH|UNION|ALL|CASE|WHEN|THEN|ELSE|END|COUNT|SUM|AVG|MIN|MAX|OVER|PARTITION|ROW_NUMBER|RANK|DENSE_RANK|LAG|LEAD|FIRST_VALUE|LAST_VALUE|ROWS|RANGE|PRECEDING|FOLLOWING|CURRENT|ROW|UNBOUNDED|RECURSIVE|EXISTS|CROSS|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|INDEX|UNIQUE|PRIMARY|FOREIGN|KEY|REFERENCES|CASCADE|RESTRICT|ACTION|NO|DEFAULT|CHECK|CONSTRAINT|INTEGER|TEXT|REAL|ALTER|DROP|PRAGMA|IGNORE)\b/g;
 
   // SQL as highlighted HTML (keywords, strings, numbers). Not a parser: good enough for display.
   function highlight(sql) {
@@ -410,7 +425,7 @@ INSERT INTO order_items VALUES
   // ---------- Challenge sets ----------
 
   // A numbered set of SQL exercises sharing one lab area (Explore pages).
-  // challenges = [{ id, prompt, starter, solution, ordered?, hint? }]
+  // challenges = [{ id, prompt, starter, solution, ordered?, hint?, dataset?, probe? }]
   // options = { dataset, storageKey, onPass(id), onAllDone() }
   function challenges(container, list, { dataset = "bakery", storageKey, onPass, onAllDone } = {}) {
     const passed = new Set(storageKey ? DSL.store.get(storageKey, []) : []);
@@ -440,7 +455,7 @@ INSERT INTO order_items VALUES
       hint.open = false;
       hint.querySelector("p").innerHTML = challenge.hint || "";
       paintTabs();
-      const exercise = lab(root.querySelector(".sql-set-lab"), { dataset, starter: challenge.starter, solution: challenge.solution, ordered: challenge.ordered });
+      const exercise = lab(root.querySelector(".sql-set-lab"), { dataset: challenge.dataset || dataset, starter: challenge.starter, solution: challenge.solution, ordered: challenge.ordered, probe: challenge.probe });
       exercise.passed.then(() => {
         if (passed.has(challenge.id)) return;
         passed.add(challenge.id);

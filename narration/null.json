@@ -144,6 +144,6 @@
     "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
 
     "finish.1": "That's the lesson, and the SQL module. NULL means unknown. Test it with IS NULL, never trust NOT IN near it, and give it a default when you mean one.",
-    "finish.2": "Next up: how a database actually reads those rows from disk."
+    "finish.2": "Next up: keys the database enforces, and the shapes relationships take."
   }
 }
