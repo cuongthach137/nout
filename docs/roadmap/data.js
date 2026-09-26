@@ -42,8 +42,8 @@ window.ROADMAP = {
     { id: "p3", name: "Level 1 foundations", short: "Phase 3", items: [
       { id: "p3-sqljs", title: "In-browser SQL engine", detail: "sql.js, with a checker that compares your result to the expected rows.", isNew: true, status: "done", note: "PR #19: js/components/sql.js (worker, checker, lab widget), the bakery dataset, and a SQL sandbox page (#/sql)." },
       { id: "p3-select", title: "SELECT, filtering and sorting", detail: "T1", isNew: true, status: "done", note: "PR #20: all three modes, about 10 min narrated, 8 keywords. Placed after Data modeling so the SQL lessons query the tables that lesson builds." },
-      { id: "p3-joins", title: "Join types", detail: "T1 · Inner, left, right, full, and what each drops.", isNew: true, status: "progress", note: "PR open: all three modes; inner/left/right/full, anti-join, the WHERE-after-LEFT-JOIN trap, fan-out and cross joins." },
-      { id: "p3-group", title: "GROUP BY and HAVING", detail: "T1", isNew: true },
+      { id: "p3-joins", title: "Join types", detail: "T1 · Inner, left, right, full, and what each drops.", isNew: true, status: "done", note: "PR #21: all three modes; inner/left/right/full, anti-join, the WHERE-after-LEFT-JOIN trap, fan-out and cross joins." },
+      { id: "p3-group", title: "GROUP BY and HAVING", detail: "T1", isNew: true, status: "progress", note: "PR open: all three modes; aggregates, COUNT(*) vs COUNT(col), grain, bare columns, WHERE vs HAVING, COUNT(DISTINCT) after a join." },
       { id: "p3-sub", title: "Subqueries and CTEs", detail: "T1", isNew: true },
       { id: "p3-window", title: "Window functions", detail: "T1 · Ranking, running totals, top-N per group.", isNew: true },
       { id: "p3-null", title: "NULL traps", detail: "T1 · Three-valued logic, COUNT(*) vs COUNT(col), NOT IN.", isNew: true },
@@ -100,7 +100,7 @@ window.ROADMAP = {
   modules: [
     { level: "Start", name: "Course map", lessons: [["Course map", "welcome", { N: "on", E: "on" }]] },
     { level: "Level 1", name: "Data models", lessons: [["One fact, one place", "modeling", { N: "on", G: "on", E: "on" }], ["Relationships and keys"], ["Relational, document, and graph"]] },
-    { level: "Level 1", name: "SQL you’ll be asked to write", lessons: [["SELECT, filter, sort", "select", { N: "on", G: "on", E: "on" }], ["Join types", "joins", { N: "on", G: "on", E: "on" }], ["GROUP BY and HAVING"], ["Subqueries and CTEs"], ["Window functions"], ["NULL traps"]] },
+    { level: "Level 1", name: "SQL you’ll be asked to write", lessons: [["SELECT, filter, sort", "select", { N: "on", G: "on", E: "on" }], ["Join types", "joins", { N: "on", G: "on", E: "on" }], ["GROUP BY and HAVING", "group", { N: "on", G: "on", E: "on" }], ["Subqueries and CTEs"], ["Window functions"], ["NULL traps"]] },
     { level: "Level 1", name: "Measuring systems", lessons: [["Latency, throughput, and percentiles"]] },
     { level: "Level 2", name: "Storage", lessons: [["Pages, not rows", "pages", { N: "on", G: "on", E: "on" }], ["Walk a B-tree", "btree", { E: "on" }], ["Physical data layout", "index-layout", { E: "on" }], ["Keys and page splits", "btree-writes", { E: "on" }]] },
     { level: "Level 2", name: "Storage engines", lessons: [["LSM trees in depth"], ["OLTP vs OLAP and column stores"]] },

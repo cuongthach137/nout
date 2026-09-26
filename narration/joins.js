@@ -104,7 +104,7 @@ window.DataSystemsLab.Narrator.register("joins", {
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
   "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
   "finish.1": "That's the lesson. Inner joins keep only matches. Outer joins keep a side whole, with NULLs. And joins can multiply rows.",
-  "finish.2": "Next up: how a database actually reads those rows from disk."
+  "finish.2": "Next up: turning rows into numbers, with GROUP BY."
  },
  "speakers": {
   "interviewer": {
@@ -175,8 +175,8 @@ window.DataSystemsLab.Narrator.register("joins", {
    "ms": 8043
   },
   "finish.2": {
-   "hash": "555b915c7e66",
-   "ms": 3712
+   "hash": "ca19a5931ae9",
+   "ms": 3029
   },
   "full.1": {
    "hash": "e851524fb06a",
