@@ -53,7 +53,9 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 - Deploying early overwrites the files of lines that changed (paths don't include the hash). The live site then briefly plays the new take of those lines; harmless.
 - Right after a deploy, new files can return 404 for a few seconds while the Worker version rolls out; re-check before assuming it failed. Check URLs with `curl`: Cloudflare answers Python's default `urllib` user agent with 403.
 - Changing the course order changes what comes "next". Each lesson's `finish.2` line names the next lesson's idea, so re-check it (and rebuild that line's audio) when a lesson is inserted before or after it.
-- Known story inconsistency: `narration/modeling.json` says "Maya runs a busy bakery" and then treats Maya as a customer (STYLE.md calls her a regular customer). The SQL dataset has Maya as customer #1. Treat the bakery as Maya's favourite shop, not hers, when writing new lines, and fix lesson 01's opening when it's next revised.
+- The bakery is "Maya's bakery" as in her favourite shop: STYLE.md makes Maya a regular customer, and the SQL dataset has her as customer #1. Never write that she runs or owns it (lesson 01 once did).
+
+- A practice recap example (`goal.example` in `js/components/practice.js`) can be plain tables instead of SQL, for lessons without a SQL lab (see `modeling.js`). Keep each recap card short enough that all three fit at 1280×700: `show` limits the rows per table, and measure `.pr-scene`'s `scrollHeight - clientHeight` after the replay finishes.
 
 ## SQL lesson building blocks
 

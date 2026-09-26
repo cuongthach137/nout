@@ -5,7 +5,8 @@
   "voice": "English_WiseScholar",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "English_expressive_narrator",
+    "interviewer": {
+      "voice": "English_expressive_narrator",
       "label": "Interviewer"
     }
   },
@@ -36,7 +37,11 @@
     }
   },
   "lines": {
-    "teach-copies.1": "Maya runs a busy bakery. Every order goes into <b>one notebook</b>.",
+    "goals.intro": "First, here's what you'll be able to do by the end of this lesson.",
+    "goals.1": "One. Spot a fact that's been copied onto rows that don't own it, and name the two bugs it causes.",
+    "goals.2": "Two. Split data into one list per kind of thing, linked by keys, and join it back together.",
+    "goals.3": "Three. Speed up slow reads with fast joins first, and make any copy someone's job to keep correct.",
+    "teach-copies.1": "Maya's favourite bakery is busy. Every order goes into <b>one notebook</b>.",
     "teach-copies.2": "Maya ordered twice, so her phone number is written down <b>twice</b>.",
     "teach-copies.ask": "Now she gets a new number. What could go wrong?",
     "teach-copies.one": "Exactly. Watch.",
@@ -136,42 +141,58 @@
     "fix.refresh": "Stale for a day at most, then its owner fixes it.",
     "fix.wide": "Thirteen wrong facts, and climbing. Nobody owns that copy.",
     "fix.outro": "In an interview, lead with fast joins. Reach for an owned copy only when you must.",
-    "quiz.intro": "Four quick questions.",
-    "quiz.q1": {
-      "caption": "Maya’s phone number is copied onto every one of her order rows. What breaks first?",
-      "voice": "Maya's phone number is copied onto every one of her order rows. What breaks first?",
+    "recap.intro": "Let's look back at what you can do now.",
+    "recap.1": "Maya's phone was copied onto each of her orders. Update one copy, and the notebook disagrees with itself. Cancel Ana's only order, and her phone goes too.",
+    "recap.2": "Ask what each fact is about. People, cakes and orders get their own lists, and orders point with a key. A join follows the pointers back.",
+    "recap.3": "Copying everything into one wide table made the report fast, and wrong. Fast joins come first. A copy needs an owner, like a nightly refresh.",
+    "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+    "check.q1": "A gym writes each member's email on every class booking. A member cancels their only booking. What else is gone?",
+    "check.q1-why": "Their email. It was a fact about the member, stored on a booking, so deleting the booking deleted it too. That's a deletion anomaly.",
+    "check.q2": {
+      "caption": "An orders list has <code>order_id, customer_id, customer_city, ordered_at</code>. Which column breaks one fact, one place?",
+      "voice": "An orders list has an order ID, a customer ID, the customer's city, and the order date. Which column breaks one fact, one place?"
+    },
+    "check.q2-why": "The customer's city. It's about the customer, not the order, so it belongs on the Customers list. The customer ID already points there.",
+    "check.q3": {
+      "caption": "A product page joins five lists and is slow. The team copies the result into a <code>product_summary</code> table. What else does the plan need?",
+      "voice": "A product page joins five lists, and it's slow. The team copies the result into a product summary table. What else does the plan need?"
+    },
+    "check.q3-why": "An owner. Something has to refresh the copy when the lists change, or it drifts. And check the joins have indexes first.",
+    "check.right1": "Right.",
+    "check.right2": "Exactly.",
+    "check.right3": "Correct.",
+    "check.pass": {
+      "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+      "voice": "Nicely done. The ideas are sticking."
+    },
+    "check.retry": {
+      "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+      "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+    },
+    "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+    "interview.w1": {
+      "caption": "What is normalization, and why do it?",
       "speaker": "interviewer"
     },
-    "quiz.q1-why": "Copies drift. Every edit becomes a search for every copy, and a missed one is silent.",
-    "quiz.q2": {
-      "caption": "A cell holds “Maya · 555-0101”. Splitting it into separate cells is the move databases call…",
-      "voice": "One cell holds Maya's name and her phone number. Splitting them into separate cells is called what?",
+    "interview.w1-why": "Normalization stores each fact once, on the table of the thing it describes. Then one change is one edit, and a delete can't erase something else.",
+    "interview.w2": {
+      "caption": "When would you deliberately denormalize?",
       "speaker": "interviewer"
     },
-    "quiz.q2-why": "That's first normal form: one value per cell, so the database can filter and index it.",
-    "quiz.q3": {
-      "caption": "Cancelling a customer’s only order also erases her phone number. The cheapest structural fix?",
-      "voice": "Cancelling a customer's only order also erases her phone number. What's the cheapest structural fix?",
+    "interview.w2-why": "When a read is still too slow after indexing. And only with something that owns keeping the copy in sync.",
+    "interview.open": {
+      "caption": "Our orders table stores the customer's name, phone and address on every order. What problems will we hit, and how would you restructure it?",
       "speaker": "interviewer"
     },
-    "quiz.q3-why": "The phone is a fact about the person. Move it to a Customers list, and orders can come and go.",
-    "quiz.q4": {
-      "caption": "A nightly report joins six lists and takes 40 minutes. The safest first move?",
-      "voice": "A nightly report joins six lists and takes forty minutes. What's the safest first move?",
-      "speaker": "interviewer"
-    },
-    "quiz.q4-why": "Slow joins usually lack indexes. Fix those first, and add an owned copy only if it's still slow.",
-    "quiz.right1": "Right.",
-    "quiz.right2": "Exactly.",
-    "quiz.right3": "Correct.",
-    "quiz.pass": {
-      "caption": "<b>{right} / 4</b>. Passed.",
-      "voice": "Nicely done. You passed."
-    },
-    "quiz.retry": {
-      "caption": "<b>{right} / 4</b>. Worth another pass.",
-      "voice": "Not quite there. Replay a chapter or two, then try again."
-    },
+    "interview.right1": "Good answer.",
+    "interview.right2": "That's the one they want.",
+    "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+    "interview.hint": "Press Reveal when you're ready.",
+    "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+    "interview.rate": "Be honest. How did you do?",
+    "interview.got": "Nice. That's an answer that lands.",
+    "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+    "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
     "finish.1": "That's the lesson. One fact, one place. Pointers instead of copies. And copies only when someone owns them.",
     "finish.2": "Next up: asking those tables questions, in SQL.",
     "keywords.1": "Before we wrap up, here are the words worth keeping.",

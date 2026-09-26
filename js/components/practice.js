@@ -10,7 +10,9 @@
   //   practice = {
   //     lessonId,
   //     goals:   [{ id, icon, title, text, snippet, recap, example }],  // 2–3, one per big idea
-  //              example = { sql, before?, dataset?, mark?(row) → class, note } replayed in the recap
+  //              example = { sql, before?, dataset?, show?, mark?(row, phase) → class, note }, replayed
+  //              in the recap. show: rows per table (7 by default). For lessons without SQL, before
+  //              and after (in place of sql) are tables { label, columns, rows }, or lists of them.
   //     checks:  [{ id, goal, prompt, options, answer, why }],          // apply an idea, tied to a goal
   //     warmups: [{ id, goal, prompt, options, answer, why }],          // interviewer, multiple choice
   //     open:    { id, goal, prompt, points: [html], answer: html },    // interviewer, open
@@ -95,20 +97,23 @@
     </article>`).join("")}</div>`;
   }
 
-  // Replay a goal's example into its card: optional "before" query, then the real one.
+  // Replay a goal's example into its card: an optional "before" step, then the real one.
   async function playExample(card, goal, wait = (ms) => new Promise((r) => setTimeout(r, ms))) {
     const ex = goal.example;
     const host = card.querySelector(".pr-example");
-    if (!ex || !host || !DSL.Sql) return;
+    if (!ex || !host) return;
     const dataset = ex.dataset || "bakery";
-    const mini = (result, cls = "") => `<div class="pr-mini ${cls}">${result.error ? `<p class="sq-err">${result.error}</p>` : `<table><thead><tr>${result.columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${result.rows.slice(0, 7).map((row) => `<tr class="${ex.mark ? ex.mark(row, cls) : ""}">${row.map((v) => `<td>${v === null ? "<i>NULL</i>" : typeof v === "number" && !Number.isInteger(v) ? Number(v.toFixed(2)) : v}</td>`).join("")}</tr>`).join("")}</tbody></table>`}</div>`;
-    const code = (sql) => `<code class="pr-snippet">${DSL.Sql.highlight(sql)}</code>`;
+    const mini = (result, cls = "") => `<div class="pr-mini ${cls}">${result.label ? `<small class="pr-label">${result.label}</small>` : ""}${result.error ? `<p class="sq-err">${result.error}</p>` : `<table><thead><tr>${result.columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${result.rows.slice(0, ex.show || 7).map((row) => `<tr class="${ex.mark ? ex.mark(row, cls) : ""}">${row.map((v) => `<td>${v === null ? "<i>NULL</i>" : typeof v === "number" && !Number.isInteger(v) ? Number(v.toFixed(2)) : v}</td>`).join("")}</tr>`).join("")}</tbody></table>`}</div>`;
+    // A step is a query (shown, then run) or tables shown as they are.
+    const step = async (what, cls) => (typeof what === "string"
+      ? `<code class="pr-snippet">${DSL.Sql.highlight(what)}</code>${mini(await DSL.Sql.run(dataset, what), cls)}`
+      : [].concat(what).map((table) => mini(table, cls)).join(""));
     if (ex.before) {
-      host.innerHTML = `${code(ex.before)}${mini(await DSL.Sql.run(dataset, ex.before), "before")}`;
+      host.innerHTML = await step(ex.before, "before");
       retrigger(host, "sq-code-in");
       await wait(1400);
     }
-    host.innerHTML = `${code(ex.sql)}${mini(await DSL.Sql.run(dataset, ex.sql), "after")}${ex.note ? `<small class="pr-note">${ex.note}</small>` : ""}`;
+    host.innerHTML = `${await step(ex.after || ex.sql, "after")}${ex.note ? `<small class="pr-note">${ex.note}</small>` : ""}`;
     retrigger(host, "sq-code-in");
   }
 

@@ -6,13 +6,12 @@
 
   const S = DSL.ModelingScenes;
 
-
-
   function makeChapters() {
     const M = DSL.ModelingModel;
     const B = Object.fromEntries(S.beats().map((beat) => [beat.id, beat]));
 
     return [
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "teach-copies",
         title: "What goes wrong with copies?",
@@ -147,7 +146,9 @@
           await n.say("fix.outro");
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("modeling"),
       {
         id: "finish",
@@ -155,6 +156,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "modeling",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🧾", "One fact, one place", "an edit stays one edit"], ["🔗", "Pointers, not copies", "keys link the lists"], ["🧷", "Copies need an owner", "or they drift"]],
           }));
           await n.say("finish.1");

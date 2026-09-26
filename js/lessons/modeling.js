@@ -45,7 +45,7 @@
   const progress = DSL.LabKit.createProgress({
     lessonId: "modeling",
     storageKey: "dsl-modeling-labs",
-    labs: [{ id: "copies", name: `${DSL.lessonNumber("modeling")}A Copies` }, { id: "split", name: `${DSL.lessonNumber("modeling")}B Split` }, { id: "join", name: `${DSL.lessonNumber("modeling")}C Join` }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "copies", name: `${DSL.lessonNumber("modeling")}A Copies` }, { id: "split", name: `${DSL.lessonNumber("modeling")}B Split` }, { id: "join", name: `${DSL.lessonNumber("modeling")}C Join` }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Practice" }],
   });
   const completeLab = (id) => progress.complete(id);
 
@@ -67,12 +67,81 @@
   ];
   const DRILL_DAYS = 30;
 
-  const QUIZ = [
-    { prompt: "Maya’s phone number is copied onto every one of her order rows. What breaks first?", options: ["The table runs out of rows", "Copies drift apart when someone forgets one", "The database refuses duplicated text"], answer: 1, why: ("Redundant copies turn every edit into a search-and-replace across unknown rows. Miss one and the rows disagree — the update anomaly from " + DSL.labLabel("modeling", "A") + ".") },
-    { prompt: "A cell holds “Maya · 555-0101”. Splitting it into separate cells is the move databases call…", options: ["1NF — one value per cell", "Denormalization", "VACUUM"], answer: 0, why: "First normal form: each cell holds exactly one value, so the engine can filter, validate, and index it directly." },
-    { prompt: "Cancelling a customer’s only order also erases her phone number. The cheapest structural fix?", options: ["Forbid deleting orders", "Move the phone to a Customers list and let orders point to it", "Copy the phone into a backup table"], answer: 1, why: "The phone was a fact about the person, stored on the wrong list. Moving it to where it belongs makes orders deletable without losing the customer." },
-    { prompt: "A nightly report joins six lists and takes 40 minutes. The safest first move?", options: ["Copy all tables into one wide table with no sync owner", "Make the joins cheap with keys and indexes; consider an owned, refreshed copy only if it is still slow", "Split every table further"], answer: 1, why: ("Slow joins are usually missing fast paths, not a shape problem. Copies without an owner are the drift bug from " + DSL.labLabel("modeling", "A") + ", back on purpose.") },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round. The lesson
+  // has no SQL, so the recap replays the notebook and the lists as plain tables.
+  const notebook = (label, mayaPhones) => ({
+    label,
+    columns: ["order", "customer", "phone"],
+    rows: ORDERS.map((o) => [o.id, o.customer, o.customer === "Maya" ? mayaPhones.shift() : o.phone]),
+  });
+  const PRACTICE = {
+    lessonId: "modeling",
+    goals: [
+      {
+        id: "copies", icon: "🧾", title: "Spot the copies", snippet: "#101 555-0199 ≠ #103 555-0101",
+        text: "Spot a fact copied onto rows that don't own it, and name the bugs it causes.",
+        recap: "Maya's phone was written on each of her orders. Update one copy and the notebook disagrees with itself: an <b>update anomaly</b>. Cancel Ana's only order and her phone goes too: a <b>deletion anomaly</b>.",
+        example: {
+          before: notebook("The notebook", [PHONE_OLD, PHONE_OLD]),
+          after: notebook("One copy updated", [PHONE_NEW, PHONE_OLD]),
+          mark: (row, phase) => (row[1] !== "Maya" ? "" : phase === "before" ? "hot" : row[2] === PHONE_NEW ? "good" : "bad"),
+          note: "Two copies of one fact, one missed. Which number is right?",
+        },
+      },
+      {
+        id: "lists", icon: "🔗", title: "One fact, one place", snippet: "#103 → C1 → Maya, 555-0199",
+        text: "Split data into a list per kind of thing, linked by keys, and join it back.",
+        recap: "People, cakes and orders each get their own list, and orders point with a <b>key</b>: → C1 is Maya. That's <b>normalization</b>. A <b>join</b> follows the pointers back.",
+        example: {
+          before: notebook("The notebook", [PHONE_OLD, PHONE_OLD]),
+          after: [
+            { label: "Customers", columns: ["id", "name", "phone"], rows: CUSTOMERS.map((c) => [c.id, c.name, c.id === "C1" ? PHONE_NEW : c.phone]) },
+            { label: "Orders", columns: ["order", "customer", "item"], rows: ORDERS.map((o) => [o.id, `→ ${CUST_ID[o.customer]}`, o.item]) },
+          ],
+          mark: (row, phase) => (phase === "before" ? (row[1] === "Maya" ? "hot" : "") : row[0] === "C1" ? "good" : row[1] === "→ C1" ? "hot" : ""),
+          note: "Maya's number lives once, on C1. One edit, and both her orders see it.",
+        },
+      },
+      {
+        id: "owner", icon: "🧷", title: "Copies need an owner", snippet: "copy + owner → stale ≤ 1 day",
+        text: "Speed up slow reads with fast joins first, and make any copy someone's job to keep correct.",
+        recap: "The slow report tempted a wide copy of everything. Nobody updated it, so it drifted. Indexes keep one copy of each fact; a copy with an owner, like a nightly refresh, is <b>denormalization</b> on purpose.",
+        example: {
+          after: {
+            label: "A month of the slow report",
+            columns: ["fix", "time", "wrong facts"],
+            rows: [["Fast joins", RESPONSES.repair.time, "0"], ["Owned copy", RESPONSES.refresh.time, "≤ 1 day stale"], ["Copy, no owner", RESPONSES.wide.time, String(DRILL_EVENTS.reduce((sum, e) => sum + e.rows, 0))]],
+          },
+          mark: (row) => (row[0] === "Copy, no owner" ? "bad" : "good"),
+          note: "Copies aren't the problem. Copies nobody owns are.",
+        },
+      },
+    ],
+    checks: [
+      { id: "gym", goal: "copies", prompt: "A gym writes each member's email on every class booking. A member cancels their only booking, and the row is deleted. What else is gone?", options: ["Nothing: it was just a booking", "The member's email: it only lived on that row", "The class itself"], answer: 1, why: "The email was a fact about the member, stored on a booking. Delete the booking and the fact goes with it: a deletion anomaly." },
+      { id: "wrong-column", goal: "lists", prompt: "An orders list has <code>order_id, customer_id, customer_city, ordered_at</code>. Which column breaks \"one fact, one place\"?", options: ["customer_id", "customer_city", "ordered_at"], answer: 1, why: "A city is about the customer, not the order. It belongs on the Customers list; customer_id already points there." },
+      { id: "summary", goal: "owner", prompt: "A product page joins five lists and is slow. The team copies the result into a <code>product_summary</code> table. What else does the plan need?", options: ["Nothing: copies are always faster", "Something responsible for refreshing the copy when the lists change", "A second copy, as a backup"], answer: 1, why: "A copy with no owner drifts from the source. A job or trigger that refreshes it bounds how stale it can get. And first, check the joins have indexes." },
+    ],
+    warmups: [
+      { id: "normalization", goal: "lists", prompt: "What is normalization, and why do it?", options: ["Compressing tables to save disk space", "Storing each fact once, on the table of the thing it describes, so updates and deletes can't contradict or lose data", "Adding indexes so reads are faster"], answer: 1, why: "Normalization removes redundant copies, so one change is one edit, and deleting one thing never erases another." },
+      { id: "denormalize", goal: "owner", prompt: "When would you deliberately denormalize?", options: ["Always: joins are slow", "When a read is still too slow after indexing, and something owns keeping the copy in sync", "Never: it's always a mistake"], answer: 1, why: "Denormalization trades write cost and staleness for read speed. Do it after measuring, and give the copy an owner." },
+    ],
+    open: {
+      id: "notebook-design",
+      goal: "copies",
+      prompt: "Our orders table stores the customer's name, phone and address on every order. What problems will we hit, and how would you restructure it?",
+      points: [
+        "<b>Update anomaly</b>: a phone change must find every order row; miss one and the data contradicts itself.",
+        "<b>Deletion anomaly</b>: deleting a customer's only order loses the customer's details.",
+        "Move customer facts to a <b>customers</b> table with a primary key.",
+        "Orders keep a <b>customer_id</b> foreign key, and a join (on an indexed key) reads it back.",
+        "Nuance: the address an order shipped to can be a fact about the order, copied on purpose.",
+      ],
+      answer: "Every customer fact is copied onto each of their orders, so a phone change is a search for every copy, and a missed one leaves two numbers: an update anomaly. Deleting a customer's only order also deletes everything we knew about them: a deletion anomaly. I'd give customers their own table with a primary key, and have orders store a customer_id foreign key; a join on that indexed key rebuilds the full order. One nuance: the shipping address at the time of the order is really a fact about the order, so keeping a copy there is deliberate.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   function slotsMarkup(prefix) {
     return `<div class="assembled" id="${prefix}-result" aria-live="polite">${SLOTS.map(([key, label]) => `<span class="slot" data-slot="${key}">${label}</span>`).join("")}</div>`;
@@ -82,6 +151,7 @@
     const lesson = DSL.getLesson("modeling");
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "One fact, <em>one place</em>.", "Before indexes, joins, or tuning: the shape of your data decides whether a one-line change stays a one-line change. This lesson needs nothing but a bakery order notebook.")}
+      <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
       ${progress.markup()}
       <section class="concept-grid">
         <div class="concept-card">
@@ -216,10 +286,7 @@
         <div class="diagnosis" id="drill-diagnosis"><span class="diagnosis-label">Diagnosis</span><p>Pick a response to see its outcome.</p></div>
       </section>
 
-      <section class="lab" id="lab-quiz">
-        <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Four calls, no jargon required</h2><p class="lab-copy">Answer with the plain-language rules from the labs; the database vocabulary is only their formal name.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-        <div id="modeling-quiz">${DSL.Quiz.render(QUIZ, "Modeling review")}</div>
-      </section>
+      ${DSL.Practice.exploreMarkup(PRACTICE)}
 
       <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> shape decides cost before any tuning does. One fact, one place; pointers instead of copies; copies only with a named owner.</p></div>
       ${DSL.lessonFooter("modeling")}
@@ -229,13 +296,7 @@
     setupSplitLab();
     setupJoinLab();
     setupDrillLab();
-    DSL.Quiz.mount(document.getElementById("modeling-quiz"), QUIZ, {
-      noun: "decision",
-      passScore: 3,
-      successTitle: "Modeling review passed",
-      successCopy: "You can explain normalization without the vocabulary.",
-      onComplete: ({ passed }) => { if (passed) completeLab("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => completeLab("quiz") });
   }
 
   function phoneFor(name) {
@@ -974,7 +1035,7 @@
 
   DSL.ModelingModel = Object.freeze({
     PHONE_OLD, PHONE_NEW, ORDERS, CUSTOMERS, ITEMS, CUST_ID, ITEM_ID, HUNT_COPIES,
-    RESPONSES, DRILL_EVENTS, DRILL_DAYS, QUIZ, progress,
+    RESPONSES, DRILL_EVENTS, DRILL_DAYS, PRACTICE, progress,
     dish, buildNotebook, boardMarkup, flip, captureFlip, playFlip,
   });
 
