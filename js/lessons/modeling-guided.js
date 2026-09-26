@@ -331,6 +331,7 @@
     const M = DSL.ModelingModel;
 
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       {
         id: "teach-copies",
         prompt: "What goes wrong with copies?",
@@ -675,9 +676,13 @@
           }));
         },
       },
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "modeling",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🧾", "One fact, one place", "an edit stays one edit"], ["🔗", "Pointers, not copies", "keys link the lists"], ["🧷", "Copies need an owner", "or they drift"]],
       }),
     ];
