@@ -1,0 +1,125 @@
+/* Keywords: highlighted in narration, collected, reviewed, and practised as flashcards. */
+
+/* In captions: a highlighter stroke that sweeps in the first time a word appears. */
+.kw { padding: 0 3px; border-radius: 3px; color: var(--green-deep); font-weight: 800; background: linear-gradient(transparent 58%, var(--lime) 58%) no-repeat; background-size: 100% 100%; }
+.kw::after { content: "✦"; margin-left: 3px; color: var(--green); font-size: .6em; vertical-align: .55em; }
+@keyframes kwSweep { 0% { background-size: 0% 100%; } 100% { background-size: 100% 100%; } }
+@keyframes kwPop { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
+.kw.kw-new { display: inline-block; animation: kwSweep .6s ease-out .15s backwards, kwPop .5s cubic-bezier(.2, .8, .3, 1.4) .2s; }
+.nr-kw-flyer { display: inline-flex !important; align-items: center; padding: 3px 10px !important; border-radius: 99px; color: var(--green-deep) !important; background: var(--lime) !important; font-weight: 800; white-space: nowrap; }
+.nr-kw-flyer::after { content: none; }
+
+/* The Keywords button in the transport bar. */
+.nr-words { display: inline-flex; align-items: center; gap: 5px; padding: 0 12px; }
+.nr-words b { min-width: 18px; padding: 0 5px; border-radius: 99px; color: var(--green-deep); background: var(--lime); font-family: var(--mono); font-size: 11px; }
+.nr-words[aria-expanded="true"] { border-color: var(--green); }
+
+/* Keyword panel: a drawer over the lesson; opening it pauses the narration. */
+.nr-words-panel { position: fixed; inset: 0; z-index: 45; display: grid; justify-items: end; padding: 70px 18px 90px; background: rgba(15, 22, 19, .28); }
+.nr-words-card { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; width: min(100%, 420px); max-height: 100%; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 24px 60px rgba(15, 22, 19, .25); overflow: hidden; animation: gwIn .3s cubic-bezier(.2, .8, .3, 1); }
+.nr-words-card header { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 16px 18px 12px; border-bottom: 1px solid var(--line); }
+.nr-words-card header b { font-size: 17px; }
+.nr-words-card header small { grid-row: 2; color: var(--muted); font-size: 12px; }
+.nr-words-close { grid-row: span 2; align-self: center; width: 32px; height: 32px; border: 1px solid var(--line-strong); border-radius: 9px; color: var(--ink); background: var(--surface); cursor: pointer; }
+.nr-words-body { overflow-y: auto; padding: 6px 18px 12px; }
+.nr-words-card footer { padding: 12px 18px; border-top: 1px solid var(--line); font-size: 13px; font-weight: 700; }
+.nr-words-card footer a { color: var(--green); }
+.nr-words-empty, .nr-words-more { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
+
+.vk-list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.vk-list li { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.vk-list li:last-child { border-bottom: 0; }
+.vk-list b { font-size: 14.5px; }
+.vk-list p { margin: 2px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.vk-star { width: 34px; height: 34px; border: 1.5px solid var(--line-strong); border-radius: 10px; color: var(--muted); background: var(--surface); font-size: 17px; line-height: 1; cursor: pointer; transition: color .15s, border-color .15s, background .15s; }
+.vk-star:hover { border-color: var(--amber); }
+.vk-star[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); background: var(--amber-soft); }
+
+/* "Words to keep" chapter: flip cards with a star. */
+.vk-review { display: grid; justify-items: center; gap: 18px; width: 100%; max-width: 900px; }
+.vk-deck { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; width: 100%; }
+.vk-card { position: relative; height: 128px; perspective: 900px; animation: gdBadge .45s cubic-bezier(.2, .8, .3, 1.3) backwards; animation-delay: calc(var(--i) * 70ms); }
+.vk-flip { position: relative; width: 100%; height: 100%; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, 1.3, .5, 1); }
+.vk-card.flipped .vk-flip { transform: rotateY(180deg); }
+.vk-front, .vk-back { position: absolute; inset: 0; display: grid; place-items: center; padding: 14px 44px 14px 14px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--surface); backface-visibility: hidden; text-align: left; }
+.vk-front { font-size: 17px; font-weight: 800; color: var(--green-deep); background: linear-gradient(135deg, var(--surface) 60%, var(--green-soft)); }
+.vk-back { transform: rotateY(180deg); font-size: 12.5px; line-height: 1.4; color: var(--ink); border-color: var(--green); }
+.vk-card .vk-star { position: absolute; top: 8px; right: 8px; z-index: 1; width: 30px; height: 30px; font-size: 15px; }
+.vk-review-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.vk-review-actions .button { display: inline-flex; align-items: center; }
+
+/* Sidebar badge for cards due. */
+.nav-due { margin-left: auto; padding: 1px 8px; border-radius: 99px; color: var(--sidebar); background: var(--lime); font-family: var(--mono); font-size: 11px; font-style: normal; font-weight: 700; }
+
+/* Flashcards page. */
+.fc-stats { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; color: var(--muted); font-size: 13px; }
+.fc-stats b { color: var(--ink); font-family: var(--mono); font-size: 18px; }
+.fc-tabs { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line-strong); border-radius: 99px; background: var(--surface); }
+.fc-tabs button { min-height: 34px; padding: 0 18px; border: 0; border-radius: 99px; color: var(--muted); background: transparent; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.fc-tabs button[aria-selected="true"] { color: #fff; background: var(--green); }
+.fc-panel { margin-top: 22px; }
+
+.fc-session { display: grid; justify-items: center; gap: 20px; }
+.fc-progress { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; width: min(100%, 560px); color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.fc-progress i { height: 6px; border-radius: 99px; background: var(--surface-soft); overflow: hidden; }
+.fc-progress b { display: block; height: 100%; background: var(--green); transition: width .4s ease; }
+.fc-card { position: relative; display: grid; width: min(100%, 560px); min-height: 260px; border: 1.5px solid var(--line); border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); cursor: pointer; outline: none; }
+.fc-card:focus-visible { box-shadow: 0 0 0 3px var(--green-soft), var(--shadow); }
+.fc-face { grid-area: 1 / 1; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 28px; text-align: center; }
+.fc-face small { color: var(--green); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.fc-front b { font-size: clamp(26px, 4vw, 38px); letter-spacing: -.03em; }
+.fc-tip { color: var(--muted); font-size: 12.5px; }
+.fc-back { display: none; }
+.fc-back p { margin: 0; max-width: 42ch; font-size: 18px; line-height: 1.5; }
+.fc-back a { color: var(--green); font-size: 13px; font-weight: 700; }
+.fc-card.flipped { cursor: default; border-color: var(--green); }
+.fc-card.flipped .fc-front { display: none; }
+.fc-card.flipped .fc-back { display: grid; }
+@keyframes fcFlip { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.fc-card.fc-flip { animation: fcFlip .35s ease-in-out; }
+.fc-show kbd, .fc-rate kbd { padding: 1px 6px; border-radius: 5px; background: rgba(255, 255, 255, .2); font-family: var(--mono); font-size: 11px; }
+.fc-rate { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: min(100%, 560px); }
+.fc-rate-btn { display: grid; justify-items: center; gap: 2px; padding: 10px 6px; border: 1.5px solid var(--line-strong); border-radius: 14px; color: var(--ink); background: var(--surface); font: inherit; cursor: pointer; transition: transform .12s, border-color .15s; }
+.fc-rate-btn:hover { transform: translateY(-2px); }
+.fc-rate-btn kbd { background: var(--surface-soft); color: var(--muted); }
+.fc-rate-btn b { font-size: 14px; }
+.fc-rate-btn small { color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.fc-rate-btn.again { border-color: var(--coral); }
+.fc-rate-btn.hard { border-color: var(--amber); }
+.fc-rate-btn.good { border-color: var(--green); }
+.fc-rate-btn.easy { border-color: var(--blue); }
+.fc-empty { display: grid; justify-items: center; gap: 10px; padding: 40px 16px; text-align: center; }
+.fc-empty-icon { font-size: 56px; }
+.fc-empty h2 { margin: 0; }
+.fc-empty p { margin: 0; color: var(--muted); max-width: 46ch; }
+
+.fc-words-top { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.fc-group { margin-bottom: 18px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); }
+.fc-group h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 6px; font-size: 15px; }
+.fc-group h3 a { color: var(--ink); }
+.fc-group h3 small { color: var(--muted); font-family: var(--mono); font-size: 11.5px; font-weight: 500; }
+.fc-group ul { display: grid; margin: 0; padding: 0; list-style: none; }
+.fc-group li { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start; padding: 10px 0; border-top: 1px solid var(--line); }
+.fc-group li:first-child { border-top: 0; }
+.fc-group li b { font-size: 14.5px; }
+.fc-group li p { margin: 2px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.fc-group li em { align-self: center; padding: 2px 8px; border-radius: 99px; color: var(--muted); background: var(--surface-soft); font-family: var(--mono); font-size: 11px; font-style: normal; white-space: nowrap; }
+.fc-group li em.new { color: var(--blue); background: var(--blue-soft); }
+.fc-group li em.due { color: var(--green-deep); background: var(--lime); }
+.fc-locked { margin: 8px 0 0; color: var(--muted); font-size: 12.5px; }
+
+@media (max-width: 760px) {
+  .nr-words { padding: 0 8px; }
+  .nr-words-panel { padding: 64px 10px 80px; justify-items: stretch; }
+  .vk-deck { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .vk-card { height: 112px; }
+  .vk-front { font-size: 14.5px; padding: 10px 34px 10px 10px; }
+  .vk-back { font-size: 11px; padding: 8px 30px 8px 8px; }
+  .fc-rate { gap: 6px; }
+  .fc-rate-btn { padding: 8px 2px; }
+  .fc-rate-btn kbd { display: none; }
+  .fc-card { min-height: 220px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vk-flip { transition: none; }
+}

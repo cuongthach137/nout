@@ -198,6 +198,7 @@
           await n.say(passed ? "quiz.pass" : "quiz.retry", { right });
         },
       },
+      DSL.Vocab.reviewChapter("modeling"),
       {
         id: "finish",
         title: "Wrap-up",

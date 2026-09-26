@@ -72,3 +72,8 @@
 .nr-marks i.current { border-color: var(--ink); }
 .nr-marks i.ok { border-color: var(--green); background: var(--green); }
 .nr-marks i.bad { border-color: var(--coral); background: var(--coral); }
+
+@media (max-width: 760px) {
+  .nr-transport { gap: 5px; }
+  .nr-btn { min-width: 34px; padding: 0 8px; }
+}

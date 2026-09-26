@@ -81,6 +81,8 @@ uv run tools/voice.py build narration/pages.json   # render changed lines to aud
 uv run tools/voice.py deploy                       # publish audio/ to Cloudflare
 ```
 
+Narrated lessons highlight **keywords** as the narrator says them (`<k>term</k>` in a caption, defined under `"keywords"` in the script). Learners collect them in the lesson's Keywords panel, review them in a "Words to keep" chapter, and star the ones to practise. Starred words become **flashcards** (`#/flashcards`, `js/components/vocab.js`), reviewed with spaced repetition and saved in the browser. Each lesson stays within a budget of 8 to 12 minutes, 3 big ideas and 8 keywords; see `narration/STYLE.md`.
+
 Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-only Cloudflare Worker (`nout-audio`, free static hosting) using wrangler; run `npx wrangler login` once. The site reads audio from the address in `index.html`'s `<meta name="audio-base">`, and from the local `audio/` folder when served from `localhost`. Lines stream one at a time, and the narrator prefetches the next two while one plays. Voice is encoded as 40 kbps mono mp3. How lines should read, sound and pace is in [`narration/STYLE.md`](narration/STYLE.md); `narration/lexicon.json` holds spoken spellings for database terms, and a line can name a speaker, like the interviewer, for a second voice.
 
 ## Architecture

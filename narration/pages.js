@@ -2,7 +2,7 @@
 window.DataSystemsLab.Narrator.register("pages", {
  "lines": {
   "teach-page.1": "Here's a table of thirty-two customers. Each one is a <b>row</b>.",
-  "teach-page.2": "On disk, rows aren't stored one by one. They're packed into <b>pages</b>.",
+  "teach-page.2": "On disk, rows aren't stored one by one. They're packed into <k id=\"page\">pages</k>.",
   "teach-page.3": {
    "caption": "Every page is the same size: <b>8 KB</b>.",
    "voice": "Every page is the same size. Eight kilobytes."
@@ -28,7 +28,7 @@ window.DataSystemsLab.Narrator.register("pages", {
    "voice": "You asked for one small row. The disk handed over the whole page. Eight kilobytes."
   },
   "page.called-it": "Exactly what you predicted.",
-  "page.amp": "That ratio, bytes read over bytes wanted, is called <b>read amplification</b>. Keep an eye on it.",
+  "page.amp": "That ratio, bytes read over bytes wanted, is called <k>read amplification</k>. Keep an eye on it.",
   "neighbour.1": "But here's the upside. That page is sitting in memory now, with its neighbours on it.",
   "neighbour.ask": "Tap one of the other rows on that page.",
   "neighbour.hint": "The glowing rows share its page.",
@@ -37,11 +37,17 @@ window.DataSystemsLab.Narrator.register("pages", {
    "voice": "Free. Zero extra bytes from disk. The page was already here."
   },
   "neighbour.2": "Amplification drops with every neighbour you read.",
-  "neighbour.3": "That's why databases work so hard to store rows that are read together, together.",
+  "neighbour.3": {
+   "caption": "That's why databases work so hard to store rows that are read together, together. That's <k>locality</k>.",
+   "voice": "That's why databases work so hard to store rows that are read together, together."
+  },
   "teach-cache.1": "Disk holds every page. But every read from disk is <b>slow</b>.",
-  "teach-cache.2": "RAM is <b>fast</b>, but it only holds a few pages. This one holds two.",
-  "teach-cache.3": "If the page you need isn't in RAM, that's a <b>miss</b>. You wait for the disk.",
-  "teach-cache.4": "If it's already there, that's a <b>hit</b>. Almost free.",
+  "teach-cache.2": {
+   "caption": "RAM is <b>fast</b>, but it only holds a few pages: the <k>buffer pool</k>. This one holds two.",
+   "voice": "RAM is fast, but it only holds a few pages. This one holds two."
+  },
+  "teach-cache.3": "If the page you need isn't in RAM, that's a <k id=\"cache-miss\">miss</k>. You wait for the disk.",
+  "teach-cache.4": "If it's already there, that's a <k id=\"cache-hit\">hit</k>. Almost free.",
   "teach-cache.5": "But RAM fills up. To load another page, one of them has to <b>leave</b>.",
   "teach-cache.6": "Which one? We'll get to that. First, feel the difference yourself.",
   "hit.1": "Here's the disk, and a RAM with two empty slots. The stopwatch times each fetch.",
@@ -94,7 +100,7 @@ window.DataSystemsLab.Narrator.register("pages", {
    "voice": "Rule one. FIFO: first in, first out. It evicts page one, even though page one is busy."
   },
   "teach-evict.4": {
-   "caption": "Rule 2 \u00b7 <b>LRU</b>: least recently used. It evicts P5.",
+   "caption": "Rule 2 \u00b7 <k id=\"lru\">LRU</k>: least recently used. It evicts P5.",
    "voice": "Rule two. LRU: least recently used. It evicts page five."
   },
   "teach-evict.5": {
@@ -136,7 +142,7 @@ window.DataSystemsLab.Narrator.register("pages", {
   "teach-locality.2": "They were written over two years, so they're <b>scattered</b> across the table's pages.",
   "teach-locality.3": "An <b>index</b> says where each order is. Following it costs one jump per page.",
   "teach-locality.4": {
-   "caption": "A <b>covering index</b> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
+   "caption": "A <k>covering index</k> stores the orders themselves, sorted: a few <b>neighbouring</b> pages.",
    "voice": "A covering index stores the orders themselves, in order. So they sit on a few neighbouring pages."
   },
   "head.1": "Now you're the read head. Every page you touch costs a trip to disk.",
@@ -198,11 +204,49 @@ window.DataSystemsLab.Narrator.register("pages", {
    "voice": "Not quite there. Replay a chapter or two, then try again."
   },
   "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
-  "finish.2": "Next up: how an index finds one row among millions, one page at a time."
+  "finish.2": "Next up: how an index finds one row among millions, one page at a time.",
+  "keywords.1": "Before we wrap up, here are the words worth keeping.",
+  "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+  "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+  "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh."
  },
  "speakers": {
   "interviewer": {
    "label": "Interviewer"
+  }
+ },
+ "keywords": {
+  "page": {
+   "term": "Page",
+   "def": "The fixed-size block a database reads and writes, often 8 KB. Reading one row means reading its whole page."
+  },
+  "read-amplification": {
+   "term": "Read amplification",
+   "def": "Bytes read from storage divided by the bytes a query actually needed. Scattered rows push it up."
+  },
+  "buffer-pool": {
+   "term": "Buffer pool",
+   "def": "The database's in-memory cache of recently used pages."
+  },
+  "cache-miss": {
+   "term": "Cache miss",
+   "def": "The page isn't in the buffer pool, so the query waits for a read from storage."
+  },
+  "cache-hit": {
+   "term": "Cache hit",
+   "def": "The page is already in the buffer pool, so no storage read is needed."
+  },
+  "lru": {
+   "term": "LRU",
+   "def": "Least recently used: when the cache is full, evict the page that was used longest ago."
+  },
+  "locality": {
+   "term": "Locality",
+   "def": "Keeping data that's read together close together, so one page read serves many rows."
+  },
+  "covering-index": {
+   "term": "Covering index",
+   "def": "An index that holds every column a query needs, so the table itself never has to be read."
   }
  },
  "audio": {
@@ -349,6 +393,22 @@ window.DataSystemsLab.Narrator.register("pages", {
   "hit.outro": {
    "hash": "f0275caf7139",
    "ms": 4224
+  },
+  "keywords.1": {
+   "hash": "6e8f6ec7dc0f",
+   "ms": 2603
+  },
+  "keywords.ask": {
+   "hash": "b9f053603353",
+   "ms": 3115
+  },
+  "keywords.done": {
+   "hash": "050256c0adfd",
+   "ms": 4096
+  },
+  "keywords.hint": {
+   "hash": "bb3638fa922e",
+   "ms": 2688
   },
   "neighbour.1": {
    "hash": "74a6e9920abf",

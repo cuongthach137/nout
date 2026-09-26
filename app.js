@@ -18,7 +18,11 @@
   }
 
   function renderNavigation() {
-    DSL.elements.nav.innerHTML = Object.entries(groupLessonsByModule()).map(([module, lessons]) => `
+    const due = DSL.Vocab ? DSL.Vocab.dueCount() : 0;
+    const practice = `<section class="nav-module"><p class="nav-module-title">Practice</p>
+        <a href="#/flashcards" class="nav-link ${DSL.state.current === "flashcards" ? "active" : ""}"><span class="nav-number"><span>🗂</span></span><span>Flashcards</span>${due ? `<em class="nav-due" aria-label="${due} to review">${due}</em>` : ""}</a>
+      </section>`;
+    DSL.elements.nav.innerHTML = practice + Object.entries(groupLessonsByModule()).map(([module, lessons]) => `
       <section class="nav-module">
         <p class="nav-module-title">${module}</p>
         ${lessons.map((lesson) => `
@@ -40,6 +44,17 @@
     const forced = params.get("mode");
     // ?view= shows a mode for this visit only, without changing the learner's saved choice.
     const view = params.get("view");
+    // Flashcards is a practice page, not a lesson: no modes, no progress.
+    if (requested === "flashcards" && DSL.Vocab) {
+      DSL.state.current = "flashcards";
+      DSL.state.mode = "explore";
+      document.body.classList.remove("guided");
+      renderNavigation();
+      DSL.Vocab.renderDeck();
+      window.scrollTo(0, 0);
+      document.querySelector(".sidebar").classList.remove("open");
+      return;
+    }
     DSL.state.current = DSL.renderers[requested] ? requested : "welcome";
     if (forced === "narrated" || forced === "guided" || forced === "explore") {
       DSL.setMode(forced);
@@ -91,6 +106,8 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") document.querySelector(".sidebar").classList.remove("open");
   });
+
+  if (DSL.Vocab) DSL.Vocab.onChange = renderNavigation;
 
   window.addEventListener("hashchange", route);
   renderNavigation();

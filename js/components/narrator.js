@@ -44,6 +44,18 @@
   }
 
   const stripTags = (html) => html.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ");
+  const slug = (text) => stripTags(text).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  // Keywords from every registered lesson, or from one: { id: { term, def, lesson } }.
+  // Captions mark them as <k>term</k>, or <k id="term-id">inflected form</k>.
+  function keywords(lessonId) {
+    const out = {};
+    Object.entries(narrations).forEach(([lesson, bundle]) => {
+      if (lessonId && lesson !== lessonId) return;
+      Object.entries(bundle.keywords || {}).forEach(([id, word]) => { out[id] = { ...word, lesson }; });
+    });
+    return out;
+  }
   const never = () => new Promise(() => {});
 
   // One pause switch for the whole film: timers, audio and running animations all obey it.
@@ -249,7 +261,7 @@
 
   function run({ lessonId, title, chapters, onLab }) {
     const root = DSL.elements.root;
-    const { lines = {}, audio: manifest = {}, speakers = {} } = narrations[lessonId] || {};
+    const { lines = {}, audio: manifest = {}, speakers = {}, keywords: lessonWords = {} } = narrations[lessonId] || {};
 
     const saveKey = `dsl-narrated-${lessonId}`;
     const saved = readJson(saveKey, { index: 0, done: [] });
@@ -282,10 +294,18 @@
         <button type="button" class="nr-btn nr-play" aria-label="Pause">❚❚</button>
         <button type="button" class="nr-btn nr-replay" aria-label="Replay chapter">↺</button>
         <span class="nr-chapter"></span>
+        <button type="button" class="nr-btn nr-words" aria-label="Keywords" aria-expanded="false" hidden>📚 <b>0</b></button>
         <button type="button" class="nr-btn nr-speed" aria-label="Playback speed"></button>
         <button type="button" class="nr-btn nr-mute" aria-pressed="false"></button>
         <button type="button" class="nr-btn nr-next" aria-label="Next chapter">⏭</button>
       </footer>
+      <div class="nr-words-panel" hidden>
+        <div class="nr-words-card" role="dialog" aria-label="Keywords">
+          <header><b>Keywords</b><small>Star the ones you want to practise</small><button type="button" class="nr-words-close" aria-label="Close keywords">✕</button></header>
+          <div class="nr-words-body"></div>
+          <footer><a href="#/flashcards">Open flashcards →</a></footer>
+        </div>
+      </div>
       <div class="nr-start">
         <div class="nr-start-card">
           <span class="nr-start-eyebrow">🎧 Narrated lesson</span>
@@ -306,6 +326,52 @@
     const playButton = el(".nr-play");
     const speedButton = el(".nr-speed");
     const muteButton = el(".nr-mute");
+    const wordsButton = el(".nr-words");
+    const wordsPanel = el(".nr-words-panel");
+    // Words flown to the button in this playthrough; the count shows every word seen in the lesson.
+    const collected = new Set();
+    let resumeAfterWords = false;
+    wordsButton.hidden = !Object.keys(lessonWords).length;
+    if (DSL.Vocab) DSL.Vocab.wireCards(wordsPanel);
+    const paintWordCount = () => {
+      const seenCount = Object.keys(lessonWords).filter((id) => collected.has(id) || (DSL.Vocab && DSL.Vocab.hasSeen(id))).length;
+      wordsButton.querySelector("b").textContent = String(seenCount);
+    };
+    paintWordCount();
+    window.addEventListener("dsl-vocab", paintWordCount);
+
+    // A keyword in a caption: light it up and send a copy to the Keywords button.
+    function collect(id) {
+      if (!lessonWords[id] || collected.has(id)) return;
+      collected.add(id);
+      const span = cap.querySelector(`.kw[data-kw="${id}"]`);
+      const first = DSL.Vocab ? DSL.Vocab.seen(id, lessonId) : false;
+      paintWordCount();
+      if (span) span.classList.add("kw-new");
+      const land = () => retrigger(wordsButton, "ping");
+      if (span && !reducedMotion()) DSL.LabKit.fly(span, wordsButton, { duration: 750, lift: 60, className: "nr-kw-flyer" }).then(land);
+      else land();
+      if (first && span) DSL.LabKit.floater(span, "new keyword", "");
+    }
+
+    function openWords() {
+      const ids = Object.keys(lessonWords).filter((id) => collected.has(id) || (DSL.Vocab && DSL.Vocab.hasSeen(id)));
+      const hidden = Object.keys(lessonWords).length - ids.length;
+      el(".nr-words-body").innerHTML = (ids.length && DSL.Vocab ? DSL.Vocab.listMarkup(ids) : `<p class="nr-words-empty">Keywords light up in the captions as they come up.</p>`)
+        + (hidden ? `<p class="nr-words-more">${hidden} more to discover in this lesson.</p>` : "");
+      resumeAfterWords = started && !clock.paused;
+      clock.set(true);
+      wordsPanel.hidden = false;
+      wordsButton.setAttribute("aria-expanded", "true");
+      el(".nr-words-close").focus({ preventScroll: true });
+    }
+
+    function closeWords() {
+      if (wordsPanel.hidden) return;
+      wordsPanel.hidden = true;
+      wordsButton.setAttribute("aria-expanded", "false");
+      if (resumeAfterWords) clock.set(false);
+    }
 
     function persist() {
       writeJson(saveKey, { index, done: [...done] });
@@ -337,8 +403,17 @@
       const speaker = line && typeof line === "object" ? line.speaker : "";
       const label = speaker ? (speakers[speaker] && speakers[speaker].label) || speaker : "";
       cap.dataset.speaker = speaker || "";
-      cap.innerHTML = (label ? `<span class="nr-speaker">${label}</span>` : "") + text.replace(/\{(\w+)\}/g, (match, key) => (key in vars ? vars[key] : match));
+      const found = [];
+      const html = text
+        .replace(/\{(\w+)\}/g, (match, key) => (key in vars ? vars[key] : match))
+        .replace(/<k(?:\s+id="([^"]+)")?>([\s\S]*?)<\/k>/g, (match, keyId, inner) => {
+          const key = keyId || slug(inner);
+          found.push(key);
+          return `<span class="kw" data-kw="${key}">${inner}</span>`;
+        });
+      cap.innerHTML = (label ? `<span class="nr-speaker">${label}</span>` : "") + html;
       retrigger(cap, "nr-cap-in");
+      found.forEach(collect);
     }
 
     function setTurn(label) {
@@ -558,6 +633,9 @@
       paintChrome();
     });
     cap.addEventListener("click", () => voice.stop());
+    wordsButton.addEventListener("click", () => (wordsPanel.hidden ? openWords() : closeWords()));
+    el(".nr-words-close").addEventListener("click", closeWords);
+    wordsPanel.addEventListener("click", (event) => { if (event.target === wordsPanel) closeWords(); });
     root.querySelector(".gd-dots").addEventListener("click", (event) => {
       const dot = event.target.closest("[data-chapter]");
       if (!dot || !started) return;
@@ -571,6 +649,7 @@
     active = {
       root,
       key(event) {
+        if (event.key === "Escape" && !wordsPanel.hidden) { closeWords(); return; }
         if (!started || event.target.closest("input, textarea, select")) return;
         if (/^[1-9]$/.test(event.key) && choiceKeys) {
           event.preventDefault();
@@ -587,6 +666,7 @@
       voice.stop();
       clock.set(false);
       document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("dsl-vocab", paintWordCount);
       active = null;
     });
     paintChrome();
@@ -597,5 +677,5 @@
     if (active && active.root.querySelector(".nr")) active.key(event);
   });
 
-  DSL.Narrator = Object.freeze({ run, register });
+  DSL.Narrator = Object.freeze({ run, register, keywords });
 })(window.DataSystemsLab);

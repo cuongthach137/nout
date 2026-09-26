@@ -11,7 +11,7 @@ body.guided .mobile-header { display: none; }
 body.guided .toast { top: 72px; bottom: auto; }
 body.guided main { height: 100vh; height: 100dvh; margin-left: 0; overflow: hidden; }
 
-.gd { display: grid; grid-template-rows: auto auto auto minmax(0, 1fr) auto; width: min(100%, 1120px); height: 100%; margin: 0 auto; padding: 0 28px; }
+.gd { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr) auto; width: min(100%, 1120px); height: 100%; margin: 0 auto; padding: 0 28px; }
 .gd-bar { grid-row: 1; display: flex; align-items: center; gap: 14px; min-height: 60px; border-bottom: 1px solid var(--line); }
 .gd-bar .mode-switch { margin: 0 0 0 auto; }
 .gd-icon { width: 38px; height: 38px; border: 1px solid var(--line-strong); border-radius: 10px; color: var(--ink); background: var(--surface); font-size: 16px; cursor: pointer; }
@@ -405,6 +405,9 @@ body.guided main { height: 100vh; height: 100dvh; margin-left: 0; overflow: hidd
 }
 
 @media (max-width: 760px) {
+  /* Three mode buttons and a row of dots don't fit a phone; the transport or Back/Next still navigate. */
+  .gd-bar:has(.mode-switch button:nth-child(3)) .gd-dots { display: none; }
+  .gd-bar:has(.mode-switch button:nth-child(3)) .mode-switch { margin-left: auto; }
   .gw-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .gw-level { padding: 10px; }
   .gw-level p { display: none; }
