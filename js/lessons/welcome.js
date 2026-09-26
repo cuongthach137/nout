@@ -7,6 +7,7 @@
     "Data modeling": ["One fact, one place", "Split a messy order notebook until updates, deletions, and reads all behave."],
     "Writing SQL": ["Ask the tables", "Write the queries every SQL interview starts with, graded live in your browser: filter and sort, join tables without losing rows, count by group, nest questions, rank with window functions, and survive NULL."],
     "Keys and data models": ["Keys, relationships, and other models", "Make the database enforce your keys, design one-to-many and many-to-many relationships, and compare tables with documents and graphs."],
+    "Measuring systems": ["How fast, really?", "Latency vs throughput, percentiles instead of averages, and why fan-out and busy servers make the slow tail worse."],
     Storage: ["Pages, B-trees, and layout", "See why a 12-row endpoint can trigger ten storage reads, then walk the structures underneath."],
     Indexes: ["Choose, scan, and build indexes", "Match index types to queries, read scan plans, build indexes safely, and skip work with Bloom filters."],
     "Query execution": ["How the planner decides", "Reproduce a bad plan from stale statistics, compare join algorithms, and contain memory spills."],
