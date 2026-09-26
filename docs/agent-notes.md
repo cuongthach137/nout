@@ -65,4 +65,4 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 
 - The roadmap's source of truth is `docs/roadmap/data.js`. The claude.ai roadmap artifact is a stale copy, and only one of the user's accounts can open it.
 - Stacked PRs: when a branch needs an unmerged one, open the PR with `--base <that-branch>`, and retarget it to `main` with `gh pr edit <n> --base main` once the base merges.
-- `?v=` cache-busting stamps in `index.html` are bumped by hand for now (planned: `h-stamp`, stamping content hashes at deploy time).
+- `?v=` stamps in `index.html` are content hashes from `python3 tools/stamp.py`; run it before committing. The pre-commit hook (`.git/hooks/pre-commit`, local, not versioned) is: `python3 tools/stamp.py --check || exit 1`. Hand-bumped dates missed `narration/*.js` changes and served stale captions and old audio to returning visitors.

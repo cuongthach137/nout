@@ -10,7 +10,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - Lesson goals and end-of-lesson practice: `js/components/practice.js` (goals at the start; recap, checks tied to goals, interview round with warm-ups and an open question rated by the learner; misses become flashcards). Piloted on `select`; see `docs/adding-a-lesson.md` §4b. Other lessons still end with the old quiz until rolled out.
 - Practice pages (`DSL.registerPage`): `#/flashcards` (vocab.js), `#/sql` sandbox (`js/pages/sql-sandbox.js`).
 - Per lesson: `js/lessons/<name>.js` (Explore), `-guided.js`, `-narrated.js`, `narration/<lesson>.json` (script: lines, speakers, keywords), generated `narration/<lesson>.js`. Narrated lessons reuse scenes exposed by the guided file (`DSL.StorageScenes`, `DSL.ModelingScenes`, `DSL.SelectScenes`).
-- Script and style tags in `index.html` load in dependency order; bump `?v=` on changed files.
+- Script and style tags in `index.html` load in dependency order. Their `?v=` stamps are content hashes: run `python3 tools/stamp.py` before every commit (a local pre-commit hook runs `--check` and refuses stale stamps; reinstall it from `tools/stamp.py`'s docstring if missing). Never hand-edit a `?v=`: a stale stamp serves returning visitors old code or old narration (it caused "[missing line: goals.2]" on SELECT).
 - New lessons: see `docs/adding-a-lesson.md`. Design Narrated first (the focused lesson), then Guided (more explanation), then Explore (most detail). Existing lesson content isn't a constraint: when porting a lesson, fix what's inaccurate or unclear and list the fixes in the PR.
 
 ## Narration and audio
