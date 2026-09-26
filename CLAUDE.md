@@ -23,5 +23,5 @@ Interactive database course for interview prep, basics to advanced. Static site,
 
 ## Open work (handoff)
 - Code health (roadmap phase `health`): refactor merged in PR #15; course map, keywords/flashcards and lesson 02 quizzes (all modes) re-verified by headless playthrough. How to add a lesson: `docs/adding-a-lesson.md`. Later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
-- Phase 3 (Level 1 SQL): engine, `select`, `joins`, `group` merged; `sub` (`p3-sub`) in its PR. Writing SQL sits after Data modeling. Shared SQL scene helpers: `js/components/sql-scenes.js`. Next: window functions (`p3-window`), then NULL traps (`p3-null`). When a lesson is added after the last SQL lesson, update that lesson's `finish.2` "Next up" line and rebuild its audio.
+- Phase 3 (Level 1 SQL): engine, `select`, `joins`, `group`, `sub` merged; `window` (`p3-window`) in its PR. Writing SQL sits after Data modeling. Shared SQL scene helpers: `js/components/sql-scenes.js`. Next: NULL traps (`p3-null`), the module's last lesson. When a lesson is added after the last SQL lesson, update that lesson's `finish.2` "Next up" line and rebuild its audio.
 - Welcome narration still describes 4 levels; the roadmap now has 5 (update `narration/welcome.json` story lines when Level 4 lessons exist).
