@@ -294,6 +294,16 @@
     paint();
   }
 
+  DSL.registerPage("flashcards", {
+    title: "Flashcards",
+    icon: "🗂",
+    render: renderDeck,
+    badge() {
+      const due = dueCount();
+      return due ? { count: due, label: `${due} to review` } : null;
+    },
+  });
+
   DSL.Vocab = {
     seen, hasSeen, star, isStarred, rate, queue, dueCount, cardsMarkup, listMarkup, wireCards, reviewChapter, renderDeck,
     // Replaced by the app to refresh the sidebar's due count.

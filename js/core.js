@@ -151,6 +151,13 @@
     api.renderers[id] = renderer;
   }
 
+  // Practice pages (#/<id>) sit beside the lessons: no modes, no numbers, no progress.
+  // page = { title, icon, render(), badge?() → { count, label } | null }
+  function registerPage(id, page) {
+    if (getLesson(id)) throw new Error(`Page id clashes with a lesson: ${id}`);
+    api.pages[id] = page;
+  }
+
   // Guided and Narrated modes: a lesson may register extra renderers beside Explore.
   const MODES = ["narrated", "guided", "explore"];
 
@@ -267,6 +274,7 @@
     guided: Object.create(null),
     narrated: Object.create(null),
     narratedComplete: new Set(),
+    pages: Object.create(null),
     store,
     modules,
     getLesson,
@@ -274,6 +282,7 @@
     lessonRef,
     labLabel,
     registerRenderer,
+    registerPage,
     registerGuided,
     registerNarrated,
     getMode,

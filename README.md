@@ -85,6 +85,10 @@ Narrated lessons highlight **keywords** as the narrator says them (`<k>term</k>`
 
 Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-only Cloudflare Worker (`nout-audio`, free static hosting) using wrangler; run `npx wrangler login` once. The site reads audio from the address in `index.html`'s `<meta name="audio-base">`, and from the local `audio/` folder when served from `localhost`. Lines stream one at a time, and the narrator prefetches the next two while one plays. Voice is encoded as 40 kbps mono mp3. How lines should read, sound and pace is in [`narration/STYLE.md`](narration/STYLE.md); `narration/lexicon.json` holds spoken spellings for database terms, and a line can name a speaker, like the interviewer, for a second voice.
 
+## SQL exercises
+
+SQL lessons run real queries in the browser: SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js), vendored under `vendor/sql.js`) inside a Web Worker. `js/components/sql.js` gives each exercise a fresh copy of its dataset, stops a runaway query after 3 seconds, and checks a learner's result against the rows the reference query returns (column names ignored; row order only when the exercise asks for it). The shared dataset is Maya's bakery: `customers`, `products`, `orders` and `order_items`, with deliberate NULLs, customers without orders and walk-in orders. `#/sql` is a free sandbox on the same data. The engine needs the site served over HTTP (`python3 -m http.server`), not opened from `file://`.
+
 ## Architecture
 
 The course is intentionally framework-free and requires no backend. It uses ordered, namespaced browser scripts so it also works in simple static hosting environments:
