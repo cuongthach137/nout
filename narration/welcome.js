@@ -41,116 +41,116 @@ window.DataSystemsLab.Narrator.register("welcome", {
  "keywords": {},
  "audio": {
   "how.1": {
-   "hash": "ace439ca2afb",
-   "ms": 5184
+   "hash": "15ac8b299775",
+   "ms": 5580
   },
   "how.2": {
-   "hash": "eb9c54a79315",
-   "ms": 4248
+   "hash": "5531a4145461",
+   "ms": 4356
   },
   "how.3": {
-   "hash": "c7d6bdbd466e",
-   "ms": 4644
-  },
-  "how.4": {
-   "hash": "c646fdf173fa",
-   "ms": 2664
-  },
-  "how.5": {
-   "hash": "55cf94da0fef",
-   "ms": 5976
-  },
-  "how.interviewer": {
-   "hash": "3a83849cea31",
-   "ms": 5076
-  },
-  "how.speed-ask": {
-   "hash": "0ffe17cf9df1",
+   "hash": "c20e279c6473",
    "ms": 4320
   },
+  "how.4": {
+   "hash": "a358dfe10f8c",
+   "ms": 2052
+  },
+  "how.5": {
+   "hash": "8b534b414f8c",
+   "ms": 5724
+  },
+  "how.interviewer": {
+   "hash": "283a94434279",
+   "ms": 4824
+  },
+  "how.speed-ask": {
+   "hash": "459f3cee2011",
+   "ms": 3420
+  },
   "how.speed-hint": {
-   "hash": "f80e785d316d",
+   "hash": "3a91b707f6ce",
    "ms": 3420
   },
   "how.speed-ok": {
-   "hash": "fbe9ebc033cc",
-   "ms": 3744
+   "hash": "b09bd245a555",
+   "ms": 4140
   },
   "path.1": {
-   "hash": "3fe850e04eb9",
-   "ms": 4392
+   "hash": "e67a95db6cf4",
+   "ms": 4320
   },
   "path.2": {
-   "hash": "1c2dfc49eca7",
-   "ms": 5076
+   "hash": "110e3a1fe82f",
+   "ms": 4428
   },
   "path.3": {
-   "hash": "ff0881beddfe",
+   "hash": "984b6add0e2a",
    "ms": 4320
   },
   "path.ask": {
-   "hash": "e1d10f463c86",
-   "ms": 2556
+   "hash": "87d2e9dfc7bb",
+   "ms": 2988
   },
   "path.go": {
-   "hash": "75acb659dbd4",
-   "ms": 3708
+   "hash": "64bd28b48097",
+   "ms": 2664
   },
   "path.hint": {
-   "hash": "9a8a381a4a16",
-   "ms": 2052
+   "hash": "832920c0b40b",
+   "ms": 2196
   },
   "story.1": {
-   "hash": "b8fc84e26c2e",
-   "ms": 3276
+   "hash": "2942e96d1b93",
+   "ms": 3564
   },
   "story.2": {
-   "hash": "34154d32f38a",
-   "ms": 5328
+   "hash": "df091de8adbf",
+   "ms": 5040
   },
   "story.3": {
-   "hash": "8a004e0032f5",
-   "ms": 6840
+   "hash": "e761b08da627",
+   "ms": 6660
   },
   "story.4": {
-   "hash": "ffbd4a76b97a",
-   "ms": 7056
+   "hash": "1bc9a8b4fa2e",
+   "ms": 6588
   },
   "story.5": {
-   "hash": "5e22eb1d6a23",
-   "ms": 5328
+   "hash": "d07f0cfec2e8",
+   "ms": 4752
   },
   "story.6": {
-   "hash": "0ddae0cb23eb",
-   "ms": 4356
+   "hash": "c6c2c8b6e14c",
+   "ms": 4067
   },
   "welcome.1": {
-   "hash": "8f1c67e1646f",
-   "ms": 6012
+   "hash": "87e0d1f3cd8e",
+   "ms": 6120
   },
   "welcome.2": {
-   "hash": "0338ea91d143",
-   "ms": 6192
+   "hash": "e8b6179caac2",
+   "ms": 7380
   },
   "welcome.3": {
-   "hash": "76291911882c",
-   "ms": 3168
+   "hash": "2e3eec441ecf",
+   "ms": 3024
   },
   "welcome.ask": {
-   "hash": "7c31a30b0fd7",
-   "ms": 2412
+   "hash": "8a5011e5e68c",
+   "ms": 2484
   },
   "welcome.curious": {
-   "hash": "b6e0745c85f5",
-   "ms": 5796
+   "hash": "83715bf78f2b",
+   "ms": 6012
   },
   "welcome.design": {
-   "hash": "556a1bad64e0",
-   "ms": 7128
+   "hash": "e2df940654e7",
+   "ms": 5940
   },
   "welcome.interview": {
-   "hash": "eaca94070ece",
-   "ms": 5544
+   "hash": "7b463994a405",
+   "ms": 6264
   }
  }
 });
