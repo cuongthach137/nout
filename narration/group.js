@@ -103,7 +103,7 @@ window.DataSystemsLab.Narrator.register("group", {
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
   "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
   "finish.1": "That's the lesson. Aggregates squeeze rows into numbers. GROUP BY sets the grain. And HAVING filters the groups.",
-  "finish.2": "Next up: how a database actually reads those rows from disk."
+  "finish.2": "Next up: questions inside questions, with subqueries and CTEs."
  },
  "speakers": {
   "interviewer": {
@@ -282,8 +282,8 @@ window.DataSystemsLab.Narrator.register("group", {
    "ms": 6848
   },
   "finish.2": {
-   "hash": "555b915c7e66",
-   "ms": 3712
+   "hash": "988c9e9e3c37",
+   "ms": 4587
   },
   "group.1": {
    "hash": "31eff017045b",

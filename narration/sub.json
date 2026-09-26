@@ -1,0 +1,146 @@
+{
+  "lesson": "sub",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "keywords": {
+    "subquery": {
+      "term": "Subquery",
+      "def": "A query inside another query, in brackets. The outer query uses its result as a value, a list, or a table."
+    },
+    "scalar-subquery": {
+      "term": "Scalar subquery",
+      "def": "A subquery that returns exactly one value, one row and one column, so it can stand wherever a single value can."
+    },
+    "correlated-subquery": {
+      "term": "Correlated subquery",
+      "def": "A subquery that uses a column of the outer query, so it's evaluated again for each outer row."
+    },
+    "exists": {
+      "term": "EXISTS",
+      "def": "True if the subquery returns at least one row. It stops at the first match; NOT EXISTS finds rows with no match."
+    },
+    "derived-table": {
+      "term": "Derived table",
+      "def": "A subquery in FROM, used as if it were a table. It needs an alias."
+    },
+    "cte": {
+      "term": "CTE",
+      "def": "Common table expression: a named subquery written first, with WITH. Later steps read it like a table, top to bottom."
+    },
+    "recursive-cte": {
+      "term": "Recursive CTE",
+      "def": "A CTE that refers to itself: a starting row, a step that builds the next rows, and a condition that stops it. Used for dates, trees and paths."
+    }
+  },
+  "lines": {
+    "hook.1": "Some questions need the answer to another question first.",
+    "hook.2": "Which products cost more than average? First, you need the average.",
+    "hook.3": "SQL lets you put a query inside a query. That's this lesson.",
+
+    "scalar.1": "Here are the eight products and their prices.",
+    "scalar.2": {
+      "caption": "The inner query, in brackets, runs first. It works out one number: the average price, <b>4.51</b>.",
+      "voice": "The inner query, in brackets, runs first. It works out one number: the average price, four fifty-one."
+    },
+    "scalar.3": "The outer query then compares every price with that number. Four products beat it.",
+    "scalar.4": "A query inside a query is a <k>subquery</k>. One that returns a single value is a <k id=\"scalar-subquery\">scalar subquery</k>.",
+    "scalar.5": "It must return exactly one value. Two rows, and PostgreSQL stops with an error.",
+
+    "later.1": "Your turn. Which customers joined after Lena?",
+    "later.ask": "Compare each join date with Lena's, found by a subquery.",
+    "later.hint": {
+      "caption": "<b>WHERE joined &gt; (SELECT joined FROM customers WHERE name = 'Lena')</b>",
+      "voice": "Where joined is later than the result of: select joined from customers where the name is Lena."
+    },
+    "later.error": "The database couldn't run that. Check the brackets around the subquery.",
+    "later.extra": "Too many customers. Is Lena's own date in the comparison?",
+    "later.missing": "Some customers are missing. Later means greater than.",
+    "later.columns": "Just the customer's name.",
+    "later.done": "Six customers joined after Lena. The subquery found her date, so you didn't have to.",
+
+    "list.1": "A subquery can also return a list. Which customers bought a cake?",
+    "list.2": "The inner query finds the customer IDs on cake orders. Customer seven shows up twice.",
+    "list.3": "IN checks each customer against that list. Ana, Raj, Yuki and Ines. Duplicates in the list don't matter.",
+
+    "corr.1": "Harder question: which products cost more than the average of their own category?",
+    "corr.2": "Now the inner query uses the outer row's category. For bread it averages the breads, for cake the cakes.",
+    "corr.3": "It runs again for every product. That's a <k id=\"correlated-subquery\">correlated subquery</k>.",
+    "corr.ask": "How many products beat their own category's average?",
+    "corr.two": "More than that. Every category has a winner, and bread has two.",
+    "corr.four": "Four. One or two from each category.",
+    "corr.six": "Fewer. Only the top of each category clears its own average. It's four.",
+    "corr.4": "Sourdough and rye beat the bread average, cinnamon roll beats the pastries, and lemon tart beats the cakes.",
+
+    "exists.1": "Which customers have at least one pending order?",
+    "exists.2": "<k>EXISTS</k> asks: is there any row? It stops at the first match, and ignores what the subquery selects.",
+    "exists.3": "Maya and Omar. And NOT EXISTS finds customers with no such row: the anti-join from the joins lesson, spelled out.",
+
+    "never.1": "Your turn. Find customers who have no paid orders at all.",
+    "never.ask": "Use NOT EXISTS with a subquery on orders.",
+    "never.hint": {
+      "caption": "<b>WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'paid')</b>",
+      "voice": "Where not exists: select one from orders, where the order's customer is this customer, and the status is paid."
+    },
+    "never.error": "The database couldn't run that. Read the message under the editor.",
+    "never.extra": "Too many customers. Does the subquery match on this customer's ID?",
+    "never.missing": "Someone's missing. Customers with no orders at all have no paid orders either.",
+    "never.columns": "Just the customer's name.",
+    "never.done": "Lena, Theo, and Raj, whose only order was refunded.",
+
+    "cte.1": "Last idea. What's the average number of orders per customer, and who's above it?",
+    "cte.2": "That's two steps: count each customer's orders, then compare with the average count. Nested, it gets hard to read.",
+    "cte.3": "WITH names the first step, counts. The next step reads it like a table. That's a <k id=\"cte\">CTE</k>.",
+    "cte.4": {
+      "caption": "The average is <b>1.75</b>. Maya, Omar, Ana and Yuki are above it.",
+      "voice": "The average is one point seven five. Maya, Omar, Ana and Yuki are above it."
+    },
+    "cte.5": "A subquery in FROM does the same job. It's called a <k id=\"derived-table\">derived table</k>. CTEs just read top to bottom.",
+    "cte.6": "One more kind: a <k id=\"recursive-cte\">recursive CTE</k> builds rows step by step, like a list of dates. Explore has one to try.",
+
+    "above.1": "Your turn. Write the whole query: customers with more orders than the average customer.",
+    "above.ask": "Finish the query below the CTE.",
+    "above.hint": {
+      "caption": "Join <b>counts</b> to <b>customers</b>, and keep <b>n &gt; (SELECT AVG(n) FROM counts)</b>.",
+      "voice": "Join counts to customers, and keep the rows where n is more than the average n from counts."
+    },
+    "above.error": "The database couldn't run that. The message under the editor says where.",
+    "above.extra": "Too many rows. Compare each count with the average.",
+    "above.missing": "Some customers are missing. Greater than the average, not equal to the maximum.",
+    "above.columns": "Two columns: the name, and the count.",
+    "above.done": "Maya, Omar, Ana and Yuki. Two named steps, read top to bottom.",
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": {
+      "caption": "<code>WHERE price &gt; (SELECT AVG(price) FROM products)</code>. What must the subquery return?",
+      "voice": "Where price is more than a subquery that averages the prices. What must that subquery return?",
+      "speaker": "interviewer"
+    },
+    "quiz.q1-why": "It's compared with one price, so it must be one value: one row, one column.",
+    "quiz.q2": { "caption": "What makes a subquery correlated?", "speaker": "interviewer" },
+    "quiz.q2-why": "It uses a column from the outer query, so its result depends on the outer row.",
+    "quiz.q3": {
+      "caption": "Why do people write <code>EXISTS (SELECT 1 …)</code>?",
+      "voice": "Why do people write exists, select one?",
+      "speaker": "interviewer"
+    },
+    "quiz.q3-why": "EXISTS only asks whether a row exists. What the subquery selects is ignored, so one is a convention.",
+    "quiz.q4": { "caption": "Why use a CTE instead of nesting subqueries?", "speaker": "interviewer" },
+    "quiz.q4-why": "It names each step, so the query reads top to bottom, and a step can be used more than once.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
+    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
+
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
+
+    "finish.1": "That's the lesson. Subqueries answer the question behind the question. Correlated ones run per row. And CTEs name the steps.",
+    "finish.2": "Next up: how a database actually reads those rows from disk."
+  }
+}
