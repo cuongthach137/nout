@@ -245,7 +245,6 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "pages",
-            next: "index-layout",
             badges: [["📄", "Whole pages", "one row costs 8 KB"], ["⚡", "Hits are cheap", "RAM is 80× faster"], ["🎯", "Neighbours win", "locality beats luck"]],
           }));
           await n.say("finish.1");

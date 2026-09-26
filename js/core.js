@@ -3,37 +3,37 @@
 
   const lessons = [
     { id: "welcome", module: "Start here", title: "Course map", minutes: 3 },
-    { id: "modeling", module: "Start here", title: "One fact, one place", minutes: 14 },
-    { id: "pages", module: "Storage fundamentals", title: "Pages, not rows", minutes: 18 },
-    { id: "index-layout", module: "Indexes", title: "Physical data layout", minutes: 12 },
-    { id: "btree", module: "Indexes", title: "Walk a B-tree", minutes: 16 },
+    { id: "modeling", module: "Data modeling", title: "One fact, one place", minutes: 14 },
+    { id: "pages", module: "Storage", title: "Pages, not rows", minutes: 18 },
+    { id: "btree", module: "Storage", title: "Walk a B-tree", minutes: 16 },
+    { id: "index-layout", module: "Storage", title: "Physical data layout", minutes: 12 },
+    { id: "btree-writes", module: "Storage", title: "Keys and page splits", minutes: 14 },
     { id: "index-types", module: "Indexes", title: "Choose an index", minutes: 15 },
     { id: "access-paths", module: "Indexes", title: "Scan strategies", minutes: 18 },
     { id: "index-operations", module: "Indexes", title: "Build indexes safely", minutes: 15 },
-    { id: "btree-writes", module: "Indexes", title: "Keys and page splits", minutes: 14 },
     { id: "bloom", module: "Indexes", title: "Bloom filters", minutes: 12 },
-    { id: "columnar-lsm", module: "Indexes", title: "Store by question", minutes: 16 },
     { id: "index-quiz", module: "Indexes", title: "Index design challenge", minutes: 10 },
     { id: "planner", module: "Query execution", title: "Think like a planner", minutes: 14 },
-    { id: "acid-foundations", module: "ACID transactions", title: "Atomic by design", minutes: 15 },
-    { id: "transactions", module: "ACID transactions", title: "Transactions collide", minutes: 16 },
-    { id: "mvcc-snapshots", module: "ACID transactions", title: "Snapshots & phantoms", minutes: 16 },
-    { id: "serializability", module: "ACID transactions", title: "Serializable, with retries", minutes: 15 },
-    { id: "consistency", module: "ACID transactions", title: "Protect invariants", minutes: 14 },
-    { id: "durability", module: "ACID transactions", title: "Commit, WAL & recovery", minutes: 15 },
-    { id: "acid-quiz", module: "ACID transactions", title: "ACID incident review", minutes: 10 },
+    { id: "join-algorithms", module: "Query execution", title: "How joins execute", minutes: 17 },
+    { id: "memory-spills", module: "Query execution", title: "Memory & disk spills", minutes: 15 },
+    { id: "acid-foundations", module: "Transactions", title: "Atomic by design", minutes: 15 },
+    { id: "transactions", module: "Transactions", title: "Transactions collide", minutes: 16 },
+    { id: "deadlocks", module: "Transactions", title: "Locks & deadlocks", minutes: 15 },
+    { id: "mvcc-snapshots", module: "Transactions", title: "Snapshots & phantoms", minutes: 16 },
+    { id: "tuple-versions", module: "Transactions", title: "Updates create versions", minutes: 15 },
+    { id: "vacuum", module: "Transactions", title: "VACUUM & bloat", minutes: 16 },
+    { id: "serializability", module: "Transactions", title: "Serializable, with retries", minutes: 15 },
+    { id: "consistency", module: "Transactions", title: "Protect invariants", minutes: 14 },
+    { id: "durability", module: "Transactions", title: "Commit, WAL & recovery", minutes: 15 },
+    { id: "acid-quiz", module: "Transactions", title: "ACID incident review", minutes: 10 },
+    { id: "columnar-lsm", module: "Engines for scale", title: "Store by question", minutes: 16 },
+    { id: "partitioning", module: "Engines for scale", title: "Partitioning & pruning", minutes: 16 },
     { id: "replication", module: "Distributed data", title: "Replication & lag", minutes: 15 },
-    { id: "incident", module: "Production practice", title: "Checkout incident", minutes: 12 },
-    { id: "tuple-versions", module: "Performance under load", title: "Updates create versions", minutes: 15 },
-    { id: "vacuum", module: "Performance under load", title: "VACUUM & bloat", minutes: 16 },
-    { id: "join-algorithms", module: "Performance under load", title: "How joins execute", minutes: 17 },
-    { id: "memory-spills", module: "Performance under load", title: "Memory & disk spills", minutes: 15 },
-    { id: "deadlocks", module: "Performance under load", title: "Locks & deadlocks", minutes: 15 },
-    { id: "partitioning", module: "Performance under load", title: "Partitioning & pruning", minutes: 16 },
-    { id: "predicate-indexes", module: "Cross-engine indexing", title: "Partial & expression indexes", minutes: 17 },
-    { id: "specialized-indexes", module: "Cross-engine indexing", title: "Specialized index families", minutes: 18 },
-    { id: "index-observability", module: "Cross-engine indexing", title: "Observe & remove indexes", minutes: 16 },
-    { id: "migration-capstone", module: "Cross-engine indexing", title: "Cross-engine migration", minutes: 20 },
+    { id: "incident", module: "Distributed data", title: "Checkout incident", minutes: 12 },
+    { id: "predicate-indexes", module: "Electives: engine depth", title: "Partial & expression indexes", minutes: 17 },
+    { id: "specialized-indexes", module: "Electives: engine depth", title: "Specialized index families", minutes: 18 },
+    { id: "index-observability", module: "Electives: engine depth", title: "Observe & remove indexes", minutes: 16 },
+    { id: "migration-capstone", module: "Electives: engine depth", title: "Cross-engine migration", minutes: 20 },
   ];
 
   function readCompletedLessons() {
@@ -169,7 +169,8 @@
       </header>`;
   }
 
-  function lessonFooter(id) {
+  // extra: more buttons before "Mark complete" (a quiz's reset button, for example).
+  function lessonFooter(id, { extra = "" } = {}) {
     const index = lessons.findIndex((lesson) => lesson.id === id);
     const previous = lessons[index - 1];
     const next = lessons[index + 1];
@@ -178,6 +179,7 @@
       <footer class="lesson-footer">
         <div>${previous ? `<a class="button ghost" href="#/${previous.id}">← ${previous.title}</a>` : ""}</div>
         <div class="footer-actions">
+          ${extra}
           ${id !== "welcome" ? `<button class="button complete-button ${done ? "done" : ""}" data-complete="${id}">${done ? "✓ Completed" : "Mark complete"}</button>` : ""}
           ${next ? `<a class="button primary" href="#/${next.id}">Next: ${next.title} →</a>` : `<button class="button primary" data-finish>Finish course</button>`}
         </div>

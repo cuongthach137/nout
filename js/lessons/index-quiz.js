@@ -12,11 +12,10 @@
 
   function renderIndexQuiz() {
     const lesson = DSL.getLesson("index-quiz");
-    const completed = DSL.state.completed.has("index-quiz");
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Make the call before the <em>planner does</em>.", "Use the evidence in each production scenario to choose an access path or operational response. Every answer explains the physical reason behind the decision.", "Challenge")}
       <div id="index-quiz">${DSL.Quiz.render(QUESTIONS, "Index design challenge")}
-        <div class="lesson-footer"><a class="button ghost" href="#/bloom">← Bloom filters</a><div class="footer-actions"><button class="button" type="button" data-quiz-reset>Reset answers</button><button class="button complete-button ${completed ? "done" : ""}" data-complete="index-quiz">${completed ? "✓ Completed" : "Mark complete"}</button><a class="button primary" href="#/planner">Next: Think like a planner →</a></div></div>
+        ${DSL.lessonFooter("index-quiz", { extra: `<button class="button" type="button" data-quiz-reset>Reset answers</button>` })}
       </div>
     </article>`;
     DSL.Quiz.mount(document.getElementById("index-quiz"), QUESTIONS, {

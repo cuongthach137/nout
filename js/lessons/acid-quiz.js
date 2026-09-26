@@ -54,12 +54,11 @@
 
   function renderAcidQuiz() {
     const lesson = DSL.getLesson("acid-quiz");
-    const completed = DSL.state.completed.has("acid-quiz");
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "Diagnose the failure from the <em>observable evidence</em>.", "Each scenario asks for a mechanism, guarantee, or recovery behavior—not an ACID acronym definition. Use the explanation to repair any weak spots in your mental model.", "Challenge")}
       <div id="acid-quiz">
         ${DSL.Quiz.render(QUESTIONS, "ACID incident review")}
-        <div class="lesson-footer"><a class="button ghost" href="#/durability">← Commit, WAL & recovery</a><div class="footer-actions"><button class="button" type="button" data-quiz-reset>Reset answers</button><button class="button complete-button ${completed ? "done" : ""}" data-complete="acid-quiz">${completed ? "✓ Completed" : "Mark complete"}</button><a class="button primary" href="#/replication">Next: Replication & lag →</a></div></div>
+        ${DSL.lessonFooter("acid-quiz", { extra: `<button class="button" type="button" data-quiz-reset>Reset answers</button>` })}
       </div>
     </article>`;
     DSL.Quiz.mount(document.getElementById("acid-quiz"), QUESTIONS, {

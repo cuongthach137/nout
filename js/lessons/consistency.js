@@ -71,7 +71,7 @@
 
       <section class="consistency-meanings">
         <div><span class="lab-kicker">ACID consistency</span><h3>Is this state valid?</h3><p>Transactions should move the database from one invariant-satisfying state to another. Constraints, isolation, and correct transaction logic work together to make that true.</p></div>
-        <div><span class="lab-kicker">Distributed consistency</span><h3>Which version did this node return?</h3><p>Replica freshness and agreement are a different dimension. A perfectly valid old value can still violate a user’s read-your-writes expectation.</p><a href="#/replication">Explore eventual consistency in ${DSL.lessonRef("acid-quiz")} →</a></div>
+        <div><span class="lab-kicker">Distributed consistency</span><h3>Which version did this node return?</h3><p>Replica freshness and agreement are a different dimension. A perfectly valid old value can still violate a user’s read-your-writes expectation.</p><a href="#/replication">Explore eventual consistency in ${DSL.lessonRef("replication")} →</a></div>
       </section>
       <div class="insight"><span class="insight-mark">!</span><p><strong>Consistency is not one switch.</strong> Name the invariant, the scope where it must hold, and the failure behavior the application will handle.</p></div>
       ${DSL.lessonFooter("consistency")}
