@@ -19,7 +19,6 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - Roadmap: `docs/roadmap/data.js` is the source of truth (phases, item ids, status, notes, target course map). Update an item's `status`/`note` there when work lands. `docs/roadmap/index.html` renders it and re-reads it every 3 s (open straight from disk). The claude.ai artifact CKGa6m77J9HwZVPdnRzzyx is an older copy.
 
 ## Open work (handoff)
-- Branch `codebase-health` (this commit): `DSL.store` (+ Back up / Restore), `DSL.modules()`, shared `setStatus`, narrator `story`/`quizChapter`/`throttled`. Verified: all 32 lessons render identical text, old saved progress carries over, backup round-trips, lesson 01 narrated full run passes. Not re-run after refactor: course map, keywords/flashcards, lesson 02 quiz flows.
-- Still to do from the code-health plan: `docs/adding-a-lesson.md`; later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
+- Code health (roadmap phase `health`): refactor merged in PR #15; course map, keywords/flashcards and lesson 02 quizzes (all modes) re-verified by headless playthrough. How to add a lesson: `docs/adding-a-lesson.md`. Later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
 - Next roadmap phase: Phase 3, in-browser SQL (sql.js) and Tier 1 SQL lessons, narrated with keywords.
 - Welcome narration still describes 4 levels; the roadmap now has 5 (update `narration/welcome.json` story lines when Level 4 lessons exist).
