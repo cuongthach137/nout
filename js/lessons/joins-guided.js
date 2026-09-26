@@ -286,6 +286,7 @@
   function makeBeats() {
     const M = DSL.JoinsModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-inner", "Follow the pointers.", slice(innerStory(), 0, 4), "Joins don't need a foreign key to be declared: ON can compare any columns. Keys are just the usual thing to match on."),
       innerPredict(),
       teach("teach-inner-result", "Only pairs survive.", slice(innerStory(), 4, 5)),
@@ -296,9 +297,13 @@
       teach("teach-full", "Right and full joins.", fullStory()),
       teach("teach-fanout", "Joins can multiply.", fanoutStory(), "In an interview, when a total looks too big, say it out loud: a one-to-many join repeated the rows. Then aggregate before joining, or count per key."),
       walkChallenge(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "joins",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🔗", "Inner", "only matched pairs"], ["🫱", "Outer", "keep a side, pad with NULL"], ["✖️", "Multiply", "fan-out and cross joins"]],
       }),
     ];

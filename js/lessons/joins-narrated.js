@@ -25,6 +25,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "inner",
         title: "Inner join",
@@ -105,7 +106,9 @@
           await exercise(n, S.walkChallenge(), "walk", { reactions: ["error", "extra", "missing", "columns"] });
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("joins"),
       {
         id: "finish",
@@ -113,6 +116,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "joins",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🔗", "Inner", "only matched pairs"], ["🫱", "Outer", "keep a side, pad with NULL"], ["✖️", "Multiply", "fan-out and cross joins"]],
           }));
           await n.say("finish.1");

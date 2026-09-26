@@ -4,6 +4,13 @@ window.DataSystemsLab.Narrator.register("joins", {
   "hook.1": "Maya's orders don't store her name. They store her customer ID, a key that points into the customers table.",
   "hook.2": "Remember following those pointers by hand? In SQL, that's one clause: JOIN.",
   "hook.3": "But every kind of join quietly drops some rows, or repeats them. Knowing which is what interviewers check.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Join tables on a key, and predict which rows an inner join drops.",
+  "goals.2": {
+   "caption": "Two. Keep every row with a left join, find rows with no match, and put right-side filters in ON.",
+   "voice": "Two. Keep every row with a left join, find rows with no match, and put filters on the right-hand table in ON."
+  },
+  "goals.3": "Three. Predict how many rows a join makes, and spot fan-out and cross joins before they inflate a total.",
   "inner.1": "Customers on the left, orders on the right. Each order carries a customer ID.",
   "inner.2": {
    "caption": "<code>JOIN customers c ON c.id = o.customer_id</code> matches each order to the customer it points at.",
@@ -65,40 +72,62 @@ window.DataSystemsLab.Narrator.register("joins", {
   "walk.missing": "Some orders are missing. The walk-ins need a left join that starts from orders.",
   "walk.columns": "Just the order's ID and the customer's name.",
   "walk.done": "Sixteen orders, two with no name. Which table comes first decides what a left join keeps.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "customers has 10 rows, orders has 16, and 2 orders have no customer. How many rows does an inner join on the customer ID return?",
-   "voice": "Customers has ten rows. Orders has sixteen, and two have no customer. How many rows does an inner join on the customer ID return?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "The condition after ON says which rows belong together. An inner join keeps only matched pairs. Sixteen orders in, fourteen out: the walk-ins have no customer.",
+  "recap.2": "A left join keeps every row of the first table, with NULLs where nothing matched. And a filter on the right table belongs in ON, or Lena disappears.",
+  "recap.3": "Join orders to their items, and each order repeats once per item. Sixteen orders become twenty-two rows. With no condition at all, it's a cross join.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>order_items</code> has 22 rows, <code>products</code> has 8, and Rye loaf has never sold. An inner join on the product ID returns how many rows?",
+   "voice": "Order items has twenty-two rows. Products has eight, and Rye loaf has never sold. An inner join on the product ID returns how many rows?"
+  },
+  "check.q1-why": "Twenty-two. Each item points at exactly one product, so every item matches. Rye loaf has no items, so dropping it costs no rows.",
+  "check.q2": {
+   "caption": "Every product with its order lines, unsold ones included: <code>LEFT JOIN order_items i \u2026 WHERE i.quantity &gt; 0</code>. What's wrong?",
+   "voice": "Every product with its order lines, unsold ones included. A left join to order items, then where the quantity is over zero. What's wrong?"
+  },
+  "check.q2-why": "Rye loaf disappears. WHERE runs after the join, and a NULL quantity isn't over zero. Move the test into ON.",
+  "check.q3": {
+   "caption": "Maya has 4 orders, with 2, 2, 1 and 2 items. Join customers, orders and order items. How many rows for Maya?",
+   "voice": "Maya has four orders, with two, two, one and two items. Join customers, orders and order items. How many rows does Maya get?"
+  },
+  "check.q3-why": "Seven. Each join repeats the rows before it once per match. One customer becomes four orders, and those become seven item rows.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "How would you find customers who have never placed an order?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "Each order with a customer matches exactly one row, so fourteen. The walk-ins, and customers who never ordered, are dropped.",
-  "quiz.q2": {
-   "caption": "Which query finds customers who have never ordered?",
-   "speaker": "interviewer"
-  },
-  "quiz.q2-why": "A left join keeps every customer. Those with no order have NULL on the order side, so test for that.",
-  "quiz.q3": {
-   "caption": "<code>LEFT JOIN orders o ON \u2026 WHERE o.status = 'paid'</code>. What happens to customers with no paid orders?",
-   "voice": "A left join to orders, then where the status is paid. What happens to customers with no paid orders?",
-   "speaker": "interviewer"
-  },
-  "quiz.q3-why": "WHERE runs after the join, and NULL isn't paid, so those rows fail. Put the condition in ON.",
-  "quiz.q4": {
+  "interview.w1-why": "Left join the orders, and keep the rows where the order's ID is NULL. Equals NULL is never true. NOT EXISTS works too.",
+  "interview.w2": {
    "caption": "A report's revenue doubled right after someone added a join. What's the likely cause?",
    "speaker": "interviewer"
   },
-  "quiz.q4-why": "The new join matches several rows per order, so each order is repeated, and added up, more than once.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
+  "interview.w2-why": "The new join matches several rows per order, so each order is repeated, and added up, more than once.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Using customers and orders, explain what INNER, LEFT and FULL OUTER JOIN each return, and one mistake people make with joins.",
+   "voice": "Using customers and orders, explain what inner, left and full outer joins each return. And tell me one mistake people make with joins.",
+   "speaker": "interviewer"
   },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -146,6 +175,54 @@ window.DataSystemsLab.Narrator.register("joins", {
   }
  },
  "audio": {
+  "check.intro": {
+   "hash": "e2ce00ee353d",
+   "ms": 5256
+  },
+  "check.pass": {
+   "hash": "c8130accb1a3",
+   "ms": 2700
+  },
+  "check.q1": {
+   "hash": "ef1985efd735",
+   "ms": 9324
+  },
+  "check.q1-why": {
+   "hash": "035565ac8290",
+   "ms": 11484
+  },
+  "check.q2": {
+   "hash": "a5693873b61b",
+   "ms": 8892
+  },
+  "check.q2-why": {
+   "hash": "b481b77f4608",
+   "ms": 8424
+  },
+  "check.q3": {
+   "hash": "5445ad375d4e",
+   "ms": 10332
+  },
+  "check.q3-why": {
+   "hash": "b2d2b32fe0f4",
+   "ms": 9684
+  },
+  "check.retry": {
+   "hash": "17e6ed537d47",
+   "ms": 5760
+  },
+  "check.right1": {
+   "hash": "5df4176b3959",
+   "ms": 900
+  },
+  "check.right2": {
+   "hash": "e99e52b00ddc",
+   "ms": 972
+  },
+  "check.right3": {
+   "hash": "bbb1d6dfd81d",
+   "ms": 936
+  },
   "fanout.1": {
    "hash": "97cb4e0f5087",
    "ms": 4140
@@ -189,6 +266,22 @@ window.DataSystemsLab.Narrator.register("joins", {
   "full.3": {
    "hash": "5520b1dc9a84",
    "ms": 5976
+  },
+  "goals.1": {
+   "hash": "acb793e11225",
+   "ms": 5328
+  },
+  "goals.2": {
+   "hash": "7d28568821ad",
+   "ms": 7128
+  },
+  "goals.3": {
+   "hash": "78a90fc1c235",
+   "ms": 7056
+  },
+  "goals.intro": {
+   "hash": "7105eda85e67",
+   "ms": 2484
   },
   "hook.1": {
    "hash": "2716bc8efaaa",
@@ -241,6 +334,66 @@ window.DataSystemsLab.Narrator.register("joins", {
   "inner.ten": {
    "hash": "e59a102257e3",
    "ms": 4500
+  },
+  "interview.got": {
+   "hash": "aabb8fade94b",
+   "ms": 3024
+  },
+  "interview.hint": {
+   "hash": "ec946fd698df",
+   "ms": 1584
+  },
+  "interview.intro": {
+   "hash": "a64cb106fc49",
+   "ms": 5688
+  },
+  "interview.missed": {
+   "hash": "cf7b5457ae7f",
+   "ms": 4428
+  },
+  "interview.open": {
+   "hash": "9b718a3f64e0",
+   "ms": 8856
+  },
+  "interview.partly": {
+   "hash": "4cd133f7622f",
+   "ms": 3672
+  },
+  "interview.rate": {
+   "hash": "33112c8f4502",
+   "ms": 2268
+  },
+  "interview.reveal": {
+   "hash": "2ab0cad8958c",
+   "ms": 4176
+  },
+  "interview.right1": {
+   "hash": "4defc0b4ea6a",
+   "ms": 1044
+  },
+  "interview.right2": {
+   "hash": "15b09ac0e501",
+   "ms": 1296
+  },
+  "interview.think": {
+   "hash": "04527f670030",
+   "ms": 8280
+  },
+  "interview.w1": {
+   "hash": "d7ea38238f2d",
+   "ms": 3420
+  },
+  "interview.w1-why": {
+   "hash": "bfa5a009561c",
+   "ms": 8748
+  },
+  "interview.w2": {
+   "hash": "98b619111761",
+   "ms": 5760
+  },
+  "interview.w2-why": {
+   "hash": "b1615138fdf2",
+   "ms": 6732
   },
   "keywords.1": {
    "hash": "52c9899fd888",
@@ -310,61 +463,21 @@ window.DataSystemsLab.Narrator.register("joins", {
    "hash": "fdc7bf5ee821",
    "ms": 4860
   },
-  "quiz.intro": {
-   "hash": "08fdf9d19fee",
-   "ms": 1404
+  "recap.1": {
+   "hash": "ecf78319b0f8",
+   "ms": 11844
   },
-  "quiz.pass": {
-   "hash": "1e2c41acf108",
-   "ms": 2160
+  "recap.2": {
+   "hash": "b4a5f303964a",
+   "ms": 9684
   },
-  "quiz.q1": {
-   "hash": "ddd904814eba",
-   "ms": 8928
+  "recap.3": {
+   "hash": "336c315a8b16",
+   "ms": 10332
   },
-  "quiz.q1-why": {
-   "hash": "6b4f8e389cc3",
-   "ms": 7848
-  },
-  "quiz.q2": {
-   "hash": "daa36988418b",
-   "ms": 2952
-  },
-  "quiz.q2-why": {
-   "hash": "182ad0e29af4",
-   "ms": 6624
-  },
-  "quiz.q3": {
-   "hash": "bf4c0ef99560",
-   "ms": 6588
-  },
-  "quiz.q3-why": {
-   "hash": "a91c44b41f05",
-   "ms": 5724
-  },
-  "quiz.q4": {
-   "hash": "98b619111761",
-   "ms": 5580
-  },
-  "quiz.q4-why": {
-   "hash": "b1615138fdf2",
-   "ms": 6948
-  },
-  "quiz.retry": {
-   "hash": "674b74cededc",
-   "ms": 4067
-  },
-  "quiz.right1": {
-   "hash": "5df4176b3959",
-   "ms": 864
-  },
-  "quiz.right2": {
-   "hash": "e99e52b00ddc",
-   "ms": 1080
-  },
-  "quiz.right3": {
-   "hash": "bbb1d6dfd81d",
-   "ms": 972
+  "recap.intro": {
+   "hash": "f29481f34c13",
+   "ms": 2088
   },
   "trap.1": {
    "hash": "d513e3a9af2a",
