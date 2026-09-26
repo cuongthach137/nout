@@ -654,7 +654,7 @@
 
   DSL.registerGuided("modeling", () => DSL.Guided.run({
     lessonId: "modeling",
-    title: "01 · One fact, one place",
+    title: `${DSL.lessonNumber("modeling")} · One fact, one place`,
     beats: makeBeats(),
     onLab: (id) => DSL.ModelingModel.progress.complete(id),
   }));

@@ -27,14 +27,14 @@
   const CUST_ID = { Maya: "C1", Omar: "C2", Ana: "C3" };
   const ITEM_ID = { "Lemon cake": "I1", "Carrot cake": "I2", Sourdough: "I3", Croissant: "I4" };
 
-  // Lab 01A hunt: notebook size → how many of those orders are Maya's.
+  // Copies lab (A) hunt: notebook size → how many of those orders are Maya's.
   const HUNT_COPIES = { 4: 2, 24: 5, 120: 14 };
   const HUNT_SECONDS = 10;
   const SCAN_MS = 45;
   const HUNT_NAMES = ["Omar", "Ana", "Lena", "Raj", "Kofi", "Yuki", "Ines", "Theo", "Priya", "Sam"];
   const HUNT_MENU = [["Lemon cake", "$24"], ["Carrot cake", "$22"], ["Sourdough", "$9"], ["Croissant", "$4"], ["Rye loaf", "$8"], ["Eclair", "$5"], ["Babka", "$14"], ["Scone", "$3"]];
 
-  // Lab 01B motion.
+  // Split lab (B) motion.
   const MOVE_MS = 720;
   const EASE = "cubic-bezier(.65,0,.35,1)";
 
@@ -45,11 +45,11 @@
   const progress = DSL.LabKit.createProgress({
     lessonId: "modeling",
     storageKey: "dsl-modeling-labs",
-    labs: [{ id: "copies", name: "01A Copies" }, { id: "split", name: "01B Split" }, { id: "join", name: "01C Join" }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "copies", name: `${DSL.lessonNumber("modeling")}A Copies` }, { id: "split", name: `${DSL.lessonNumber("modeling")}B Split` }, { id: "join", name: `${DSL.lessonNumber("modeling")}C Join` }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
   });
   const completeLab = (id) => progress.complete(id);
 
-  // Lab 01C: the screen row both lanes assemble for order #103.
+  // Join lab (C): the screen row both lanes assemble for order #103.
   const SLOTS = [["id", "order"], ["name", "name"], ["phone", "phone"], ["item", "item"], ["price", "price"]];
 
   // Production drill: a month of customer changes, and what each response does with them.
@@ -68,10 +68,10 @@
   const DRILL_DAYS = 30;
 
   const QUIZ = [
-    { prompt: "Maya’s phone number is copied onto every one of her order rows. What breaks first?", options: ["The table runs out of rows", "Copies drift apart when someone forgets one", "The database refuses duplicated text"], answer: 1, why: "Redundant copies turn every edit into a search-and-replace across unknown rows. Miss one and the rows disagree — the update anomaly from Lab 01A." },
+    { prompt: "Maya’s phone number is copied onto every one of her order rows. What breaks first?", options: ["The table runs out of rows", "Copies drift apart when someone forgets one", "The database refuses duplicated text"], answer: 1, why: ("Redundant copies turn every edit into a search-and-replace across unknown rows. Miss one and the rows disagree — the update anomaly from " + DSL.labLabel("modeling", "A") + ".") },
     { prompt: "A cell holds “Maya · 555-0101”. Splitting it into separate cells is the move databases call…", options: ["1NF — one value per cell", "Denormalization", "VACUUM"], answer: 0, why: "First normal form: each cell holds exactly one value, so the engine can filter, validate, and index it directly." },
     { prompt: "Cancelling a customer’s only order also erases her phone number. The cheapest structural fix?", options: ["Forbid deleting orders", "Move the phone to a Customers list and let orders point to it", "Copy the phone into a backup table"], answer: 1, why: "The phone was a fact about the person, stored on the wrong list. Moving it to where it belongs makes orders deletable without losing the customer." },
-    { prompt: "A nightly report joins six lists and takes 40 minutes. The safest first move?", options: ["Copy all tables into one wide table with no sync owner", "Make the joins cheap with keys and indexes; consider an owned, refreshed copy only if it is still slow", "Split every table further"], answer: 1, why: "Slow joins are usually missing fast paths, not a shape problem. Copies without an owner are the drift bug from Lab 01A, back on purpose." },
+    { prompt: "A nightly report joins six lists and takes 40 minutes. The safest first move?", options: ["Copy all tables into one wide table with no sync owner", "Make the joins cheap with keys and indexes; consider an owned, refreshed copy only if it is still slow", "Split every table further"], answer: 1, why: ("Slow joins are usually missing fast paths, not a shape problem. Copies without an owner are the drift bug from " + DSL.labLabel("modeling", "A") + ", back on purpose.") },
   ];
 
   function setStatus(el, message, tone) {
@@ -119,12 +119,12 @@
           </div>
           <h3>Splitting costs reads</h3>
           <p>Showing one order now means visiting a few lists and stitching the pieces together. That re-stitch is a <em>join</em>.</p>
-          ${wonder("So splitting just made reads slower?", "Sometimes. Writes became safe by default; read speed is bought back with indexes (Lesson 03), or with deliberate copies that have a named owner.")}
+          ${wonder("So splitting just made reads slower?", ("Sometimes. Writes became safe by default; read speed is bought back with indexes (" + DSL.lessonRef("index-layout") + "), or with deliberate copies that have a named owner."))}
         </div>
       </section>
 
       <section class="lab" id="lab-copies">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 01A · copies</span><h2>Maya changed her phone number</h2><p class="lab-copy">Maya’s phone is written on every order she placed. Update it by hand: click each of her old numbers before the clock runs out. Then try a bigger notebook.</p></div>${labSide("update anomaly")}</div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("modeling", "A")} · copies</span><h2>Maya changed her phone number</h2><p class="lab-copy">Maya’s phone is written on every order she placed. Update it by hand: click each of her old numbers before the clock runs out. Then try a bigger notebook.</p></div>${labSide("update anomaly")}</div>
         <div class="controls">
           <div class="control"><span class="control-label">Notebook size</span><div class="segmented" id="copy-size" role="group" aria-label="Notebook size">
             <button type="button" data-size="4" aria-pressed="true">4 orders</button><button type="button" data-size="24" aria-pressed="false">24</button><button type="button" data-size="120" aria-pressed="false">120</button>
@@ -156,7 +156,7 @@
       </section>
 
       <section class="lab" id="lab-split">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 01B · split</span><h2>Reshape the notebook, three steps</h2><p class="lab-copy">Same orders. Each step moves facts to where they belong; after each step, re-run the same phone change and the same cancellation to see what the new shape buys you.</p></div>${labSide("1NF → 2NF → 3NF")}</div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("modeling", "B")} · split</span><h2>Reshape the notebook, three steps</h2><p class="lab-copy">Same orders. Each step moves facts to where they belong; after each step, re-run the same phone change and the same cancellation to see what the new shape buys you.</p></div>${labSide("1NF → 2NF → 3NF")}</div>
         <div class="controls">
           <button class="button primary" id="split-step1" type="button">Step 1 · One value per cell</button>
           <button class="button primary" id="split-step2" type="button" disabled>Step 2 · People get their own list</button>
@@ -175,7 +175,7 @@
       </section>
 
       <section class="lab" id="lab-join">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 01C · join</span><h2>Race: stitch one order back together</h2><p class="lab-copy">Both shapes assemble order #103 for the screen at the same time. Count the lookups, then check whether what each one printed is true.</p></div>${labSide("read cost")}</div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("modeling", "C")} · join</span><h2>Race: stitch one order back together</h2><p class="lab-copy">Both shapes assemble order #103 for the screen at the same time. Count the lookups, then check whether what each one printed is true.</p></div>${labSide("read cost")}</div>
         <div class="controls">
           <button class="button primary" id="join-run" type="button">Race both shapes · assemble #103</button>
           <span class="control-hint">Each dot is one list lookup.</span>
@@ -195,7 +195,7 @@
           </div>
         </div>
         <div class="viz-caption"><span class="live-status"><i class="pulse" id="join-pulse"></i><span id="join-status" aria-live="polite">Press race. Both shapes start at the same moment.</span></span></div>
-        ${wonder("Three lookups for one order: did the split make everything worse?", "Only this read. The messy notebook buys cheap reads with unsafe writes; the split buys safe writes with a few extra lookups. At millions of rows, Lesson 04’s B-tree keeps each pointer hop at a few page reads, so the split’s cost stays small and bounded.")}
+        ${wonder("Three lookups for one order: did the split make everything worse?", ("Only this read. The messy notebook buys cheap reads with unsafe writes; the split buys safe writes with a few extra lookups. At millions of rows, " + DSL.lessonRef("btree") + "’s B-tree keeps each pointer hop at a few page reads, so the split’s cost stays small and bounded."))}
       </section>
 
       <section class="lab incident-lab" id="lab-drill">
@@ -717,7 +717,7 @@
     let running = false;
 
     function renderLanes() {
-      // Lab 01A's leftover: #101 got Maya's new number, #103's copy did not.
+      // The copies lab's leftover: #101 got Maya's new number, #103's copy did not.
       const phoneOf = (o) => (o.id === "#101" ? PHONE_NEW : o.phone);
       const messyRows = ORDERS.map((o) => `<tr data-row="${o.id}"><td class="mono">${o.id}</td><td>${o.customer}</td><td class="mono${o.id === "#103" ? " stale-cell" : ""}">${phoneOf(o)}</td><td>${dish(o.item)}</td><td class="mono">${o.price}</td></tr>`).join("");
       messy.innerHTML = boardMarkup("Order notebook · one big table", ["Order", "Customer", "Phone", "Item", "Price"], messyRows, "orders");
@@ -856,7 +856,7 @@
     const DIAGNOSIS = {
       repair: "The joins were slow because the pointers had no fast path. Keys and indexes make each lookup cheap while every fact keeps exactly one home. Try this before any copying: it fixes speed without creating a second source of truth.",
       refresh: "A materialized copy with a named owner: the report reads one flat table, and drift is bounded by the refresh schedule. This is denormalization as a deliberate, owned trade, acceptable when staleness up to the refresh interval is tolerable.",
-      wide: "The wide copy is fast and wrong-in-waiting. Every fact now lives in two designs and nothing owns keeping the copy current. This is denormalization without an owner: the drift bug from Lab 01A, back on purpose.",
+      wide: ("The wide copy is fast and wrong-in-waiting. Every fact now lives in two designs and nothing owns keeping the copy current. This is denormalization without an owner: the drift bug from " + DSL.labLabel("modeling", "A") + ", back on purpose."),
     };
     const totalRows = DRILL_EVENTS.reduce((sum, e) => sum + e.rows, 0);
     const AFTER_MONTH = {

@@ -69,7 +69,7 @@ Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-o
 
 The course is intentionally framework-free and requires no backend. It uses ordered, namespaced browser scripts so it also works in simple static hosting environments:
 
-- `js/core.js` owns course metadata, shared state, timing, headers, and footers.
+- `js/core.js` owns course metadata, shared state, timing, headers, and footers. A lesson's number is its position in the `lessons` list, so reordering that list renumbers the course. Lesson text refers to other lessons by id, never by number: `DSL.lessonRef("index-layout")` renders "Lesson 03", and `DSL.labLabel("access-paths", "A")` renders "Lab 06A".
 - `js/components/quiz.js` provides the reusable accessible quiz renderer and state handling.
 - `js/components/engine-lens.js` provides a reusable four-level PostgreSQL/MySQL/SQLite comparison surface with step traces and prediction feedback.
 - `js/lessons/*.js` contains one concept area per file and registers its renderer with the core.

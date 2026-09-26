@@ -912,7 +912,7 @@
 
   DSL.registerGuided("pages", () => DSL.Guided.run({
     lessonId: "pages",
-    title: "02 · Pages, not rows",
+    title: `${DSL.lessonNumber("pages")} · Pages, not rows`,
     beats: makeBeats(),
     onLab: (id) => DSL.StorageModel.progress.complete(id),
   }));

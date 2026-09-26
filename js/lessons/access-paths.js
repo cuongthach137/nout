@@ -23,7 +23,7 @@
     DSL.elements.root.innerHTML = `<article class="lesson">
       ${DSL.lessonHeader(lesson, "One index can produce <em>four different scans</em>.", "The optimizer chooses an access path from estimated cost—not from a rule that says indexes are always faster. See how selectivity, projected columns, and MVCC visibility change the plan.", "Intermediate")}
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 06A</span><h2>Read an EXPLAIN plan physically</h2><p class="lab-copy">Change the query shape. The plan diagram shows the executor’s steps; the page strip shows the actual storage work those steps imply.</p></div><span class="lab-badge">estimate → access path</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("access-paths", "A")}</span><h2>Read an EXPLAIN plan physically</h2><p class="lab-copy">Change the query shape. The plan diagram shows the executor’s steps; the page strip shows the actual storage work those steps imply.</p></div><span class="lab-badge">estimate → access path</span></div>
         <div class="controls">
           <div class="control"><label for="scan-selectivity">Rows matching</label><select id="scan-selectivity"><option value="rare">Rare · 0.5%</option><option value="medium">Medium · 15%</option><option value="wide">Wide · 65%</option></select></div>
           <div class="control"><label for="scan-projection">Columns requested</label><select id="scan-projection"><option value="covered">id, total · covered</option><option value="full">SELECT * · needs heap</option></select></div>
@@ -38,7 +38,7 @@
 
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Design drill</span><strong>Separate indexes, composite index, or scan?</strong><span class="severity">AND / OR</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Lab 06B</span><h2>Combine predicates without guessing</h2><p class="lab-copy">PostgreSQL can combine separate indexes into in-memory bitmaps. That flexibility costs extra scans and loses index ordering.</p></div><span class="lab-badge">BitmapAnd · BitmapOr</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("access-paths", "B")}</span><h2>Combine predicates without guessing</h2><p class="lab-copy">PostgreSQL can combine separate indexes into in-memory bitmaps. That flexibility costs extra scans and loses index ordering.</p></div><span class="lab-badge">BitmapAnd · BitmapOr</span></div>
         <div class="query-box"><code id="combine-query">WHERE status = 'paid' AND region = 'EU' ORDER BY created_at</code></div>
         <div class="controls"><div class="control"><label for="combine-operator">Predicate</label><select id="combine-operator"><option value="and">status AND region</option><option value="or">status OR region</option></select></div><div class="control grow"><label for="combine-design">Available design</label><select id="combine-design"><option value="separate">Two indexes: (status), (region)</option><option value="composite">Composite: (status, region, created_at)</option></select></div><button class="button primary" id="run-combination">Build plan</button></div>
         <div class="bitmap-flow" id="bitmap-flow" aria-live="polite"></div>

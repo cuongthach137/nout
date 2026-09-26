@@ -27,7 +27,7 @@
     { prompt: "An analytics query reads 3 columns of a 40-column, 10-million-row table. Why does a column layout win?", options: ["It reads faster per cell", "The 37 unread columns are never touched, and each column compresses better", "It avoids transactions"], answer: 1, why: "Columns together mean a query touches only the strips it names — and one repeated value per strip compresses to a fraction of its row-store size." },
     { prompt: "Why does an LSM engine absorb a write storm without falling over?", options: ["It appends to a memtable and defers sorting and rewriting to flushes and compaction", "It writes directly into sorted tables", "It skips the log to save time"], answer: 0, why: "Appends are the cheapest write there is. Sorting happens later, in bulk, when a full memtable becomes one sorted chunk." },
     { prompt: "What cost grows between compactions?", options: ["Write throughput", "Reads: one more sorted chunk is one more place to check", "Index size"], answer: 1, why: "Each chunk is cheap alone; the accumulation is not. Background compaction caps how many places a read must look." },
-    { prompt: "Why does keeping each chunk sorted help a lookup that misses?", options: ["Sorted data cannot contain errors", "The search can stop early — once past where the key would be", "Sorted chunks stay in memory"], answer: 1, why: "A sorted column lets the search bail out the moment it passes the target — and Lesson 09’s bloom filters skip whole chunks before that search starts." },
+    { prompt: "Why does keeping each chunk sorted help a lookup that misses?", options: ["Sorted data cannot contain errors", "The search can stop early — once past where the key would be", "Sorted chunks stay in memory"], answer: 1, why: ("A sorted column lets the search bail out the moment it passes the target — and " + DSL.lessonRef("bloom") + "’s bloom filters skip whole chunks before that search starts.") },
   ];
 
   function setStatus(el, message, tone) {
@@ -47,7 +47,7 @@
       </section>
 
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 10A · columnar</span><h2>Ask one question of a tiny notebook</h2><p class="lab-copy">One week of sales, five receipts, twenty cells. Ask the notebook a question in both layouts and count exactly what had to be read.</p></div><span class="lab-badge">rows ↔ columns</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("columnar-lsm", "A")} · columnar</span><h2>Ask one question of a tiny notebook</h2><p class="lab-copy">One week of sales, five receipts, twenty cells. Ask the notebook a question in both layouts and count exactly what had to be read.</p></div><span class="lab-badge">rows ↔ columns</span></div>
         <div class="controls">
           <div class="control grow"><label for="col-query">Question</label><select id="col-query">
             <option value="qty">How many croissants did we sell?</option>
@@ -63,11 +63,11 @@
           <div class="metric"><span>Cells the answer used</span><strong id="col-used">—</strong><small>what the question needed</small></div>
         </div>
         <div class="viz-caption"><span class="live-status"><i class="pulse" id="col-pulse"></i><span id="col-status" aria-live="polite">Pick a question, choose a layout, and run it.</span></span></div>
-        <div class="wait-what"><strong>Wait, what?</strong><p>Why not store columns apart from the very start? Because the order screen reads all four fields of one receipt — and strips must be stitched back together for that, the join problem from Lesson 01 again. Rows win whole-receipt work; columns win when queries keep asking one question of millions of receipts.</p></div>
+        <div class="wait-what"><strong>Wait, what?</strong><p>Why not store columns apart from the very start? Because the order screen reads all four fields of one receipt — and strips must be stitched back together for that, the join problem from ${DSL.lessonRef("modeling")} again. Rows win whole-receipt work; columns win when queries keep asking one question of millions of receipts.</p></div>
       </section>
 
       <section class="lab">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 10B · chunks</span><h2>Run a write storm, then go looking</h2><p class="lab-copy">Orders arrive one at a time — append, append, append. Flush turns the memtable into a sorted chunk. Then find Omar and watch the cost of every chunk you have accumulated.</p></div><span class="lab-badge">memtable → chunks</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("columnar-lsm", "B")} · chunks</span><h2>Run a write storm, then go looking</h2><p class="lab-copy">Orders arrive one at a time — append, append, append. Flush turns the memtable into a sorted chunk. Then find Omar and watch the cost of every chunk you have accumulated.</p></div><span class="lab-badge">memtable → chunks</span></div>
         <div class="controls">
           <button class="button primary" id="lsm-add" type="button">Append an order</button>
           <button class="button primary" id="lsm-flush" type="button" disabled>Flush memtable → sorted chunk</button>
@@ -83,10 +83,10 @@
           <div class="metric"><span>Entries examined, last read</span><strong id="lsm-lastread">—</strong><small>run a read to measure</small></div>
         </div>
         <div class="viz-caption"><span class="live-status"><i class="pulse" id="lsm-pulse"></i><span id="lsm-status" aria-live="polite">Append a few orders, flush, then go looking for Omar.</span></span></div>
-        <div class="wait-what"><strong>Wait, what?</strong><p>Didn’t Lesson 02 say the database rewrites pages in place? Row stores can. But when writes arrive faster than pages can be rewritten, the trick inverts: never rewrite — append, and sort in bulk later. That is the LSM design behind RocksDB, Cassandra, and many cloud stores.</p></div>
+        <div class="wait-what"><strong>Wait, what?</strong><p>Didn’t ${DSL.lessonRef("pages")} say the database rewrites pages in place? Row stores can. But when writes arrive faster than pages can be rewritten, the trick inverts: never rewrite — append, and sort in bulk later. That is the LSM design behind RocksDB, Cassandra, and many cloud stores.</p></div>
       </section>
 
-      <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> no layout wins everywhere. Columns serve questions that read few fields of many rows; append-and-sort serves stores that write constantly and read by key. Read amplification and write amplification are the same dial turned in opposite directions — Lesson 04’s B-tree is the in-place compromise between them.</p></div>
+      <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> no layout wins everywhere. Columns serve questions that read few fields of many rows; append-and-sort serves stores that write constantly and read by key. Read amplification and write amplification are the same dial turned in opposite directions — ${DSL.lessonRef("btree")}’s B-tree is the in-place compromise between them.</p></div>
 
       <section class="lab">
         <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Four calls on the two layouts</h2><p class="lab-copy">Answer with the plain-language rules from the labs; the storage-engine vocabulary is only their formal name.</p></div><button class="button" type="button" data-quiz-reset>Reset answers</button></div>
@@ -251,7 +251,7 @@
         examined += inChunk;
         state.lastRead = { cells: examined, found, chunkIndex: index, examined };
         if (found) {
-          setStatus(status, `Found ${target} in chunk ${state.flushCount - index} after ${inChunk} sorted entr${inChunk === 1 ? "y" : "ies"} — ${examined} entries in total. Sorted columns let the search stop early; Lesson 09’s bloom filters skip whole chunks before it starts.`, "ok");
+          setStatus(status, `Found ${target} in chunk ${state.flushCount - index} after ${inChunk} sorted entr${inChunk === 1 ? "y" : "ies"} — ${examined} entries in total. Sorted columns let the search stop early; ${DSL.lessonRef("bloom")}’s bloom filters skip whole chunks before it starts.`, "ok");
           paint();
           return;
         }

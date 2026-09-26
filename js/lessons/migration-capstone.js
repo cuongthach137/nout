@@ -38,7 +38,7 @@
 
       <section class="lab incident-lab">
         <div class="incident-strip"><span>Migration review</span><strong>Architecture sign-off in 30 minutes</strong><span class="severity">four hidden contracts</span></div>
-        <div class="lab-top"><div><span class="lab-kicker">Levels 1–2 · Lab 31</span><h2>Translate the mechanism before the DDL</h2><p class="lab-copy" id="migration-story"></p></div><span class="lab-badge" id="migration-route-badge">—</span></div>
+        <div class="lab-top"><div><span class="lab-kicker">Levels 1–2 · ${DSL.labLabel("migration-capstone")}</span><h2>Translate the mechanism before the DDL</h2><p class="lab-copy" id="migration-story"></p></div><span class="lab-badge" id="migration-route-badge">—</span></div>
         <div class="controls"><div class="control grow"><label for="migration-route">Migration route</label><select id="migration-route"><option value="postgresMysql">PostgreSQL 18 → MySQL 8.4/InnoDB</option><option value="mysqlSqlite">MySQL 8.4/InnoDB → SQLite 3.x</option></select></div><button class="button primary" id="review-migration">Run architecture review</button></div>
         <div class="migration-path"><div><small>source</small><strong id="migration-source">—</strong></div><span>→ translate →</span><div><small>target</small><strong id="migration-target">—</strong></div></div>
         <div class="migration-dimensions" id="migration-dimensions"></div>

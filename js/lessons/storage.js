@@ -4,7 +4,7 @@
   const { retrigger, wonder, labSide, fly, burst, floater, countTo } = DSL.LabKit;
   const progress = DSL.LabKit.createProgress({
     lessonId: "pages",
-    labs: [{ id: "anatomy", name: "02A Page" }, { id: "buffer", name: "02B Buffer pool" }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "anatomy", name: `${DSL.lessonNumber("pages")}A Page` }, { id: "buffer", name: `${DSL.lessonNumber("pages")}B Buffer pool` }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
   });
 
   const PAGE_BYTES = 8192;
@@ -38,7 +38,7 @@
   const wait = (duration) => new Promise((resolve) => DSL.setTimer(resolve, duration));
 
   const QUIZ = [
-    { prompt: "You ask for customer #11, a 70-byte row. What does the engine read from storage?", options: ["Exactly those 70 bytes", "The whole 8 KB page that holds #11", "Every page in the table"], answer: 1, why: "Storage moves whole pages. The row you wanted arrives together with every neighbour on its page: Lab 02A’s read amplification." },
+    { prompt: "You ask for customer #11, a 70-byte row. What does the engine read from storage?", options: ["Exactly those 70 bytes", "The whole 8 KB page that holds #11", "Every page in the table"], answer: 1, why: ("Storage moves whole pages. The row you wanted arrives together with every neighbour on its page: " + DSL.labLabel("pages", "A") + "’s read amplification.") },
     { prompt: "#12 sits on the same page as #11, which you fetched a moment ago. Fetching #12 next is most likely…", options: ["Another storage read", "A buffer hit: the page is already in memory", "Blocked until #11 is released"], answer: 1, why: "The page came into the buffer pool with #11, so #12 is served from RAM. Neighbours ride along for free." },
     { prompt: "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?", options: ["First in, first out", "Least recently used", "Whichever page is biggest"], answer: 1, why: "LRU refreshes a page every time it is used, so a hot page never becomes the oldest. FIFO evicts by arrival time, even if the page was used a moment ago." },
     { prompt: "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?", options: ["Return fewer JSON fields", "An index in the query’s order (customer_id, created_at) that also holds the shown columns", "Retry the request when it is slow"], answer: 1, why: "The rows are few but physically scattered. An index that matches the query’s order and covers its columns turns 10 random pages into a few neighbouring ones." },
@@ -89,12 +89,12 @@
           <div class="mini st-mini-local" aria-hidden="true"><span class="st-mini-pair"><i class="a">#11</i><i class="b">#12</i></span><span class="st-mini-costs"><em class="a">8 ms</em><em class="b">0.1 ms</em></span></div>
           <h3>Neighbours matter</h3>
           <p>Keep rows that are read together on the same pages, and the second lookup is served from a page you already loaded.</p>
-          ${wonder("Who decides which rows are neighbours?", "The table’s physical order and your indexes. Rows land wherever there was room when they were inserted, unless an index or clustering keeps related rows together. Lesson 03 explores this.")}
+          ${wonder("Who decides which rows are neighbours?", ("The table’s physical order and your indexes. Rows land wherever there was room when they were inserted, unless an index or clustering keeps related rows together. " + DSL.lessonRef("index-layout") + " explores this."))}
         </div>
       </section>
 
       <section class="lab" id="lab-anatomy">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 02A · page</span><h2>You asked for one row</h2><p class="lab-copy">Click any customer on the disk shelf. The engine can’t hand you just that row: it reads the whole 8 KB page the row lives on. Then click one of its neighbours.</p></div>${labSide("1 row → 1 page")}</div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("pages", "A")} · page</span><h2>You asked for one row</h2><p class="lab-copy">Click any customer on the disk shelf. The engine can’t hand you just that row: it reads the whole 8 KB page the row lives on. Then click one of its neighbours.</p></div>${labSide("1 row → 1 page")}</div>
         <div class="viz-stage st-anatomy">
           <div><div class="control-label">Disk · ${PAGE_COUNT} pages</div><div class="st-shelf" id="anat-shelf">${Array.from({ length: PAGE_COUNT }, (_, page) => `<div class="st-shelf-page" data-page="${page}"><b>P${page + 1}</b><div class="st-rows">${idsOn(page).map((id) => `<button type="button" class="st-row" data-id="${id}" aria-label="Fetch customer ${id}">${pad(id)}</button>`).join("")}</div></div>`).join("")}</div></div>
           <div><div class="control-label">In memory · the page you got</div><div class="st-page empty" id="anat-page"><p>Pick a customer on the left.</p></div></div>
@@ -109,7 +109,7 @@
       </section>
 
       <section class="lab" id="lab-buffer">
-        <div class="lab-top"><div><span class="lab-kicker">Lab 02B · buffer pool</span><h2>Keep the right pages in RAM</h2><p class="lab-copy">Fetch customers and watch pages travel from disk into a tiny buffer pool. Misses are slow; hits are nearly free. Then run the hot-page mix under both eviction rules.</p></div>${labSide("storage → memory")}</div>
+        <div class="lab-top"><div><span class="lab-kicker">${DSL.labLabel("pages", "B")} · buffer pool</span><h2>Keep the right pages in RAM</h2><p class="lab-copy">Fetch customers and watch pages travel from disk into a tiny buffer pool. Misses are slow; hits are nearly free. Then run the hot-page mix under both eviction rules.</p></div>${labSide("storage → memory")}</div>
         <div class="controls">
           ${segmented("bp-capacity", "Buffer slots", [["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"]], "2")}
           ${segmented("bp-policy", "When full, evict", [["fifo", "Oldest first · FIFO"], ["lru", "Least recent · LRU"]], "fifo")}
@@ -187,7 +187,7 @@
       <div class="st-tuples">${rows.slice().reverse().map((row, i) => `<div class="st-tuple ${wanted.has(row.id) ? "want" : "along"}" data-id="${row.id}" style="--i:${i}"><b>${pad(row.id)}</b><span>${row.name} · ${row.city}</span><em>${row.bytes} B</em></div>`).join("")}</div>`;
   }
 
-  // Lab 02A: one row requested, one whole page read.
+  // Page lab (A): one row requested, one whole page read.
   function setupAnatomyLab() {
     const shelf = document.getElementById("anat-shelf");
     const pageEl = document.getElementById("anat-page");
@@ -273,7 +273,7 @@
     });
   }
 
-  // Lab 02B: a tiny buffer pool with visible travel, eviction, and time accounting.
+  // Buffer pool lab (B): a tiny buffer pool with visible travel, eviction, and time accounting.
   function setupBufferLab() {
     const $ = (id) => document.getElementById(id);
     const shelf = $("bp-shelf");
