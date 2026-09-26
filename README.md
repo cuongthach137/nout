@@ -59,11 +59,12 @@ Narrated lessons use pre-rendered mp3s made with [Kokoro](https://github.com/the
 ```bash
 uv run tools/voice.py say "Try a line."            # preview
 uv run tools/voice.py voices                       # list voices
+uv run tools/voice.py lint narration/pages.json    # check a script against narration/STYLE.md
 uv run tools/voice.py build narration/pages.json   # render changed lines to audio/pages/
 uv run tools/voice.py deploy                       # publish audio/ to Cloudflare
 ```
 
-Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-only Cloudflare Worker (`nout-audio`, free static hosting) using wrangler; run `npx wrangler login` once. The site reads audio from the address in `index.html`'s `<meta name="audio-base">`, and from the local `audio/` folder when served from `localhost`. Lines stream one at a time, and the narrator prefetches the next two while one plays. Voice is encoded as 40 kbps mono mp3.
+Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-only Cloudflare Worker (`nout-audio`, free static hosting) using wrangler; run `npx wrangler login` once. The site reads audio from the address in `index.html`'s `<meta name="audio-base">`, and from the local `audio/` folder when served from `localhost`. Lines stream one at a time, and the narrator prefetches the next two while one plays. Voice is encoded as 40 kbps mono mp3. How lines should read, sound and pace is in [`narration/STYLE.md`](narration/STYLE.md); `narration/lexicon.json` holds spoken spellings for database terms, and a line can name a speaker, like the interviewer, for a second voice.
 
 ## Architecture
 

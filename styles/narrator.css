@@ -6,6 +6,9 @@
 .nr-dock { grid-row: 3; display: grid; grid-template-columns: 34px minmax(0, 1fr) 34px; align-items: center; justify-items: center; gap: 6px 12px; min-height: 104px; padding: 12px 0 14px; border-top: 1px solid var(--line); }
 .nr-cap { grid-column: 2; max-width: 760px; min-height: 2.7em; margin: 0; font-size: clamp(17px, 2.1vw, 22px); font-weight: 500; line-height: 1.35; letter-spacing: -.015em; text-align: center; cursor: pointer; }
 .nr-cap b { color: var(--green-deep); }
+.nr-speaker { display: inline-block; margin-right: 10px; padding: 2px 9px; border-radius: 99px; color: #fff; background: var(--blue); font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; vertical-align: 3px; }
+.nr-cap[data-speaker="interviewer"] { font-style: italic; }
+.nr-cap[data-speaker="interviewer"] .nr-speaker { font-style: normal; }
 .nr-cap.nr-cap-in { animation: nrCapIn .4s cubic-bezier(.2, .8, .3, 1); }
 .nr-dock.paused .nr-cap { opacity: .55; }
 

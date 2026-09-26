@@ -2,6 +2,12 @@
   "lesson": "pages",
   "voice": "af_heart",
   "speed": 1.0,
+  "speakers": {
+    "interviewer": {
+      "voice": "bm_george",
+      "label": "Interviewer"
+    }
+  },
   "lines": {
     "teach-page.1": "Here's a table of thirty-two customers. Each one is a <b>row</b>.",
     "teach-page.2": "On disk, rows aren't stored one by one. They're packed into <b>pages</b>.",
@@ -166,22 +172,26 @@
     "quiz.intro": "Four quick questions.",
     "quiz.q1": {
       "caption": "You ask for customer #11, a 70-byte row. What does the engine read from storage?",
-      "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?"
+      "voice": "You ask for customer eleven, a seventy-byte row. What does the engine read from storage?",
+      "speaker": "interviewer"
     },
     "quiz.q1-why": "Storage moves whole pages. The row you wanted arrives with every neighbour on its page.",
     "quiz.q2": {
       "caption": "#12 sits on the same page as #11, which you fetched a moment ago. Fetching #12 next is most likely…",
-      "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?"
+      "voice": "Customer twelve sits on the same page as eleven, which you just fetched. Fetching twelve next is most likely what?",
+      "speaker": "interviewer"
     },
     "quiz.q2-why": "The page came into memory with eleven, so twelve is a buffer hit. Neighbours ride along for free.",
     "quiz.q3": {
       "caption": "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
-      "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?"
+      "voice": "A buffer pool has two slots. One page is needed by every other query. Which eviction rule keeps it in memory?",
+      "speaker": "interviewer"
     },
     "quiz.q3-why": "LRU refreshes a page every time it's used, so a hot page never becomes the oldest. FIFO evicts by arrival, even if the page was just used.",
     "quiz.q4": {
       "caption": "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?",
-      "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?"
+      "voice": "An orders endpoint returns twelve rows, but reads ten scattered pages on a cold cache. What's the best first fix?",
+      "speaker": "interviewer"
     },
     "quiz.q4-why": "The rows are few, but scattered. An index in the query's order, holding the columns it shows, turns ten random pages into a few neighbouring ones.",
     "quiz.right1": "Right.",

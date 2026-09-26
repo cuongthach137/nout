@@ -1,0 +1,32 @@
+{
+  "note": "Spoken spellings, applied only to the voice text (captions keep the real term). Whole words, case-sensitive. Patterns are [regex, replacement] pairs applied after the words.",
+  "words": {
+    "PostgreSQL": "Postgres",
+    "MySQL": "My S Q L",
+    "SQLite": "S Q Lite",
+    "InnoDB": "Inno D B",
+    "SQL": "S Q L",
+    "MVCC": "M V C C",
+    "WAL": "W A L",
+    "LSM": "L S M",
+    "UUID": "U U I D",
+    "UUIDv4": "U U I D version four",
+    "UUIDv7": "U U I D version seven",
+    "CTE": "C T E",
+    "CTEs": "C T Es",
+    "OLTP": "O L T P",
+    "OLAP": "O L A P",
+    "B-tree": "B tree",
+    "B-trees": "B trees",
+    "I/O": "I O",
+    "2PC": "two phase commit",
+    "JSON": "Jason",
+    "p95": "p ninety-five"
+  },
+  "patterns": [
+    ["(\\d)\\s?KB\\b", "\\1 kilobytes"],
+    ["(\\d)\\s?MB\\b", "\\1 megabytes"],
+    ["(\\d)\\s?GB\\b", "\\1 gigabytes"],
+    ["(\\d)\\s?ms\\b", "\\1 milliseconds"]
+  ]
+}

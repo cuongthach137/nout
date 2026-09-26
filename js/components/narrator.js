@@ -8,7 +8,8 @@
   // chapter = { id, title, continues?, script(n, scene) → Promise }
   // n       = { say, react, show, mount, ask, choose, wait, after, alive, lab, state }
   //
-  // Lines are written in narration/<lesson>.json as { id: caption } or { id: { caption, voice } }.
+  // Lines are written in narration/<lesson>.json as { id: caption } or { id: { caption, voice, speaker } }.
+  // A line with a speaker (like the interviewer) is voiced by that speaker and labelled in the caption.
   // Captions may hold markup and {placeholders}; the voice text never does.
 
   const { reducedMotion, retrigger } = DSL.LabKit;
@@ -248,7 +249,7 @@
 
   function run({ lessonId, title, chapters, onLab }) {
     const root = DSL.elements.root;
-    const { lines = {}, audio: manifest = {} } = narrations[lessonId] || {};
+    const { lines = {}, audio: manifest = {}, speakers = {} } = narrations[lessonId] || {};
 
     const saveKey = `dsl-narrated-${lessonId}`;
     const saved = readJson(saveKey, { index: 0, done: [] });
@@ -333,7 +334,10 @@
     function caption(id, vars = {}) {
       const line = lines[id];
       const text = line ? (typeof line === "string" ? line : line.caption) : `[missing line: ${id}]`;
-      cap.innerHTML = text.replace(/\{(\w+)\}/g, (match, key) => (key in vars ? vars[key] : match));
+      const speaker = line && typeof line === "object" ? line.speaker : "";
+      const label = speaker ? (speakers[speaker] && speakers[speaker].label) || speaker : "";
+      cap.dataset.speaker = speaker || "";
+      cap.innerHTML = (label ? `<span class="nr-speaker">${label}</span>` : "") + text.replace(/\{(\w+)\}/g, (match, key) => (key in vars ? vars[key] : match));
       retrigger(cap, "nr-cap-in");
     }
 
