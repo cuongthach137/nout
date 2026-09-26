@@ -9,7 +9,8 @@
   // A lesson supplies its data:
   //   practice = {
   //     lessonId,
-  //     goals:   [{ id, text, recap }],                                 // 2–3, one per big idea
+  //     goals:   [{ id, icon, title, text, snippet, recap, example }],  // 2–3, one per big idea
+  //              example = { sql, before?, dataset?, mark?(row) → class, note } replayed in the recap
   //     checks:  [{ id, goal, prompt, options, answer, why }],          // apply an idea, tied to a goal
   //     warmups: [{ id, goal, prompt, options, answer, why }],          // interviewer, multiple choice
   //     open:    { id, goal, prompt, points: [html], answer: html },    // interviewer, open
@@ -71,13 +72,51 @@
 
   const STATUS_LABEL = { solid: "✓", revisit: "revisit", "": "" };
 
+  // The compact list: the wrap-up's ✓ / revisit summary.
   function goalsMarkup(practice, { withStatus = false, recap = false } = {}) {
     const st = withStatus ? status(practice) : {};
     return `<ol class="pr-goals">${practice.goals.map((goal, i) => `<li class="pr-goal ${st[goal.id] || ""}" data-goal="${goal.id}" style="--i:${i}">
-      <span class="pr-num">${i + 1}</span>
-      <div><b>${goal.text}</b>${recap ? `<p>${goal.recap}</p>` : ""}</div>
+      <span class="pr-num">${goal.icon || i + 1}</span>
+      <div><b>${goal.title ? `${goal.title}. ` : ""}</b>${goal.text}${recap ? `<p>${goal.recap}</p>` : ""}</div>
       ${withStatus && st[goal.id] ? `<em>${STATUS_LABEL[st[goal.id]]}</em>` : ""}
     </li>`).join("")}</ol>`;
+  }
+
+  // The goal cards: icon, short title, the can-do sentence and a code snippet, joined by a path.
+  // recap: add the takeaway and a slot where the goal's example replays.
+  function cardsMarkup(practice, { recap = false, compact = false } = {}) {
+    const hl = (sql) => (DSL.Sql ? DSL.Sql.highlight(sql) : sql);
+    return `<div class="pr-cards ${compact ? "compact" : ""} ${recap ? "recap" : ""}">${practice.goals.map((goal, i) => `<article class="pr-card" data-goal="${goal.id}" data-hue="${i % 3}" style="--i:${i}">
+      <header><span class="pr-card-icon" aria-hidden="true">${goal.icon || "🎯"}</span><span class="pr-card-num">Goal ${i + 1}</span><span class="pr-stamp" aria-hidden="true">✓ unlocked</span></header>
+      <h3>${goal.title || goal.text}</h3>
+      ${goal.title && !recap ? `<p class="pr-card-text">${goal.text}</p>` : ""}
+      ${goal.snippet && !recap ? `<code class="pr-snippet">${hl(goal.snippet)}</code>` : ""}
+      ${recap ? `<p class="pr-card-recap">${goal.recap}</p><div class="pr-example"></div>` : ""}
+    </article>`).join("")}</div>`;
+  }
+
+  // Replay a goal's example into its card: optional "before" query, then the real one.
+  async function playExample(card, goal, wait = (ms) => new Promise((r) => setTimeout(r, ms))) {
+    const ex = goal.example;
+    const host = card.querySelector(".pr-example");
+    if (!ex || !host || !DSL.Sql) return;
+    const dataset = ex.dataset || "bakery";
+    const mini = (result, cls = "") => `<div class="pr-mini ${cls}">${result.error ? `<p class="sq-err">${result.error}</p>` : `<table><thead><tr>${result.columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${result.rows.slice(0, 7).map((row) => `<tr class="${ex.mark ? ex.mark(row, cls) : ""}">${row.map((v) => `<td>${v === null ? "<i>NULL</i>" : typeof v === "number" && !Number.isInteger(v) ? Number(v.toFixed(2)) : v}</td>`).join("")}</tr>`).join("")}</tbody></table>`}</div>`;
+    const code = (sql) => `<code class="pr-snippet">${DSL.Sql.highlight(sql)}</code>`;
+    if (ex.before) {
+      host.innerHTML = `${code(ex.before)}${mini(await DSL.Sql.run(dataset, ex.before), "before")}`;
+      retrigger(host, "sq-code-in");
+      await wait(1400);
+    }
+    host.innerHTML = `${code(ex.sql)}${mini(await DSL.Sql.run(dataset, ex.sql), "after")}${ex.note ? `<small class="pr-note">${ex.note}</small>` : ""}`;
+    retrigger(host, "sq-code-in");
+  }
+
+  function unlock(card) {
+    card.classList.add("pr-lit", "pr-unlocked");
+    card.scrollIntoView({ block: "nearest", behavior: DSL.LabKit.reducedMotion() ? "auto" : "smooth" });
+    retrigger(card, "gd-pop");
+    burst(card.querySelector(".pr-stamp"), { count: 10, spread: 40 });
   }
 
   const goalTag = (practice, goalId) => {
@@ -146,14 +185,13 @@
       id: "goals",
       title: "What you'll be able to do",
       async script(n, scene) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">By the end of this lesson, you'll be able to</p>${goalsMarkup(practice)}</div>`;
-        const items = [...scene.querySelectorAll(".pr-goal")];
-        items.forEach((item) => item.classList.add("pr-dim"));
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">By the end of this lesson, you'll be able to</p>${cardsMarkup(practice)}</div>`;
+        const cards = [...scene.querySelectorAll(".pr-card")];
         await n.say("goals.intro");
-        for (const [i, item] of items.entries()) {
-          item.classList.remove("pr-dim");
-          item.classList.add("pr-on");
-          retrigger(item, "gd-pop");
+        for (const [i, card] of cards.entries()) {
+          card.classList.add("pr-lit");
+          retrigger(card, "gd-pop");
+          DSL.Sfx.play("tick");
           await n.say(`goals.${i + 1}`);
         }
       },
@@ -165,15 +203,13 @@
       id: "recap",
       title: "Recap",
       async script(n, scene) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">What you can do now</p>${goalsMarkup(practice, { recap: true })}</div>`;
-        const items = [...scene.querySelectorAll(".pr-goal")];
-        items.forEach((item) => item.classList.add("pr-dim"));
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">What you can do now</p>${cardsMarkup(practice, { recap: true })}</div>`;
+        const cards = [...scene.querySelectorAll(".pr-card")];
         await n.say("recap.intro");
-        for (const [i, item] of items.entries()) {
-          item.classList.remove("pr-dim");
-          item.classList.add("pr-on", "pr-done");
-          retrigger(item, "gd-pop");
-          await n.say(`recap.${i + 1}`);
+        for (const [i, card] of cards.entries()) {
+          unlock(card);
+          DSL.Sfx.play("correct", { streak: i + 1 });
+          await Promise.all([n.say(`recap.${i + 1}`), n.show(() => playExample(card, practice.goals[i], (ms) => n.wait(ms)))]);
         }
       },
     };
@@ -245,7 +281,8 @@
       prompt: "What you'll be able to do.",
       why: "Each goal is one of the lesson's big ideas. The end of the lesson checks each one, and tells you which to revisit.",
       mount(scene, api) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">By the end of this lesson, you'll be able to</p>${goalsMarkup(practice)}</div>`;
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">By the end of this lesson, you'll be able to</p>${cardsMarkup(practice)}</div>`;
+        scene.querySelectorAll(".pr-card").forEach((card) => card.classList.add("pr-lit"));
         api.done("Keep these in mind. The last steps check each one.");
       },
     };
@@ -256,9 +293,18 @@
       id: "recap",
       prompt: "Recap: what you can do now.",
       mount(scene, api) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">Recap</p>${goalsMarkup(practice, { recap: true })}</div>`;
-        scene.querySelectorAll(".pr-goal").forEach((item) => item.classList.add("pr-on", "pr-done"));
-        api.done("Next: put each one to use.");
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">What you can do now</p>${cardsMarkup(practice, { recap: true })}</div>`;
+        const cards = [...scene.querySelectorAll(".pr-card")];
+        (async () => {
+          for (const [i, card] of cards.entries()) {
+            if (!api.alive()) return;
+            unlock(card);
+            DSL.Sfx.play("correct", { streak: i + 1 });
+            await playExample(card, practice.goals[i], (ms) => api.wait(ms));
+            await api.wait(500);
+          }
+          api.done("Next: put each one to use.");
+        })();
       },
     };
   }
@@ -331,7 +377,7 @@
     return `<section class="lab pr-explore" id="lab-quiz">
       <div class="lab-top"><div><span class="lab-kicker">Practice</span><h2>Recap, check, and an interview round</h2><p class="lab-copy">What you should now be able to do, questions that make you use it, and questions as an interviewer would ask them.</p></div><div class="lab-side">${DSL.LabKit.stamp()}</div></div>
       <h3 class="pr-h">Recap</h3>
-      ${goalsMarkup(practice, { recap: true })}
+      ${cardsMarkup(practice, { recap: true })}
       <h3 class="pr-h">Check your understanding</h3>
       <div class="pr-checks">${DSL.Quiz.render(practice.checks, "Understanding")}</div>
       <h3 class="pr-h">Interview round</h3>
@@ -341,6 +387,7 @@
   }
 
   function mountExplore(root, practice, { onPass } = {}) {
+    root.querySelectorAll(".pr-card").forEach((card, i) => { card.classList.add("pr-lit", "pr-unlocked"); playExample(card, practice.goals[i], () => Promise.resolve()); });
     const recordAll = (kind, list) => (idx, correct) => record(practice.lessonId, kind, list[idx].id, correct);
     const checks = root.querySelector(".pr-checks");
     const warmups = root.querySelector(".pr-warmups");
@@ -352,5 +399,5 @@
     wireOpen(root.querySelector(".pr-open"), practice);
   }
 
-  DSL.Practice = Object.freeze({ status, registerCards, goalsMarkup, goalsSummary, goalsChapter, recapChapter, checkChapter, interviewChapter, goalsBeat, recapBeat, checkBeat, warmupBeat, openBeat, exploreMarkup, mountExplore });
+  DSL.Practice = Object.freeze({ status, registerCards, goalsMarkup, cardsMarkup, goalsSummary, goalsChapter, recapChapter, checkChapter, interviewChapter, goalsBeat, recapBeat, checkBeat, warmupBeat, openBeat, exploreMarkup, mountExplore });
 })(window.DataSystemsLab);

@@ -41,9 +41,9 @@
   const PRACTICE = {
     lessonId: "select",
     goals: [
-      { id: "shape", text: "Shape a result: pick columns, compute and name them, and remove repeated rows.", recap: "SELECT picks columns, and the answer is a table: the result set. <code>AS</code> names a computed column; <code>DISTINCT</code> keeps one copy of each row, NULL included." },
-      { id: "filter", text: "Filter rows with WHERE, and bracket AND/OR so the query means what you say.", recap: "WHERE tests every row and keeps only the true ones. AND binds before OR: Maya's pending-or-refunded query also caught Raj's refund until brackets fixed it." },
-      { id: "sort", text: "Sort and take the top N, and explain the order SQL runs its clauses in.", recap: "ORDER BY, then LIMIT: without a sort, \"top 3\" means any 3. SQL runs FROM, WHERE, SELECT, ORDER BY, LIMIT, which is why an alias works in ORDER BY but not in WHERE." },
+      { id: "shape", icon: "🧾", title: "Shape the answer", snippet: "SELECT DISTINCT city", example: { sql: "SELECT DISTINCT city FROM customers", note: "7 cities from 10 customers. NULL counts as one.", mark: (row) => (row[0] === null ? "hot" : "") }, text: "Pick columns, compute and name them, and remove repeated rows.", recap: "SELECT picks columns, and the answer is a table: the result set. <code>AS</code> names a computed column; <code>DISTINCT</code> keeps one copy of each row, NULL included." },
+      { id: "filter", icon: "🔎", title: "Keep the right rows", snippet: "WHERE a AND (b OR c)", example: { before: "SELECT id, customer_id, status FROM orders WHERE customer_id = 1 AND status = 'pending' OR status = 'refunded'", sql: "SELECT id, customer_id, status FROM orders WHERE customer_id = 1 AND status IN ('pending', 'refunded')", note: "Without brackets, Raj's refund sneaks in. With them, only Maya's order.", mark: (row, phase) => (phase === "before" && row[1] === 5 ? "bad" : "good") }, text: "Filter rows with WHERE, and bracket AND/OR so the query means what you say.", recap: "WHERE tests every row and keeps only the true ones. AND binds before OR: Maya's pending-or-refunded query also caught Raj's refund until brackets fixed it." },
+      { id: "sort", icon: "🏁", title: "Sort, then cut", snippet: "ORDER BY price DESC LIMIT 3", example: { sql: "SELECT name, price FROM products ORDER BY price DESC LIMIT 3", note: "Sorted first, then cut. Runs FROM → WHERE → SELECT → ORDER BY → LIMIT.", mark: () => "good" }, text: "Sort and take the top N, and explain the order SQL runs its clauses in.", recap: "ORDER BY, then LIMIT: without a sort, \"top 3\" means any 3. SQL runs FROM, WHERE, SELECT, ORDER BY, LIMIT, which is why an alias works in ORDER BY but not in WHERE." },
     ],
     checks: [
       { id: "distinct-pairs", goal: "shape", prompt: "<code>SELECT DISTINCT city, name FROM customers</code>. Ten customers, seven different cities. How many rows?", options: ["7", "10", "3"], answer: 1, why: "DISTINCT compares whole rows. Every (city, name) pair is different, because every name is, so all 10 stay." },
@@ -95,7 +95,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Ask the tables: <em>SELECT</em>, filter, sort.", "Maya's bakery runs on four tables. Here you'll write the queries every SQL interview starts with: pick columns, keep the right rows, and return them in order.")}
-        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.goalsMarkup(PRACTICE)}</div>
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>Every query here runs for real, on SQLite in your browser, against a fresh copy of the bakery's data. Break anything you like. Tables: <code>customers</code>, <code>products</code>, <code>orders</code>, <code>order_items</code>.</p></div>
