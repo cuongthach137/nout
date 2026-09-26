@@ -16,7 +16,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 ## Process
 - Branch per change, PR to `main`, user merges or asks for merge. Commit trailer: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - No committed tests yet (user wants lessons to settle first); verify changes with headless Chrome playthroughs before PRs.
-- Roadmap: offline snapshot in `docs/roadmap.md`; live source of truth is the claude.ai artifact CKGa6m77J9HwZVPdnRzzyx (item status in its `status` db collection).
+- Roadmap: `docs/roadmap/data.js` is the source of truth (phases, item ids, status, notes, target course map). Update an item's `status`/`note` there when work lands. `docs/roadmap/index.html` renders it and re-reads it every 3 s (open straight from disk). The claude.ai artifact CKGa6m77J9HwZVPdnRzzyx is an older copy.
 
 ## Open work (handoff)
 - Branch `codebase-health` (this commit): `DSL.store` (+ Back up / Restore), `DSL.modules()`, shared `setStatus`, narrator `story`/`quizChapter`/`throttled`. Verified: all 32 lessons render identical text, old saved progress carries over, backup round-trips, lesson 01 narrated full run passes. Not re-run after refactor: course map, keywords/flashcards, lesson 02 quiz flows.
