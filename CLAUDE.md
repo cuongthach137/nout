@@ -13,7 +13,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 
 ## Narration and audio
 - Rules: `narration/STYLE.md` (lesson budget 8-12 min, 3 big ideas, 8 keywords; `<k>` keyword marks; tutor vs interviewer voices).
-- `uv run tools/voice.py lint|build|deploy narration/<lesson>.json`. Build renders only changed lines (Kokoro, 40 kbps). Audio is NOT in git: `deploy` uploads `audio/` to the Cloudflare Worker `nout-audio` (`nout-audio.yourshirtisajoke.workers.dev`, set in `index.html` meta `audio-base`). Run deploy whenever a PR that changes narration merges. Never run `wrangler pages ...` (it auto-deploys the whole repo); `voice.py deploy` passes an explicit assets path.
+- `uv run tools/voice.py lint|build|deploy narration/<lesson>.json`. Build renders only changed lines (Kokoro, 40 kbps). Audio is NOT in git: `deploy` uploads `audio/` to the Cloudflare Worker `nout-audio` (`nout-audio.yourshirtisajoke.workers.dev`, set in `index.html` meta `audio-base`). Run deploy when you open a PR that changes narration, **before** it merges (and again if its narration changes later): if the site goes live first, browsers request missing lines and cache the 404 for a year (the host's immutable Cache-Control applies to 404s too). The narrator retries a failed line once with the cache bypassed, but don't rely on it. Never run `wrangler pages ...` (it auto-deploys the whole repo); `voice.py deploy` passes an explicit assets path.
 
 ## Process
 - Branch per change, PR to `main`, user merges or asks for merge. Commit trailer: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.

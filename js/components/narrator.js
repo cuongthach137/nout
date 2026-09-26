@@ -133,13 +133,25 @@
       fetched.delete(id);
     }
 
+    // A line's audio as a blob URL, or null. Audio URLs are cached as immutable, and the audio host
+    // attaches that header to 404s too, so a request made before a line was deployed can leave a
+    // cached 404. On failure, ask once more with cache: "reload": it skips the browser cache and
+    // stores the fresh response over the stale 404.
+    function load(id, priority) {
+      const get = (cache) => fetch(urlFor(id), { priority, cache }).then((response) => (response.ok ? response.blob() : null));
+      return get("default")
+        .then((blob) => blob || get("reload"))
+        .catch(() => get("reload"))
+        .then((blob) => (blob ? URL.createObjectURL(blob) : null), () => null);
+    }
+
     function prefetch(id) {
       if (!manifest[id] || fetched.has(id) || location.protocol === "file:") return;
       fetched.set(id, true);
-      fetch(urlFor(id), { priority: "low" })
-        .then((response) => (response.ok ? response.blob() : null))
-        .then((blob) => { if (blob && fetched.has(id)) ready.set(id, URL.createObjectURL(blob)); })
-        .catch(() => fetched.delete(id));
+      load(id, "low").then((url) => {
+        if (url && fetched.has(id)) ready.set(id, url);
+        else if (!url) fetched.delete(id);
+      });
       if (fetched.size > KEEP) {
         const oldest = [...fetched.keys()].find((key) => key !== current && key !== id);
         if (oldest) release(oldest);
@@ -203,11 +215,27 @@
           audio.playbackRate = prefs.speed;
           const ended = () => finish();
           const failed = () => { if (!settled) silent(); };
+          // The file didn't load (often a stale cached 404): fetch it fresh once, else read silently.
+          let retried = false;
+          const broken = () => {
+            if (settled) return;
+            if (retried || location.protocol === "file:") { failed(); return; }
+            retried = true;
+            load(id, "high").then((url) => {
+              if (settled || current !== id) return;
+              if (!url) { failed(); return; }
+              ready.set(id, url);
+              fetched.set(id, true);
+              audio.src = url;
+              audio.playbackRate = prefs.speed;
+              if (!clock.paused) audio.play().catch(failed);
+            });
+          };
           audio.addEventListener("ended", ended);
-          audio.addEventListener("error", failed);
+          audio.addEventListener("error", broken);
           cleanups.push(() => {
             audio.removeEventListener("ended", ended);
-            audio.removeEventListener("error", failed);
+            audio.removeEventListener("error", broken);
             audio.pause();
           });
           onPause((paused) => (paused ? audio.pause() : audio.play().catch(failed)));
