@@ -52,7 +52,7 @@
       renderNavigation();
       DSL.Vocab.renderDeck();
       window.scrollTo(0, 0);
-      document.querySelector(".sidebar").classList.remove("open");
+      setNav(false);
       return;
     }
     DSL.state.current = DSL.renderers[requested] ? requested : "welcome";
@@ -69,9 +69,20 @@
     ({ narrated: DSL.narrated, guided: DSL.guided, explore: DSL.renderers })[mode][DSL.state.current]();
     window.scrollTo(0, 0);
     DSL.elements.root.focus({ preventScroll: true });
-    document.querySelector(".sidebar").classList.remove("open");
-    document.getElementById("menu-button").setAttribute("aria-expanded", "false");
+    setNav(false);
   }
+
+  // The course menu slides over the page on phones (and in Guided and Narrated modes). A
+  // backdrop and a close button dismiss it; so do Esc and picking a lesson.
+  function setNav(open) {
+    document.querySelector(".sidebar").classList.toggle("open", open);
+    document.querySelector(".nav-scrim").hidden = !open;
+    document.body.classList.toggle("nav-open", open);
+    document.getElementById("menu-button").setAttribute("aria-expanded", String(open));
+    if (open) document.querySelector(".nav-close").focus({ preventScroll: true });
+  }
+
+  const navIsOpen = () => document.querySelector(".sidebar").classList.contains("open");
 
   document.addEventListener("click", (event) => {
     const completeButton = event.target.closest("[data-complete]");
@@ -90,21 +101,14 @@
       DSL.setMode(modeButton.dataset.mode);
       route();
     }
-    if (event.target.closest("[data-nav-toggle]")) {
-      const sidebar = document.querySelector(".sidebar");
-      const open = sidebar.classList.toggle("open");
-      document.getElementById("menu-button").setAttribute("aria-expanded", String(open));
-    }
+    if (event.target.closest("[data-nav-toggle]")) setNav(!navIsOpen());
+    if (event.target.closest("[data-nav-close]")) setNav(false);
   });
 
-  document.getElementById("menu-button").addEventListener("click", (event) => {
-    const sidebar = document.querySelector(".sidebar");
-    const open = sidebar.classList.toggle("open");
-    event.currentTarget.setAttribute("aria-expanded", String(open));
-  });
+  document.getElementById("menu-button").addEventListener("click", () => setNav(!navIsOpen()));
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") document.querySelector(".sidebar").classList.remove("open");
+    if (event.key === "Escape" && navIsOpen()) setNav(false);
   });
 
   if (DSL.Vocab) DSL.Vocab.onChange = renderNavigation;
