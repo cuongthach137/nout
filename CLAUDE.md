@@ -18,6 +18,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 ## Process
 - Branch per change, PR to `main`, user merges or asks for merge. Commit trailer: `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - No committed tests yet (user wants lessons to settle first); verify changes with headless Chrome playthroughs before PRs.
+- Read `docs/agent-notes.md` before testing or writing SQL/narration: the headless-Chrome recipe, SQLite-vs-Postgres differences, and other gotchas. Add to it when you hit something non-obvious.
 - Roadmap: `docs/roadmap/data.js` is the source of truth (phases, item ids, status, notes, target course map). Update an item's `status`/`note` there when work lands. `docs/roadmap/index.html` renders it and re-reads it every 3 s (open straight from disk). The claude.ai artifact CKGa6m77J9HwZVPdnRzzyx is an older copy.
 
 ## Open work (handoff)
