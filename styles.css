@@ -89,6 +89,8 @@ a { color: inherit; text-decoration: none; }
 .sidebar-backup { display: flex; gap: 6px; margin-top: 10px; }
 .sidebar-backup button, .sidebar-backup label { padding: 4px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 7px; color: var(--sidebar-muted); background: transparent; font: inherit; font-size: 10.5px; font-weight: 700; cursor: pointer; }
 .sidebar-backup button:hover, .sidebar-backup label:hover { color: white; border-color: rgba(255,255,255,.35); }
+.sidebar-sound { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--sidebar-muted); font-size: 10.5px; font-weight: 700; cursor: pointer; }
+.sidebar-sound input { accent-color: var(--lime); }
 .status-dot { display: inline-block; width: 6px; height: 6px; margin-right: 7px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 3px rgba(200,237,118,.12); }
 
 .mobile-header { display: none; }

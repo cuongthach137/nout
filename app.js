@@ -30,6 +30,7 @@
 
   function route() {
     DSL.clearTimers();
+    DSL.Sfx.reset();
     DSL.leave();
     DSL.elements.toast.classList.remove("show");
     const [path, query = ""] = window.location.hash.replace("#/", "").split("?");
@@ -86,6 +87,7 @@
       DSL.store.set("completed", [...DSL.state.completed]);
       completeButton.textContent = "✓ Completed";
       completeButton.classList.add("done");
+      DSL.Sfx.play("complete");
       renderNavigation();
       DSL.showToast("Lesson completed — progress saved");
     }
@@ -100,6 +102,14 @@
   });
 
   document.getElementById("menu-button").addEventListener("click", () => setNav(!navIsOpen()));
+
+  // Sound effects switch (narration has its own mute in the player).
+  const soundToggle = document.querySelector("[data-sound]");
+  soundToggle.checked = DSL.Sfx.soundOn();
+  soundToggle.addEventListener("change", () => {
+    DSL.Sfx.setSound(soundToggle.checked);
+    if (soundToggle.checked) DSL.Sfx.play("correct", { streak: 1 });
+  });
 
   // Back up / Restore: progress lives in one browser, so let learners carry it elsewhere.
   document.querySelector("[data-backup]").addEventListener("click", () => {
