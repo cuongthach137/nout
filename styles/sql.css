@@ -1,0 +1,60 @@
+/* In-browser SQL labs: schema, editor, result table, verdict (js/components/sql.js). */
+
+.sql-lab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
+
+.sql-schema { display: flex; flex-wrap: wrap; gap: 8px; }
+.sql-schema-table { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); font-size: 12px; }
+.sql-schema-table b { color: var(--green-deep); font-family: var(--mono); font-size: 12px; }
+.sql-schema-table span { display: flex; flex-wrap: wrap; gap: 4px; }
+.sql-schema-table code { padding: 1px 6px; border-radius: 5px; color: var(--muted); background: var(--surface); font-family: var(--mono); font-size: 11px; }
+.sql-schema-table code.pk { color: var(--green-deep); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.sql-loading { color: var(--muted); font-size: 12px; }
+
+.sql-goal { border: 1px dashed var(--line-strong); border-radius: 10px; padding: 8px 12px; }
+.sql-goal summary { color: var(--green-deep); font-size: 12px; font-weight: 700; cursor: pointer; }
+.sql-goal-body { margin-top: 10px; }
+
+.sql-editor { border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.sql-editor:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.sql-input { display: block; width: 100%; min-height: 96px; padding: 14px 16px; border: 0; outline: none; resize: vertical; color: var(--ink); background: transparent; font-family: var(--mono); font-size: 14px; line-height: 1.55; tab-size: 2; }
+.sql-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--line); background: var(--surface-soft); }
+.sql-actions kbd { margin-left: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(255, 255, 255, .18); font-family: var(--mono); font-size: 10px; }
+.sql-verdict { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 600; }
+.sql-verdict.ok { color: var(--green); }
+.sql-verdict.warn { color: var(--amber); }
+
+.sql-out:empty { display: none; }
+.sql-table-wrap { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.sql-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12.5px; }
+.sql-table th { position: sticky; top: 0; padding: 8px 12px; border-bottom: 1px solid var(--line-strong); color: var(--muted); background: var(--surface-soft); font-weight: 500; text-align: left; white-space: nowrap; }
+.sql-table td { padding: 7px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.sql-table tr:last-child td { border-bottom: 0; }
+.sql-table td.sql-num { text-align: right; }
+.sql-table td.sql-null { color: var(--muted); font-style: italic; opacity: .7; }
+.sql-table td.sql-none { color: var(--muted); text-align: center; }
+.sql-table tr.sql-extra td { background: var(--coral-soft); }
+.sql-count { margin: 6px 2px 0; color: var(--muted); font-size: 11px; }
+.sql-missing { margin-top: 12px; }
+.sql-missing > b { display: block; margin-bottom: 6px; color: var(--amber); font-size: 12px; }
+.sql-missing .sql-table td { background: var(--amber-soft); }
+.sql-empty { color: var(--muted); font-size: 13px; }
+
+.sql-error { padding: 12px 14px; border: 1px solid var(--coral); border-radius: 10px; background: var(--coral-soft); }
+.sql-error b { color: var(--coral); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.sql-error p { margin: 4px 0 0; font-size: 14px; }
+.sql-error small { display: block; margin-top: 6px; color: var(--muted); font-family: var(--mono); font-size: 11px; }
+.sql-error-text { color: var(--coral); font-size: 12px; }
+
+.sql-lab.is-passed .sql-editor { border-color: var(--green); }
+
+/* Sandbox page */
+.sql-examples { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 22px; }
+.sql-examples > span { color: var(--muted); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.sql-chip { min-height: 32px; padding: 0 12px; border: 1px solid var(--line-strong); border-radius: 99px; color: var(--ink); background: var(--surface); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.sql-chip:hover { border-color: var(--green); }
+.sql-sandbox { margin-top: 14px; }
+
+@media (max-width: 680px) {
+  .sql-input { font-size: 13px; }
+  .sql-verdict { flex-basis: 100%; margin-left: 0; }
+}

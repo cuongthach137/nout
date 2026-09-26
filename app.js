@@ -10,9 +10,11 @@
   }
 
   function renderNavigation() {
-    const due = DSL.Vocab ? DSL.Vocab.dueCount() : 0;
     const practice = `<section class="nav-module"><p class="nav-module-title">Practice</p>
-        <a href="#/flashcards" class="nav-link ${DSL.state.current === "flashcards" ? "active" : ""}"><span class="nav-number"><span>🗂</span></span><span>Flashcards</span>${due ? `<em class="nav-due" aria-label="${due} to review">${due}</em>` : ""}</a>
+        ${Object.entries(DSL.pages).map(([id, page]) => {
+          const badge = page.badge ? page.badge() : null;
+          return `<a href="#/${id}" class="nav-link ${DSL.state.current === id ? "active" : ""}"><span class="nav-number"><span>${page.icon}</span></span><span>${page.title}</span>${badge ? `<em class="nav-due" aria-label="${badge.label}">${badge.count}</em>` : ""}</a>`;
+        }).join("")}
       </section>`;
     DSL.elements.nav.innerHTML = practice + DSL.modules().map(({ name: module, lessons }) => `
       <section class="nav-module">
@@ -36,13 +38,13 @@
     const forced = params.get("mode");
     // ?view= shows a mode for this visit only, without changing the learner's saved choice.
     const view = params.get("view");
-    // Flashcards is a practice page, not a lesson: no modes, no progress.
-    if (requested === "flashcards" && DSL.Vocab) {
-      DSL.state.current = "flashcards";
+    // Practice pages (flashcards, the SQL sandbox) aren't lessons: no modes, no progress.
+    if (DSL.pages[requested]) {
+      DSL.state.current = requested;
       DSL.state.mode = "explore";
       document.body.classList.remove("guided");
       renderNavigation();
-      DSL.Vocab.renderDeck();
+      DSL.pages[requested].render();
       window.scrollTo(0, 0);
       setNav(false);
       return;
