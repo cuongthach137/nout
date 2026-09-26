@@ -7,6 +7,7 @@
   uv run tools/voice.py say "Hello there."          # preview one line (plays it)
   uv run tools/voice.py voices                     # list voice ids
   uv run tools/voice.py build narration/pages.json # render a lesson's lines
+  uv run tools/voice.py deploy                     # publish audio/ to Cloudflare
 
 A narration file looks like:
   {"lesson": "pages", "voice": "af_heart", "speed": 1.0, "lines": {
@@ -19,6 +20,11 @@ narration/<lesson>.js: the captions plus that manifest as a plain script, so the
 them without fetch (which browsers block for pages opened from file://). Rebuild after any edit.
 Unchanged lines are skipped; lines removed from the script have their mp3 deleted.
 Models (~340 MB) download once to ~/.cache/kokoro-onnx.
+
+audio/ is not committed. deploy uploads it as an assets-only Cloudflare Worker named
+AUDIO_PROJECT (free static hosting, served from <name>.<subdomain>.workers.dev) with wrangler;
+run `npx wrangler login` once. The site reads audio from the address in index.html's
+<meta name="audio-base">, and from the local audio/ folder when served from localhost.
 """
 
 import argparse
@@ -37,6 +43,15 @@ CACHE = Path.home() / ".cache" / "kokoro-onnx"
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_VOICE = "af_heart"
 SAMPLE_RATE = 24000
+# Speech stays clear at 40 kbps mono; changing this re-renders every line (it's part of the hash).
+BITRATE = "40k"
+AUDIO_PROJECT = "nout-audio"
+# Cloudflare static-asset headers for audio/: file names are stable but URLs carry ?v=<hash>, so
+# cache hard; CORS lets the site prefetch lines with fetch().
+HEADERS = """/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+"""
 
 
 def model():
@@ -61,7 +76,7 @@ def synth(tts, text, voice, speed):
 def write_mp3(samples, rate, out):
     out.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
-        ["ffmpeg", "-loglevel", "error", "-y", "-f", "f32le", "-ar", str(rate), "-ac", "1", "-i", "-", "-b:a", "64k", str(out)],
+        ["ffmpeg", "-loglevel", "error", "-y", "-f", "f32le", "-ar", str(rate), "-ac", "1", "-i", "-", "-b:a", BITRATE, str(out)],
         input=samples.tobytes(),
         check=True,
     )
@@ -80,7 +95,7 @@ def spoken(line_id, line):
 
 
 def line_hash(text, voice, speed):
-    return hashlib.sha1(f"{voice}|{speed}|{text}".encode()).hexdigest()[:12]
+    return hashlib.sha1(f"{voice}|{speed}|{BITRATE}|{text}".encode()).hexdigest()[:12]
 
 
 def cmd_say(args):
@@ -121,6 +136,7 @@ def cmd_build(args):
         print(f"removed {line_id}")
 
     folder.mkdir(parents=True, exist_ok=True)
+    (folder.parent / "_headers").write_text(HEADERS)
     manifest_path.write_text(json.dumps(dict(sorted(manifest.items())), indent=1) + "\n")
     bundle = {"lines": script["lines"], "audio": {i: manifest[i] for i in sorted(manifest)}}
     Path(args.file).with_suffix(".js").write_text(
@@ -128,6 +144,20 @@ def cmd_build(args):
         f"window.DataSystemsLab.Narrator.register({json.dumps(lesson)}, {json.dumps(bundle, indent=1)});\n"
     )
     print(f"{len(lines)} lines, {len(stale)} rendered → {folder.relative_to(ROOT)}")
+
+
+def wrangler(*args, check=True):
+    return subprocess.run(["npx", "--yes", "wrangler@4", *args], cwd=ROOT, check=check, text=True, capture_output=not check)
+
+
+def cmd_deploy(args):
+    audio = ROOT / "audio"
+    if not any(audio.glob("*/manifest.json")):
+        sys.exit("audio/ has no lessons yet; run build first")
+    (audio / "_headers").write_text(HEADERS)
+    # An assets-only Worker: no script, just files. Flags instead of a wrangler config file, so
+    # nothing in the repo can accidentally publish the whole site.
+    wrangler("deploy", "--name", args.project, "--assets", str(audio), "--compatibility-date", "2026-09-01")
 
 
 def main():
@@ -143,6 +173,9 @@ def main():
     build = sub.add_parser("build", help="render a narration file")
     build.add_argument("file")
     build.set_defaults(run=cmd_build)
+    deploy = sub.add_parser("deploy", help="publish audio/ to Cloudflare")
+    deploy.add_argument("--project", default=AUDIO_PROJECT)
+    deploy.set_defaults(run=cmd_deploy)
     args = parser.parse_args()
     args.run(args)
 

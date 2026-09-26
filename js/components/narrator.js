@@ -94,12 +94,57 @@
     };
   }
 
+  // Where the mp3s live: the audio host named in index.html, or the local audio/ folder when the
+  // site runs from this machine (tools/voice.py build writes there).
+  function audioBase() {
+    const local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+    const meta = document.querySelector('meta[name="audio-base"]');
+    return local || !meta || !meta.content ? "audio" : meta.content.replace(/\/+$/, "");
+  }
+
   // Speaks one line at a time. play(id) resolves when the line is over (or skipped).
   function createVoice({ lessonId, lines, manifest, prefs, clock }) {
     const audio = new Audio();
     audio.preload = "auto";
     let finishCurrent = null;
     let englishVoice = null;
+
+    // Lines stream on demand. While one plays, the next two (in script order) are fetched into
+    // memory, so they start without a gap even on a slow connection.
+    const base = audioBase();
+    const order = Object.keys(lines).filter((id) => manifest[id]);
+    const fetched = new Map();
+    const ready = new Map();
+    const PREFETCH = 2;
+    const KEEP = 6;
+    let current = null;
+    const urlFor = (id) => `${base}/${lessonId}/${encodeURIComponent(id)}.mp3?v=${manifest[id].hash}`;
+
+    function release(id) {
+      if (id === current) return;
+      const url = ready.get(id);
+      if (url) URL.revokeObjectURL(url);
+      ready.delete(id);
+      fetched.delete(id);
+    }
+
+    function prefetch(id) {
+      if (!manifest[id] || fetched.has(id) || location.protocol === "file:") return;
+      fetched.set(id, true);
+      fetch(urlFor(id), { priority: "low" })
+        .then((response) => (response.ok ? response.blob() : null))
+        .then((blob) => { if (blob && fetched.has(id)) ready.set(id, URL.createObjectURL(blob)); })
+        .catch(() => fetched.delete(id));
+      if (fetched.size > KEEP) {
+        const oldest = [...fetched.keys()].find((key) => key !== current && key !== id);
+        if (oldest) release(oldest);
+      }
+    }
+
+    function prefetchAfter(id) {
+      const at = order.indexOf(id);
+      order.slice(at + 1, at + 1 + PREFETCH).forEach(prefetch);
+    }
 
     function spoken(id) {
       const line = lines[id];
@@ -147,7 +192,9 @@
 
         const entry = manifest[id];
         if (entry) {
-          audio.src = `audio/${lessonId}/${encodeURIComponent(id)}.mp3?v=${entry.hash}`;
+          current = id;
+          audio.src = ready.get(id) || urlFor(id);
+          prefetchAfter(id);
           audio.playbackRate = prefs.speed;
           const ended = () => finish();
           const failed = () => { if (!settled) silent(); };
@@ -193,6 +240,8 @@
       audio.play().catch(() => {});
       if (window.speechSynthesis) speechSynthesis.getVoices();
     }
+
+    order.slice(0, PREFETCH).forEach(prefetch);
 
     return { play, stop, unlock, setSpeed };
   }
