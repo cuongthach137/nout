@@ -1,10 +1,11 @@
 {
   "lesson": "modeling",
-  "voice": "af_heart",
+  "engine": "minimax",
+  "model": "speech-2.8-hd",
+  "voice": "English_WiseScholar",
   "speed": 1.0,
   "speakers": {
-    "interviewer": {
-      "voice": "bm_george",
+    "interviewer": { "voice": "English_expressive_narrator",
       "label": "Interviewer"
     }
   },
