@@ -5,7 +5,7 @@
   // reorder in core.js updates the map; only the words below are written by hand.
   const MODULE_CARDS = {
     "Data modeling": ["One fact, one place", "Split a messy order notebook until updates, deletions, and reads all behave."],
-    "Writing SQL": ["Ask the tables", "Write the queries every SQL interview starts with, graded live in your browser: filter and sort, join tables without losing rows, and count by group."],
+    "Writing SQL": ["Ask the tables", "Write the queries every SQL interview starts with, graded live in your browser: filter and sort, join tables without losing rows, count by group, and nest one question inside another."],
     Storage: ["Pages, B-trees, and layout", "See why a 12-row endpoint can trigger ten storage reads, then walk the structures underneath."],
     Indexes: ["Choose, scan, and build indexes", "Match index types to queries, read scan plans, build indexes safely, and skip work with Bloom filters."],
     "Query execution": ["How the planner decides", "Reproduce a bad plan from stale statistics, compare join algorithms, and contain memory spills."],

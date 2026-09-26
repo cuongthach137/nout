@@ -1,0 +1,17 @@
+/* Subqueries lesson: the nest board (outer query, highlighted inner query, its result). */
+
+.nb-board { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; }
+.nb-board > * { flex: none; }
+.nb-board > .nb-out { flex: 0 1 auto; min-height: 90px; display: flex; flex-direction: column; overflow: auto; }
+.nb-code { font-size: 12.5px; }
+.nb-inner { display: inline; padding: 1px 3px; border-radius: 5px; background: rgba(200, 237, 118, .16); outline: 1.5px dashed var(--lime); }
+.nb-mid[hidden] { display: none; }
+.nb-mid { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.nb-arrow { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.nb-value { padding: 4px 14px; border-radius: 99px; color: var(--green-deep); background: var(--lime); font-family: var(--mono); font-size: 14px; }
+.nb-value code { font-family: var(--mono); }
+.gp-question.nb-first { margin-left: 28px; border-style: dashed; }
+
+@media (max-width: 760px) {
+  .nb-code { font-size: 11px; }
+}

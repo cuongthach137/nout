@@ -135,6 +135,6 @@
     "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
 
     "finish.1": "That's the lesson. Aggregates squeeze rows into numbers. GROUP BY sets the grain. And HAVING filters the groups.",
-    "finish.2": "Next up: how a database actually reads those rows from disk."
+    "finish.2": "Next up: questions inside questions, with subqueries and CTEs."
   }
 }
