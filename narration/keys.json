@@ -1,0 +1,137 @@
+{
+  "lesson": "keys",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "keywords": {
+    "primary-key": {
+      "term": "Primary key",
+      "def": "The column, or columns, that identify each row: unique and never NULL. Other tables point at it."
+    },
+    "surrogate-key": {
+      "term": "Surrogate key",
+      "def": "An ID with no meaning of its own, like 1, 2, 3, used as the primary key instead of a real-world value such as a phone number, which can change or be missing."
+    },
+    "unique-constraint": {
+      "term": "UNIQUE constraint",
+      "def": "Forbids two rows from sharing a value. NULLs don't count as equal, so many rows can leave it empty."
+    },
+    "foreign-key": {
+      "term": "Foreign key",
+      "def": "A column that must match a key in another table, or be NULL. The database refuses rows that point at nothing."
+    },
+    "on-delete": {
+      "term": "ON DELETE",
+      "def": "What happens to pointing rows when their target is deleted: refuse the delete (the default), CASCADE and delete them too, or SET NULL."
+    },
+    "cardinality": {
+      "term": "Cardinality",
+      "def": "How many rows can relate on each side: one-to-one, one-to-many, or many-to-many."
+    },
+    "junction-table": {
+      "term": "Junction table",
+      "def": "A table that turns a many-to-many relationship into two one-to-many ones, one row per pair, like order_items between orders and products."
+    },
+    "composite-key": {
+      "term": "Composite key",
+      "def": "A primary key made of more than one column, like (order_id, product_id): each pair can appear only once."
+    }
+  },
+  "lines": {
+    "hook.1": "Remember the notebook? Orders stopped copying Maya's details, and pointed at her instead.",
+    "hook.2": "A pointer only helps if it can't point at nothing. And an ID only helps if no two rows share it.",
+    "hook.3": "This lesson makes the database enforce both. Every change here runs for real, on a fresh copy.",
+
+    "pk.1": "Every customer has an ID. That column is the table's <k id=\"primary-key\">primary key</k>: unique, and never empty.",
+    "pk.2": "Try adding a second customer with ID one. The database refuses.",
+    "pk.3": "Why not use the phone number as the key? Three customers don't have one, and phones change.",
+    "pk.4": "So the key is a plain number with no meaning of its own: a <k id=\"surrogate-key\">surrogate key</k>. It never needs to change.",
+
+    "uniq.1": "Phones still shouldn't be shared, though. Two customers with one number is probably a typo.",
+    "uniq.2": "A <k id=\"unique-constraint\">UNIQUE constraint</k> forbids duplicates in a column that isn't the key.",
+    "uniq.ask": "Three customers have no phone. Will a UNIQUE constraint on phone allow that?",
+    "uniq.yes": "Yes. NULLs aren't equal to each other, so they never clash.",
+    "uniq.no": "It does allow it. NULLs aren't equal to each other, so they never clash.",
+    "uniq.3": "Unknown isn't equal to unknown. The same rule you met in the NULL lesson.",
+
+    "phone.1": "Your turn. Make it impossible for two customers to share a phone number.",
+    "phone.ask": "Create a unique index on the phone column.",
+    "phone.hint": {
+      "caption": "<b>CREATE UNIQUE INDEX customers_phone ON customers (phone);</b>",
+      "voice": "Create unique index customers phone, on customers, phone."
+    },
+    "phone.error": "The database couldn't run that. Read the message under the editor.",
+    "phone.missing": "Not yet. A duplicate phone still gets in. Is the index UNIQUE?",
+    "phone.extra": "Something's off. Did anything else change in the table?",
+    "phone.columns": "Just the index, please. The check runs by itself.",
+    "phone.done": "The check tried to add a second Maya number and failed, while an empty phone went in fine. That's a UNIQUE constraint.",
+
+    "fk.1": "Now the pointers. Each order's customer ID should match a real customer.",
+    "fk.2": "A <k id=\"foreign-key\">foreign key</k> makes that a rule. Add an order for customer ninety-nine, and the database says no.",
+    "fk.3": "But an empty pointer is allowed. The walk-in orders have no customer, and that's fine: NULL points at nothing on purpose.",
+
+    "del.1": "Here's the question interviewers love. What happens if you delete Maya, who has orders?",
+    "del.ask": "Pick what the database does by default.",
+    "del.error": "Right. It refuses. Her orders would point at nothing.",
+    "del.cascade": "Not by default. It refuses, because her orders would point at nothing.",
+    "del.dangle": "That's what happens without a foreign key. With one, it refuses.",
+    "del.2": "You choose the behaviour with <k id=\"on-delete\">ON DELETE</k>. CASCADE deletes her orders too. SET NULL keeps them, with no customer.",
+    "del.3": "Here, with CASCADE, Maya goes and her two orders go with her. Omar's order stays. Use it only when the child rows mean nothing on their own.",
+
+    "addr.1": "Your turn. Customers need addresses, and every address must belong to a real customer.",
+    "addr.ask": "Create the addresses table with a foreign key.",
+    "addr.hint": {
+      "caption": "<b>customer_id INTEGER NOT NULL REFERENCES customers (id)</b>",
+      "voice": "Customer ID, integer, not null, references customers I D."
+    },
+    "addr.error": "The database couldn't run that. Check the brackets and commas.",
+    "addr.missing": "Not yet. The check can't find a foreign key from customer ID to customers.",
+    "addr.extra": "Close. The check found more than it expected. Just one foreign key.",
+    "addr.columns": "The check looks at the foreign key only. Is the table called addresses?",
+    "addr.done": "Every address now has to point at a real customer. And one customer can have many addresses: one-to-many.",
+
+    "card.1": "That's <k>cardinality</k>: how many rows can relate on each side.",
+    "card.2": "One customer, many orders: the foreign key goes on the many side, in orders.",
+    "card.3": "One to one, like one loyalty card per customer: the same foreign key, made UNIQUE.",
+    "card.4": "Many to many is different. An order holds many products, and a product is in many orders. Neither side can hold one pointer.",
+    "card.5": "So a table sits in between, with one row per pair: order items. That's a <k id=\"junction-table\">junction table</k>.",
+    "card.6": "Its key is both columns together, order ID and product ID: a <k id=\"composite-key\">composite key</k>. Each pair appears once.",
+
+    "fav.1": "Last one. Customers can favourite products, and a product can be anyone's favourite.",
+    "fav.ask": "Create the favourites junction table: two foreign keys, and a key made of both.",
+    "fav.hint": {
+      "caption": "<b>PRIMARY KEY (customer_id, product_id)</b>, and each column <b>REFERENCES</b> its table.",
+      "voice": "Primary key, customer ID and product ID. And each column references its table."
+    },
+    "fav.error": "The database couldn't run that. Read the message under the editor.",
+    "fav.missing": "Something's missing. Two foreign keys, and a primary key made of both columns.",
+    "fav.extra": "The check found extra key columns. Just customer ID and product ID.",
+    "fav.columns": "Is the table called favourites, with customer ID and product ID?",
+    "fav.done": "A many-to-many relationship, built from two one-to-manys. That's how every relational database does it.",
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": { "caption": "Why use a surrogate ID rather than an email address as a primary key?", "voice": "Why use a surrogate I D rather than an email address as a primary key?", "speaker": "interviewer" },
+    "quiz.q1-why": "Emails change and can be missing, and a key is copied into every table that points at it. A meaningless ID never needs to change.",
+    "quiz.q2": { "caption": "You delete a customer who has orders. With a foreign key and no ON DELETE clause, what happens?", "voice": "You delete a customer who has orders. With a foreign key and no on delete clause, what happens?", "speaker": "interviewer" },
+    "quiz.q2-why": "The default refuses the delete, so no order is left pointing at nothing. CASCADE or SET NULL must be asked for.",
+    "quiz.q3": { "caption": "Students take many courses, and courses have many students. How do you model it?", "speaker": "interviewer" },
+    "quiz.q3-why": "A junction table, enrolments, with one row per student and course pair, and a composite key on both.",
+    "quiz.q4": { "caption": "A UNIQUE column has three rows where it's NULL. Is that allowed?", "voice": "A unique column has three rows where it's null. Is that allowed?", "speaker": "interviewer" },
+    "quiz.q4-why": "Yes, in most databases. NULLs aren't equal to each other, so they don't clash. SQL Server is the exception.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
+    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
+
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
+
+    "finish.1": "That's the lesson. Keys identify rows, foreign keys keep pointers honest, and junction tables handle many to many.",
+    "finish.2": "Next up: when tables aren't the only way to model data, with documents and graphs."
+  }
+}
