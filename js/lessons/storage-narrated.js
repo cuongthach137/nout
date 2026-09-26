@@ -260,5 +260,5 @@
     title: "02 · Pages, not rows",
     chapters: makeChapters(),
     onLab: (id) => DSL.StorageModel.progress.complete(id),
-  }));
+  }), { complete: true });
 })(window.DataSystemsLab);
