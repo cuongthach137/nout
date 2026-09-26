@@ -135,7 +135,7 @@ window.DataSystemsLab.Narrator.register("select", {
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
   "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
   "finish.1": "That's the lesson. SELECT shapes the answer, WHERE keeps the rows you want, and ORDER BY with LIMIT picks the top.",
-  "finish.2": "Next up: how a database actually reads those rows from disk."
+  "finish.2": "Next up: joining tables, and the rows each kind of join quietly drops."
  },
  "speakers": {
   "interviewer": {
@@ -254,8 +254,8 @@ window.DataSystemsLab.Narrator.register("select", {
    "ms": 6379
   },
   "finish.2": {
-   "hash": "555b915c7e66",
-   "ms": 3712
+   "hash": "36241408a441",
+   "ms": 4821
   },
   "hook.1": {
    "hash": "19118fd24cf6",
