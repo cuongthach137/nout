@@ -1,11 +1,35 @@
 (function registerWelcomeLesson(DSL) {
   "use strict";
 
-  // "03–10": the lesson numbers a course-map card covers, from the lessons' current order.
-  function span(first, last) {
-    const a = DSL.lessonNumber(first);
-    const b = DSL.lessonNumber(last);
-    return a === b ? a : `${a}–${b}`;
+  // One card per module, in course order. Numbers and links come from the lesson list, so a
+  // reorder in core.js updates the map; only the words below are written by hand.
+  const MODULE_CARDS = {
+    "Data modeling": ["One fact, one place", "Split a messy order notebook until updates, deletions, and reads all behave."],
+    Storage: ["Pages, B-trees, and layout", "See why a 12-row endpoint can trigger ten storage reads, then walk the structures underneath."],
+    Indexes: ["Choose, scan, and build indexes", "Match index types to queries, read scan plans, build indexes safely, and skip work with Bloom filters."],
+    "Query execution": ["How the planner decides", "Reproduce a bad plan from stale statistics, compare join algorithms, and contain memory spills."],
+    Transactions: ["Failures, concurrency, and recovery", "Roll back partial work, break deadlocks, expose snapshot anomalies, reclaim old versions, and recover from WAL."],
+    "Engines for scale": ["Store by question", "Columnar strips, LSM compaction, and partition pruning for large data."],
+    "Distributed data": ["Replication, then a real incident", "Repair a read-after-write bug, then run a checkout incident end to end."],
+    "Electives: engine depth": ["Indexes that survive a migration", "Compare predicates, expressions, specialized families, removal runbooks, and physical assumptions across PostgreSQL, InnoDB, and SQLite."],
+  };
+
+  function modules() {
+    const groups = [];
+    DSL.lessons.filter((lesson) => lesson.id !== "welcome").forEach((lesson) => {
+      let group = groups[groups.length - 1];
+      if (!group || group.name !== lesson.module) groups.push((group = { name: lesson.module, lessons: [] }));
+      group.lessons.push(lesson);
+    });
+    return groups;
+  }
+
+  function cardMarkup(group) {
+    const first = group.lessons[0];
+    const last = group.lessons[group.lessons.length - 1];
+    const span = first === last ? first.number : `${first.number}–${last.number}`;
+    const [title, blurb] = MODULE_CARDS[group.name] || [first.title, ""];
+    return `<a href="#/${first.id}" class="path-card"><small>${span} · ${group.name}</small><span class="arrow">↗</span><h3>${title}</h3><p>${blurb}</p></a>`;
   }
 
   function renderWelcome() {
@@ -26,17 +50,7 @@
 
         <div class="insight"><span class="insight-mark">//</span><p>The course uses simplified cost models. Real engines differ in detail, but the mental models transfer to PostgreSQL, MySQL, SQLite, key-value stores, and distributed databases.</p></div>
 
-        <section class="path-grid" aria-label="Course modules">
-          <a href="#/modeling" class="path-card"><small>${span("modeling", "modeling")} · Data modeling</small><span class="arrow">↗</span><h3>One fact, one place</h3><p>Split a messy order notebook until updates, deletions, and reads all behave.</p></a>
-          <a href="#/pages" class="path-card"><small>${span("pages", "pages")} · Storage</small><span class="arrow">↗</span><h3>Pages, buffers, and locality</h3><p>See why a 12-row endpoint can trigger ten storage reads.</p></a>
-          <a href="#/index-layout" class="path-card"><small>${span("index-layout", "columnar-lsm")} · Indexes</small><span class="arrow">↗</span><h3>From physical layout to production operations</h3><p>Compare scan paths, build safely, trigger page splits, and see how columnar and LSM stores move the cost.</p></a>
-          <a href="#/planner" class="path-card"><small>${span("planner", "planner")} · Query execution</small><span class="arrow">↗</span><h3>Cost-based decisions</h3><p>Reproduce a bad plan caused by stale statistics.</p></a>
-          <a href="#/acid-foundations" class="path-card"><small>${span("acid-foundations", "acid-quiz")} · ACID transactions</small><span class="arrow">↗</span><h3>Failures, concurrency, and recovery</h3><p>Roll back partial work, expose snapshot anomalies, protect invariants, and recover a committed write from WAL.</p></a>
-          <a href="#/replication" class="path-card"><small>${span("replication", "replication")} · Distributed data</small><span class="arrow">↗</span><h3>Replication and stale reads</h3><p>Repair a read-after-write bug without pretending every copy is current.</p></a>
-          <a href="#/incident" class="path-card"><small>${span("incident", "incident")} · Capstone</small><span class="arrow">↗</span><h3>Run a checkout incident</h3><p>Use evidence to fix latency, duplicates, and missing confirmations.</p></a>
-          <a href="#/tuple-versions" class="path-card"><small>${span("tuple-versions", "partitioning")} · Performance under load</small><span class="arrow">↗</span><h3>Follow the work the database must do</h3><p>Trace row versions, reclaim bloat, choose joins, contain spills, break deadlocks, and prune partitions.</p></a>
-          <a href="#/predicate-indexes" class="path-card"><small>${span("predicate-indexes", "migration-capstone")} · Cross-engine indexing</small><span class="arrow">↗</span><h3>Design indexes that survive a migration</h3><p>Compare predicates, expressions, specialized families, removal runbooks, and physical assumptions across PostgreSQL, InnoDB, and SQLite.</p></a>
-        </section>
+        <section class="path-grid" aria-label="Course modules">${modules().map(cardMarkup).join("")}</section>
         ${DSL.lessonFooter("welcome")}
       </article>`;
   }

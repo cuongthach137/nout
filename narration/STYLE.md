@@ -13,6 +13,7 @@ How narrated lessons sound, read, and pace. `uv run tools/voice.py lint narratio
 The course follows Maya's bakery as it grows: a paper notebook (Level 1), one server once it goes online (Level 2), a chain with many stores (Level 3). Open each lesson with the bakery's current problem and close it with a one-line recap.
 
 - Recurring people: **Maya** (a regular customer), **Omar** and **Ana** (other customers). Reuse them before inventing new names.
+- A closing "Next up" line names the next lesson's idea, not its number. When the course order in `js/core.js` changes, check each lesson's closing line still matches what comes next.
 - Call back to earlier lessons by idea ("remember Maya's two phone numbers?"), never by number. **(lint: no "lesson 3" or "lab two")** Numbers change whenever the course is reordered; the site computes them, the audio can't.
 
 ## Lines

@@ -206,6 +206,6 @@
       "voice": "Not quite there. Replay a chapter or two, then try again."
     },
     "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
-    "finish.2": "Next up: how tables and indexes are actually laid out on disk."
+    "finish.2": "Next up: how an index finds one row among millions, one page at a time."
   }
 }

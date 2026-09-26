@@ -198,7 +198,7 @@ window.DataSystemsLab.Narrator.register("pages", {
    "voice": "Not quite there. Replay a chapter or two, then try again."
   },
   "finish.1": "That's the lesson. Databases read pages, not rows. Hits are cheap, misses are slow, and rows stored together are read together.",
-  "finish.2": "Next up: how tables and indexes are actually laid out on disk."
+  "finish.2": "Next up: how an index finds one row among millions, one page at a time."
  },
  "speakers": {
   "interviewer": {
@@ -299,8 +299,8 @@ window.DataSystemsLab.Narrator.register("pages", {
    "ms": 8256
   },
   "finish.2": {
-   "hash": "9fd98e5107bf",
-   "ms": 3797
+   "hash": "6657999b9bc3",
+   "ms": 4693
   },
   "head.1": {
    "hash": "aff9b4a56add",

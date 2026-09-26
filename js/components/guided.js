@@ -281,8 +281,11 @@
     };
   }
 
+  // next defaults to the lesson after this one in the course order.
   function finishBeat({ lessonId, badges, next }) {
     const { burst } = DSL.LabKit;
+    const after = DSL.lessons[DSL.lessons.findIndex((lesson) => lesson.id === lessonId) + 1];
+    next = next || (after && after.id);
     return {
       id: "finish",
       prompt: "Lesson done. 🎉",

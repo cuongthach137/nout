@@ -204,7 +204,6 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "modeling",
-            next: "pages",
             badges: [["🧾", "One fact, one place", "an edit stays one edit"], ["🔗", "Pointers, not copies", "keys link the lists"], ["🧷", "Copies need an owner", "or they drift"]],
           }));
           await n.say("finish.1");

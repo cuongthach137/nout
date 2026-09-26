@@ -14,35 +14,50 @@ Then open [http://localhost:8000](http://localhost:8000).
 
 ## Course structure
 
-Each concept lesson starts with a small visual model and ends with a production-shaped debugging or architecture drill:
+Lessons are grouped into modules. A lesson's number is its position in `js/core.js`, so this list follows that order:
 
+**Data modeling**
 1. Normalization without jargon: update and deletion anomalies, split lists, keys, joins, and owned denormalization
+
+**Storage**
 2. Storage pages, buffer hits, and a scattered-order performance incident
-3. Heap, secondary-index, and clustered physical layouts with observable page-read costs
-4. B-tree traversal and a composite-index key-order regression
-5. B-tree, hash, LSM, and inverted indexes under feature-shaped load tests
-6. Sequential, plain index, bitmap heap, and index-only scans; covering and combined indexes
-7. Production-safe index creation across million- to billion-row tables
-8. Random UUIDv4 versus time-ordered UUIDv7 B-tree insert behavior
+3. B-tree traversal and a composite-index key-order regression
+4. Heap, secondary-index, and clustered physical layouts with observable page-read costs
+5. Random UUIDv4 versus time-ordered UUIDv7 B-tree insert behavior
+
+**Indexes**
+6. B-tree, hash, LSM, and inverted indexes under feature-shaped load tests
+7. Sequential, plain index, bitmap heap, and index-only scans; covering and combined indexes
+8. Production-safe index creation across million- to billion-row tables
 9. Bloom-filter membership checks and false positives
-10. Column strips versus whole receipts, then an LSM memtable, sorted chunks, and compaction
-11. An evidence-based index design challenge
-12. Cost-based planning, selectivity, and stale-statistics diagnosis
-13. Transaction boundaries, rollback, and partial-commit failures
-14. Lost updates, row locking, unique constraints, and an oversold-seat race
-15. MVCC snapshots, non-repeatable reads, and phantom reads
-16. Repeatable Read write skew, Serializable detection, and whole-transaction retries
-17. ACID consistency through `CHECK`, `UNIQUE`, `FOREIGN KEY`, and `EXCLUDE` constraints
-18. Synchronous versus asynchronous commit, WAL flushes, crashes, and REDO recovery
-19. An evidence-based ACID incident review
-20. Leader/follower lag and read-your-writes routing policies
-21. A checkout incident capstone covering latency, duplicate orders, and stale confirmations
-22. MVCC tuple versions, HOT updates, and index write amplification
-23. Standard `VACUUM`, long-running snapshots, reusable space, and `VACUUM FULL`
-24. Nested-loop, hash, and merge joins under different workload shapes
-25. Per-operation `work_mem`, temporary-file spills, and concurrency risk
-26. Lock waits, deadlock cycles, consistent ordering, and transaction retries
-27. Partition bounds, pruning, local indexes, planning overhead, and retention
+10. An evidence-based index design challenge
+
+**Query execution**
+11. Cost-based planning, selectivity, and stale-statistics diagnosis
+12. Nested-loop, hash, and merge joins under different workload shapes
+13. Per-operation `work_mem`, temporary-file spills, and concurrency risk
+
+**Transactions**
+14. Transaction boundaries, rollback, and partial-commit failures
+15. Lost updates, row locking, unique constraints, and an oversold-seat race
+16. Lock waits, deadlock cycles, consistent ordering, and transaction retries
+17. MVCC snapshots, non-repeatable reads, and phantom reads
+18. MVCC tuple versions, HOT updates, and index write amplification
+19. Standard `VACUUM`, long-running snapshots, reusable space, and `VACUUM FULL`
+20. Repeatable Read write skew, Serializable detection, and whole-transaction retries
+21. ACID consistency through `CHECK`, `UNIQUE`, `FOREIGN KEY`, and `EXCLUDE` constraints
+22. Synchronous versus asynchronous commit, WAL flushes, crashes, and REDO recovery
+23. An evidence-based ACID incident review
+
+**Engines for scale**
+24. Column strips versus whole receipts, then an LSM memtable, sorted chunks, and compaction
+25. Partition bounds, pruning, local indexes, planning overhead, and retention
+
+**Distributed data**
+26. Leader/follower lag and read-your-writes routing policies
+27. A checkout incident capstone covering latency, duplicate orders, and stale confirmations
+
+**Electives: engine depth**
 28. PostgreSQL/SQLite partial indexes, cross-engine expression indexes, and MySQL alternatives
 29. Specialized PostgreSQL, MySQL, and SQLite index families matched to query semantics
 30. Engine-specific index evidence, canary removal, rollback, and integrity guardrails
