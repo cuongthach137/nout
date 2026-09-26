@@ -544,6 +544,7 @@
             if (!button || !alive()) return;
             choiceKeys = null;
             button.classList.add("picked");
+            DSL.Sfx.play("tick");
             choices.querySelectorAll(".nr-choice").forEach((other) => { other.disabled = true; });
             clock.sleep(reducedMotion() ? 0 : 420).then(() => {
               choices.hidden = true;
@@ -734,6 +735,7 @@
           await n.say(`quiz.q${i + 1}`);
           const pick = await n.choose(question.options.map((option, j) => [String(j), option]), { label: "Your answer" });
           const correct = Number(pick) === question.answer;
+          DSL.Sfx.play(correct ? "correct" : "wrong");
           marks[i].className = correct ? "ok" : "bad";
           marks[i].textContent = correct ? "✓" : "✗";
           retrigger(marks[i], "gd-pop");

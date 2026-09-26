@@ -117,6 +117,7 @@
             c.disabled = true;
             if (c.dataset.key === answer) c.classList.add("correct");
           });
+          DSL.Sfx.play(right ? "correct" : "wrong");
           if (!right) chip.classList.add("wrong");
           else burst(chip, { count: 12 });
           api.event("predict", { key: chip.dataset.key, right });

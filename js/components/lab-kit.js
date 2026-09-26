@@ -100,6 +100,7 @@
       retrigger(document.getElementById(`lab-${id}`), "ding");
       if (done.has(id)) return;
       done.add(id);
+      DSL.Sfx.play("combo");
       save();
       paint();
       if (onScreen()) retrigger(root.querySelector(`.lc-item[data-goto="${id}"]`), "ping");
@@ -137,7 +138,7 @@
       { transform: `translate(${dx * 0.55}px, ${dy * 0.55 - lift}px) scale(${(1 + sx) / 2 + 0.06}, ${(1 + sy) / 2 + 0.06}) rotate(3deg)`, offset: 0.6 },
       { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(0deg)`, offset: 1 },
     ], { duration, easing: "cubic-bezier(.45,.05,.35,1)", fill: "forwards" });
-    return animation.finished.then(() => ghost.remove(), () => ghost.remove());
+    return animation.finished.then(() => { ghost.remove(); DSL.Sfx.play("tick"); }, () => ghost.remove());
   }
 
   // Confetti-ish sparks from the centre of an element.

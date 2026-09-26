@@ -243,6 +243,7 @@
               b.disabled = true;
               if (Number(b.dataset.i) === question.answer) b.classList.add("correct");
             });
+            DSL.Sfx.play(correct ? "correct" : "wrong");
             if (correct) {
               right += 1;
               burst(button, { count: 12 });
@@ -292,7 +293,7 @@
             <button type="button" class="button ghost gd-replay">↺ Replay</button>
           </div>
         </div>`;
-        DSL.setTimer(() => burst(scene.querySelector(".gd-badges"), { count: 26, spread: 140 }), 350);
+        DSL.setTimer(() => { burst(scene.querySelector(".gd-badges"), { count: 26, spread: 140 }); DSL.Sfx.play("complete"); }, 350);
         scene.querySelector(".gd-replay").addEventListener("click", () => api.restart());
         api.done();
       },

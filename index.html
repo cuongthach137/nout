@@ -17,7 +17,7 @@
       href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css?v=20261009" />
+    <link rel="stylesheet" href="styles.css?v=20261021" />
     <link rel="stylesheet" href="styles/lab-kit.css?v=20261009" />
     <link rel="stylesheet" href="styles/modeling.css?v=20261009" />
     <link rel="stylesheet" href="styles/storage.css?v=20261009" />
@@ -68,6 +68,7 @@
             <button type="button" data-backup>Back up</button>
             <label>Restore<input type="file" accept="application/json,.json" data-restore hidden /></label>
           </div>
+          <label class="sidebar-sound"><input type="checkbox" data-sound /> Sound effects</label>
         </div>
       </aside>
 
@@ -88,14 +89,15 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="js/core.js?v=20261020"></script>
-    <script src="js/components/quiz.js?v=20261009"></script>
-    <script src="js/components/lab-kit.js?v=20261009"></script>
-    <script src="js/components/guided.js?v=20261011"></script>
-    <script src="js/components/narrator.js?v=20261015"></script>
-    <script src="js/components/vocab.js?v=20261010"></script>
-    <script src="js/components/sql.js?v=20261019"></script>
-    <script src="js/components/sql-scenes.js?v=20261012"></script>
+    <script src="js/core.js?v=20261021"></script>
+    <script src="js/components/sfx.js?v=20261021"></script>
+    <script src="js/components/quiz.js?v=20261021"></script>
+    <script src="js/components/lab-kit.js?v=20261021"></script>
+    <script src="js/components/guided.js?v=20261021"></script>
+    <script src="js/components/narrator.js?v=20261021"></script>
+    <script src="js/components/vocab.js?v=20261021"></script>
+    <script src="js/components/sql.js?v=20261021"></script>
+    <script src="js/components/sql-scenes.js?v=20261021"></script>
     <script src="js/pages/sql-sandbox.js?v=20261010"></script>
     <script src="js/components/engine-lens.js?v=20261009"></script>
     <script src="js/lessons/welcome.js?v=20261020"></script>
@@ -106,7 +108,7 @@
     <script src="js/lessons/modeling-narrated.js?v=20261009"></script>
     <script src="narration/modeling.js?v=20261011"></script>
     <script src="js/lessons/select.js?v=20261011"></script>
-    <script src="js/lessons/select-guided.js?v=20261012"></script>
+    <script src="js/lessons/select-guided.js?v=20261021"></script>
     <script src="js/lessons/select-narrated.js?v=20261012"></script>
     <script src="narration/select.js?v=20261012"></script>
     <script src="js/lessons/joins.js?v=20261012"></script>
@@ -161,6 +163,6 @@
     <script src="js/lessons/specialized-indexes.js?v=20261009"></script>
     <script src="js/lessons/index-observability.js?v=20261009"></script>
     <script src="js/lessons/migration-capstone.js?v=20261009"></script>
-    <script src="app.js?v=20261010"></script>
+    <script src="app.js?v=20261021"></script>
   </body>
 </html>

@@ -338,6 +338,7 @@ INSERT INTO order_items VALUES
       runButton.disabled = false;
       if (!root.isConnected) return;
       if (result.error) {
+        if (goal) DSL.Sfx.play("wrong");
         out.innerHTML = `<div class="sql-error"><b>Error</b><p>${escapeHtml(result.error)}</p>${result.raw && result.raw !== result.error ? `<small>SQLite: ${escapeHtml(result.raw)}</small>` : ""}</div>`;
         setVerdict("");
         if (onResult) onResult(result, { ok: false, reason: result.timedOut ? "timeout" : "error" });
@@ -355,6 +356,7 @@ INSERT INTO order_items VALUES
         + (verdict.missing.length ? `<div class="sql-missing"><b>Missing from your result</b>${tableMarkup({ columns: goal.columns, rows: verdict.missing })}</div>` : "");
       setVerdict(verdict.ok ? `✓ ${verdict.message}` : verdict.message, verdict.ok ? "ok" : "warn");
       root.classList.toggle("is-passed", verdict.ok);
+      DSL.Sfx.play(verdict.ok ? "correct" : "wrong");
       if (verdict.ok) {
         DSL.LabKit.retrigger(verdictEl, "gd-pop");
         DSL.LabKit.burst(verdictEl, { count: 14 });

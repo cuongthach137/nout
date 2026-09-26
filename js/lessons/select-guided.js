@@ -299,6 +299,7 @@
           b.grid.replaceWith(view.grid);
           b.grid = view.grid;
           const ok = value === "name, phone";
+          DSL.Sfx.play(ok ? "correct" : "wrong");
           scene.querySelectorAll(".sq-chip").forEach((c) => c.classList.toggle("picked", c === chip));
           busy = false;
           api.event("pick", { choice: value, ok });

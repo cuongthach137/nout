@@ -121,7 +121,7 @@
           b.textContent = on ? "★" : "☆";
         });
         retrigger(starButton, "gd-pop");
-        if (on) burst(starButton, { count: 8, spread: 28 });
+        if (on) { burst(starButton, { count: 8, spread: 28 }); DSL.Sfx.play("tick"); }
         return;
       }
       const flip = event.target.closest(".vk-flip");
@@ -241,12 +241,13 @@
       if (!flipped || !session.length) return;
       const id = session.shift();
       rate(id, rating);
+      DSL.Sfx.play({ again: "wrong", hard: "tick", good: "correct", easy: "correct" }[rating]);
       if (rating === "again") session.push(id);
       else reviewed += 1;
       flipped = false;
       paint();
       DSL.Vocab.onChange();
-      if (!session.length && reviewed) burst(root.querySelector(".fc-empty-icon"), { count: 22, spread: 90 });
+      if (!session.length && reviewed) { burst(root.querySelector(".fc-empty-icon"), { count: 22, spread: 90 }); DSL.Sfx.play("complete"); }
     }
 
     function onClick(event) {
