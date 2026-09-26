@@ -46,6 +46,7 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 
 ## Narration
 
+- MiniMax builds (`"engine": "minimax"`) call the API once per changed line and need `MINIMAX_API_KEY`, which lives in `~/.zshrc`: plain Bash tool shells don't load it, so run `zsh -ic 'cd … && uv run tools/voice.py build narration/<lesson>.json'`. Never print the key. `voices --engine minimax` lists the English voices; `say --engine minimax --voice ID --out file.mp3 "text"` previews one. MiniMax pauses naturally at commas (0.15–0.4 s), unlike Kokoro.
 - `uv run tools/voice.py build` needs the Kokoro models in `~/.cache/kokoro-onnx` and ffmpeg (both installed on this machine). The first build downloads about 340 MB.
 - Audio is not in git. Run `uv run tools/voice.py deploy` when you open a PR that changes narration, before it merges. Never run `wrangler pages ...`.
 - Why before: `audio/_headers` sets `Cache-Control: public, max-age=31536000, immutable` on everything the audio host serves, **including 404s**. If GitHub Pages publishes the lesson before its audio exists, a visitor's browser caches a 404 for that line for a year ("404 Not Found (from disk cache)" in DevTools). The narrator now retries a failed line once with `fetch(..., { cache: "reload" })`, which also overwrites the cached 404, but deploying first avoids the window entirely. To clear it by hand: DevTools open → right-click reload → Empty Cache and Hard Reload.

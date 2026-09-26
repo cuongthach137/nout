@@ -4,8 +4,8 @@ How narrated lessons sound, read, and pace. `uv run tools/voice.py lint narratio
 
 ## Who is speaking
 
-- **The tutor** (default voice, `af_heart`) teaches. Warm, direct, a little dry. Speaks to one learner as "you".
-- **The interviewer** (`bm_george`, `"speaker": "interviewer"`) only asks questions, in drills, quizzes, and mock interviews. Neutral and brief; never explains or hints. The tutor gives every explanation.
+- **The tutor** teaches. Voice: MiniMax `English_WiseScholar` (scripts with `"engine": "minimax"`), or Kokoro `af_heart` in scripts not yet moved to MiniMax. Warm, direct, a little dry. Speaks to one learner as "you".
+- **The interviewer** (MiniMax `English_expressive_narrator`, or Kokoro `bm_george`; `"speaker": "interviewer"`) only asks questions, in drills, quizzes, and mock interviews. Neutral and brief; never explains or hints. The tutor gives every explanation.
 - Add a speaker under `"speakers"` in the script with a `voice` and a `label`; its captions show that label. **(lint: unknown speakers)**
 
 ## The story

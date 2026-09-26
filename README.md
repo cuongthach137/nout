@@ -92,7 +92,7 @@ Lessons can offer three modes: Narrated (the default once a lesson's narration i
 
 Narrated mode (`js/components/narrator.js`) plays a lesson like a short film and stops for taps and response choices. A lesson's chapters live in `js/lessons/<lesson>-narrated.js`; its lines live in `narration/<lesson>.json`, where each line is a caption string or `{ "caption", "voice" }`. `build` also regenerates `narration/<lesson>.js`, the copy the page actually loads (plain script, so it works from `file://` too). Rebuild after editing lines.
 
-Narrated lessons use pre-rendered mp3s made with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx), a free local neural TTS (no API key). Needs [uv](https://docs.astral.sh/uv/) and ffmpeg; models download once to `~/.cache/kokoro-onnx`.
+Narrated lessons use pre-rendered mp3s made with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx), a free local neural TTS (no API key), or with [MiniMax](https://platform.minimax.io/docs/api-reference/speech-t2a-http) speech for scripts that set `"engine": "minimax"` (needs `MINIMAX_API_KEY`). Needs [uv](https://docs.astral.sh/uv/) and ffmpeg; models download once to `~/.cache/kokoro-onnx`.
 
 ```bash
 uv run tools/voice.py say "Try a line."            # preview
