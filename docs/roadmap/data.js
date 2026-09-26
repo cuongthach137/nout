@@ -30,6 +30,15 @@ window.ROADMAP = {
       { id: "p2-reorder", title: "Move existing lessons into modules", detail: "Deadlocks join transactions, MVCC comes together, joins sit with the planner. Bloom filters and safe index builds stay in Indexes; Protect invariants stays in Transactions.", status: "done", note: "PR #12: modules in dependency order; numbers follow automatically." },
       { id: "p2-links", title: "Update the course map, README and cross-links", detail: "", status: "done", note: "PR #12: course map cards generated, README reordered, Next links computed; two stale references fixed." },
     ] },
+    { id: "health", name: "Code health", short: "Health", items: [
+      { id: "h-store", title: "Centralize saved data and shared helpers", detail: "DSL.store with Back up / Restore, DSL.modules(), shared setStatus, narrator story/quizChapter/throttled.", status: "done", note: "PR #15. All 32 lessons render identical text; old saved progress carries over." },
+      { id: "h-roadmap", title: "Roadmap lives in the repo", detail: "docs/roadmap/data.js is the source of truth; docs/roadmap/index.html renders it live.", status: "done", note: "PR #16 (snapshot), PR #17 (live page)." },
+      { id: "h-verify", title: "Re-verify flows after the refactor", detail: "Course map, keywords and flashcards, lesson 02 quizzes in all three modes.", status: "done", note: "Headless Chrome playthrough, 57 checks pass." },
+      { id: "h-docs", title: "How to add a lesson", detail: "docs/adding-a-lesson.md: registering, the three modes, narration, checks.", status: "done", note: "PR #18. Lessons are designed Narrated first, then Guided, then Explore." },
+      { id: "h-tests", title: "Tests and CI", detail: "Commit the playthroughs; include a check that audio matches the narration scripts." },
+      { id: "h-modules", title: "ES modules and one folder per lesson", detail: "Replace ordered script tags and window globals." },
+      { id: "h-stamp", title: "Stamp ?v= automatically", detail: "A script that bumps cache-busting versions on changed files." },
+    ] },
     { id: "p3", name: "Level 1 foundations", short: "Phase 3", items: [
       { id: "p3-sqljs", title: "In-browser SQL engine", detail: "sql.js, with a checker that compares your result to the expected rows.", isNew: true },
       { id: "p3-select", title: "SELECT, filtering and sorting", detail: "T1", isNew: true },

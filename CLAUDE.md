@@ -8,6 +8,7 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - `js/components/`: `lab-kit.js` (asides, progress checklist, `setStatus`, motion helpers), `guided.js` (step engine, storyboard, quiz/finish beats), `narrator.js` (narrated film engine, keywords panel, `story()`, `quizChapter()`, `throttled()`), `vocab.js` (keywords, flashcards, spaced repetition).
 - Per lesson: `js/lessons/<name>.js` (Explore), `-guided.js`, `-narrated.js`, `narration/<lesson>.json` (script: lines, speakers, keywords), generated `narration/<lesson>.js`. Narrated lessons reuse scenes exposed by the guided file (`DSL.StorageScenes`, `DSL.ModelingScenes`).
 - Script and style tags in `index.html` load in dependency order; bump `?v=` on changed files.
+- New lessons: see `docs/adding-a-lesson.md`. Design Narrated first (the focused lesson), then Guided (more explanation), then Explore (most detail). Existing lesson content isn't a constraint: when porting a lesson, fix what's inaccurate or unclear and list the fixes in the PR.
 
 ## Narration and audio
 - Rules: `narration/STYLE.md` (lesson budget 8-12 min, 3 big ideas, 8 keywords; `<k>` keyword marks; tutor vs interviewer voices).
@@ -19,7 +20,6 @@ Interactive database course for interview prep, basics to advanced. Static site,
 - Roadmap: `docs/roadmap/data.js` is the source of truth (phases, item ids, status, notes, target course map). Update an item's `status`/`note` there when work lands. `docs/roadmap/index.html` renders it and re-reads it every 3 s (open straight from disk). The claude.ai artifact CKGa6m77J9HwZVPdnRzzyx is an older copy.
 
 ## Open work (handoff)
-- Branch `codebase-health` (this commit): `DSL.store` (+ Back up / Restore), `DSL.modules()`, shared `setStatus`, narrator `story`/`quizChapter`/`throttled`. Verified: all 32 lessons render identical text, old saved progress carries over, backup round-trips, lesson 01 narrated full run passes. Not re-run after refactor: course map, keywords/flashcards, lesson 02 quiz flows.
-- Still to do from the code-health plan: `docs/adding-a-lesson.md`; later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
+- Code health (roadmap phase `health`): refactor merged in PR #15; course map, keywords/flashcards and lesson 02 quizzes (all modes) re-verified by headless playthrough. How to add a lesson: `docs/adding-a-lesson.md`. Later: tests + CI (incl. an audio-in-sync check), ES modules + one folder per lesson, `?v=` stamping script.
 - Next roadmap phase: Phase 3, in-browser SQL (sql.js) and Tier 1 SQL lessons, narrated with keywords.
 - Welcome narration still describes 4 levels; the roadmap now has 5 (update `narration/welcome.json` story lines when Level 4 lessons exist).
