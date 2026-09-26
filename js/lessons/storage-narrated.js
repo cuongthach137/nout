@@ -239,6 +239,7 @@
           await n.say(passed ? "quiz.pass" : "quiz.retry", { right });
         },
       },
+      DSL.Vocab.reviewChapter("pages"),
       {
         id: "finish",
         title: "Wrap-up",

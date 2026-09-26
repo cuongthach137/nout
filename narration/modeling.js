@@ -33,7 +33,7 @@ window.DataSystemsLab.Narrator.register("modeling", {
    "voice": "The bin on order one oh four."
   },
   "cancel.gone": "Ana's gone. Her phone number only ever lived on that order.",
-  "cancel.2": "Databases call these the <b>update anomaly</b> and the <b>deletion anomaly</b>.",
+  "cancel.2": "Databases call these the <k>update anomaly</k> and the <k>deletion anomaly</k>.",
   "teach-lists.1": "The fix starts with one question: what is each fact <b>about</b>?",
   "teach-lists.2": "Some facts are about <b>people</b>, some about <b>cakes</b>, and some about the <b>order</b> itself.",
   "teach-lists.3": {
@@ -44,8 +44,8 @@ window.DataSystemsLab.Narrator.register("modeling", {
   "teach-lists.ask": "Maya changes her number again. How many places do you edit now?",
   "teach-lists.one": "One. Her number lives in exactly one place.",
   "teach-lists.two": "Just one, actually. The orders only point at her.",
-  "teach-lists.5": "Every fact lives in <b>one place</b>. The IDs that link the lists are called <b>keys</b>.",
-  "teach-lists.6": "This reshaping has a name: <b>normalization</b>.",
+  "teach-lists.5": "Every fact lives in <b>one place</b>. The IDs that link the lists are called <k id=\"key\">keys</k>.",
+  "teach-lists.6": "This reshaping has a name: <k>normalization</k>.",
   "sort.1": "A new order just came in, written the old way.",
   "sort.ask": "Sort each fact onto the list of the thing it describes.",
   "sort.hint": "Ask yourself: is it about a person, a cake, or the order?",
@@ -68,7 +68,7 @@ window.DataSystemsLab.Narrator.register("modeling", {
    "caption": "Then follow <b>\u2192 I3</b> to the Items list.",
    "voice": "Then follow I three to the Items list."
   },
-  "teach-join.4": "Stitching lists back together is called a <b>join</b>. A few lookups, and the data is always current.",
+  "teach-join.4": "Stitching lists back together is called a <k>join</k>. A few lookups, and the data is always current.",
   "teach-join.ask": "Three lookups instead of one. Worth it?",
   "teach-join.yes": "That's the trade. And indexes make each lookup fast. You'll see how soon.",
   "teach-join.slow": "Each lookup is fast with an index. You'll see how soon.",
@@ -93,7 +93,7 @@ window.DataSystemsLab.Narrator.register("modeling", {
   "teach-owner.3": "But customers keep changing, and nobody updates the copy. It <b>drifts</b>, and the report starts lying.",
   "teach-owner.4": "Give the copy an <b>owner</b>, like a nightly refresh, and it's stale for a day at most.",
   "teach-owner.5": "Or skip the copy, and make the joins fast with <b>indexes</b>.",
-  "teach-owner.6": "Copies aren't the problem. Copies <b>nobody owns</b> are. On purpose, it's called <b>denormalization</b>.",
+  "teach-owner.6": "Copies aren't the problem. Copies <b>nobody owns</b> are. On purpose, it's called <k>denormalization</k>.",
   "fix.1": "Your call. The report is slow. Pick a fix, then watch a month go by.",
   "fix.ask": "Try at least two fixes.",
   "fix.hint": "Tap one of the three cards.",
@@ -138,11 +138,41 @@ window.DataSystemsLab.Narrator.register("modeling", {
    "voice": "Not quite there. Replay a chapter or two, then try again."
   },
   "finish.1": "That's the lesson. One fact, one place. Pointers instead of copies. And copies only when someone owns them.",
-  "finish.2": "Next up: how a database actually reads those rows from disk."
+  "finish.2": "Next up: how a database actually reads those rows from disk.",
+  "keywords.1": "Before we wrap up, here are the words worth keeping.",
+  "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+  "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+  "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh."
  },
  "speakers": {
   "interviewer": {
    "label": "Interviewer"
+  }
+ },
+ "keywords": {
+  "update-anomaly": {
+   "term": "Update anomaly",
+   "def": "The same fact is copied onto several rows, so an update has to find every copy. Miss one and the data contradicts itself."
+  },
+  "deletion-anomaly": {
+   "term": "Deletion anomaly",
+   "def": "Deleting one row also erases a different fact that was only stored on that row."
+  },
+  "normalization": {
+   "term": "Normalization",
+   "def": "Reshaping tables so each fact lives in exactly one place: on the table of the thing it describes."
+  },
+  "key": {
+   "term": "Key",
+   "def": "A value that identifies one row (its primary key). Stored in another table to point at that row, it's a foreign key."
+  },
+  "join": {
+   "term": "Join",
+   "def": "Combining rows from several tables by matching their keys, to rebuild one complete record."
+  },
+  "denormalization": {
+   "term": "Denormalization",
+   "def": "Copying data on purpose to make reads faster, with something responsible for keeping the copies correct."
   }
  },
  "audio": {
@@ -277,6 +307,22 @@ window.DataSystemsLab.Narrator.register("modeling", {
   "hunt.wrong": {
    "hash": "d16406dea988",
    "ms": 1515
+  },
+  "keywords.1": {
+   "hash": "6e8f6ec7dc0f",
+   "ms": 2603
+  },
+  "keywords.ask": {
+   "hash": "b9f053603353",
+   "ms": 3115
+  },
+  "keywords.done": {
+   "hash": "050256c0adfd",
+   "ms": 4096
+  },
+  "keywords.hint": {
+   "hash": "bb3638fa922e",
+   "ms": 2688
   },
   "quiz.intro": {
    "hash": "f0a37944ed86",

@@ -3,7 +3,36 @@
   "voice": "af_heart",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+    "interviewer": {
+      "voice": "bm_george",
+      "label": "Interviewer"
+    }
+  },
+  "keywords": {
+    "update-anomaly": {
+      "term": "Update anomaly",
+      "def": "The same fact is copied onto several rows, so an update has to find every copy. Miss one and the data contradicts itself."
+    },
+    "deletion-anomaly": {
+      "term": "Deletion anomaly",
+      "def": "Deleting one row also erases a different fact that was only stored on that row."
+    },
+    "normalization": {
+      "term": "Normalization",
+      "def": "Reshaping tables so each fact lives in exactly one place: on the table of the thing it describes."
+    },
+    "key": {
+      "term": "Key",
+      "def": "A value that identifies one row (its primary key). Stored in another table to point at that row, it's a foreign key."
+    },
+    "join": {
+      "term": "Join",
+      "def": "Combining rows from several tables by matching their keys, to rebuild one complete record."
+    },
+    "denormalization": {
+      "term": "Denormalization",
+      "def": "Copying data on purpose to make reads faster, with something responsible for keeping the copies correct."
+    }
   },
   "lines": {
     "teach-copies.1": "Maya runs a busy bakery. Every order goes into <b>one notebook</b>.",
@@ -15,7 +44,6 @@
     "teach-copies.4": "Now the notebook <b>disagrees with itself</b>. Which number is right? Nobody knows.",
     "teach-copies.5": "It gets worse. Cancel Ana's only order, and her phone number <b>vanishes</b> with it.",
     "teach-copies.6": "Two bugs, one cause: facts copied onto rows that don't own them.",
-
     "hunt.1": "Your turn to do the updating. Twenty-four orders. Ten seconds.",
     "hunt.ask": {
       "caption": "Press start, then tap every <b>555-0101</b> on Maya's tickets.",
@@ -29,7 +57,6 @@
       "voice": "You missed some. Maya now has two phone numbers, and nobody would notice."
     },
     "hunt.outro": "With millions of rows, somebody misses a copy every time.",
-
     "cancel.1": {
       "caption": "Now the second bug. Ana placed exactly one order: <b>#104</b>.",
       "voice": "Now the second bug. Ana placed exactly one order. Number one oh four."
@@ -40,8 +67,7 @@
       "voice": "The bin on order one oh four."
     },
     "cancel.gone": "Ana's gone. Her phone number only ever lived on that order.",
-    "cancel.2": "Databases call these the <b>update anomaly</b> and the <b>deletion anomaly</b>.",
-
+    "cancel.2": "Databases call these the <k>update anomaly</k> and the <k>deletion anomaly</k>.",
     "teach-lists.1": "The fix starts with one question: what is each fact <b>about</b>?",
     "teach-lists.2": "Some facts are about <b>people</b>, some about <b>cakes</b>, and some about the <b>order</b> itself.",
     "teach-lists.3": {
@@ -52,15 +78,13 @@
     "teach-lists.ask": "Maya changes her number again. How many places do you edit now?",
     "teach-lists.one": "One. Her number lives in exactly one place.",
     "teach-lists.two": "Just one, actually. The orders only point at her.",
-    "teach-lists.5": "Every fact lives in <b>one place</b>. The IDs that link the lists are called <b>keys</b>.",
-    "teach-lists.6": "This reshaping has a name: <b>normalization</b>.",
-
+    "teach-lists.5": "Every fact lives in <b>one place</b>. The IDs that link the lists are called <k id=\"key\">keys</k>.",
+    "teach-lists.6": "This reshaping has a name: <k>normalization</k>.",
     "sort.1": "A new order just came in, written the old way.",
     "sort.ask": "Sort each fact onto the list of the thing it describes.",
     "sort.hint": "Ask yourself: is it about a person, a cake, or the order?",
     "sort.wrong": "Not quite. What is that fact about?",
     "sort.done": "Every fact on its own list. That's normalization, in six taps.",
-
     "edit.1": "Here's the reshaped bakery: a Customers list, and orders that point to it.",
     "edit.ask": "Maya has a new number. Change it, once.",
     "edit.hint": "Tap Maya's phone number on the Customers list.",
@@ -69,7 +93,6 @@
       "voice": "One edit, and both of Maya's orders see it. Now cancel Ana's order again."
     },
     "edit.kept": "Ana stays. Deleting an order no longer deletes a person.",
-
     "teach-join.1": "Splitting has a cost. The screen still needs each order as <b>one line</b>.",
     "teach-join.2": {
       "caption": "Order <b>#103</b> points to <b>→ C1</b>. Follow it to the Customers list.",
@@ -79,11 +102,10 @@
       "caption": "Then follow <b>→ I3</b> to the Items list.",
       "voice": "Then follow I three to the Items list."
     },
-    "teach-join.4": "Stitching lists back together is called a <b>join</b>. A few lookups, and the data is always current.",
+    "teach-join.4": "Stitching lists back together is called a <k>join</k>. A few lookups, and the data is always current.",
     "teach-join.ask": "Three lookups instead of one. Worth it?",
     "teach-join.yes": "That's the trade. And indexes make each lookup fast. You'll see how soon.",
     "teach-join.slow": "Each lookup is fast with an index. You'll see how soon.",
-
     "assemble.1": {
       "caption": "Your turn. Rebuild order <b>#102</b> for the screen.",
       "voice": "Your turn. Rebuild order one oh two for the screen."
@@ -97,7 +119,6 @@
     "assemble.l2": "That's Omar. Now the cake.",
     "assemble.wrong": "Not that one. Look for the ID the pointer names.",
     "assemble.done": "Three lookups, one complete order. You just did a join by hand.",
-
     "teach-owner.1": {
       "caption": "The bakery grew. A nightly report now joins six lists, and takes <b>40 minutes</b>.",
       "voice": "The bakery grew. A nightly report now joins six lists, and takes forty minutes."
@@ -106,8 +127,7 @@
     "teach-owner.3": "But customers keep changing, and nobody updates the copy. It <b>drifts</b>, and the report starts lying.",
     "teach-owner.4": "Give the copy an <b>owner</b>, like a nightly refresh, and it's stale for a day at most.",
     "teach-owner.5": "Or skip the copy, and make the joins fast with <b>indexes</b>.",
-    "teach-owner.6": "Copies aren't the problem. Copies <b>nobody owns</b> are. On purpose, it's called <b>denormalization</b>.",
-
+    "teach-owner.6": "Copies aren't the problem. Copies <b>nobody owns</b> are. On purpose, it's called <k>denormalization</k>.",
     "fix.1": "Your call. The report is slow. Pick a fix, then watch a month go by.",
     "fix.ask": "Try at least two fixes.",
     "fix.hint": "Tap one of the three cards.",
@@ -115,7 +135,6 @@
     "fix.refresh": "Stale for a day at most, then its owner fixes it.",
     "fix.wide": "Thirteen wrong facts, and climbing. Nobody owns that copy.",
     "fix.outro": "In an interview, lead with fast joins. Reach for an owned copy only when you must.",
-
     "quiz.intro": "Four quick questions.",
     "quiz.q1": {
       "caption": "Maya’s phone number is copied onto every one of her order rows. What breaks first?",
@@ -152,8 +171,11 @@
       "caption": "<b>{right} / 4</b>. Worth another pass.",
       "voice": "Not quite there. Replay a chapter or two, then try again."
     },
-
     "finish.1": "That's the lesson. One fact, one place. Pointers instead of copies. And copies only when someone owns them.",
-    "finish.2": "Next up: how a database actually reads those rows from disk."
+    "finish.2": "Next up: how a database actually reads those rows from disk.",
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh."
   }
 }
