@@ -5,7 +5,8 @@
   // mounts one interactive scene, and unlocks Next when the learner reaches its goal.
   //
   // beat = { id, prompt, why?, continues?, mount(scene, api) → cleanup? }
-  // api  = { alive, wait, after, prompt, say, done, lab, restart, state }
+  // api  = { alive, wait, after, prompt, say, done, lab, restart, event, state }
+  // event(name, data) reports what the learner did; Narrated mode reacts to it, Guided ignores it.
 
   const { reducedMotion, retrigger } = DSL.LabKit;
   let active = null;
@@ -102,6 +103,7 @@
           if (first) retrigger(next, "gd-next-pop");
         },
         lab: (labId) => { if (onLab) onLab(labId); },
+        event: () => {},
         restart: () => {
           done.clear();
           Object.keys(state).forEach((k) => delete state[k]);

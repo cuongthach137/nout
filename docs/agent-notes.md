@@ -7,8 +7,15 @@ Findings from earlier sessions, so the next agent doesn't rediscover them. Add t
 There are no committed tests yet. The working setup:
 
 - Install `puppeteer-core` in your scratchpad (not the repo) and point it at the installed Chrome: `executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"`.
-- Serve the repo with `python3 -m http.server 8765`. Start it detached (`(python3 -m http.server 8765 &)`); a plain background `&` inside a one-shot shell can exit with the shell. Stop it afterwards: `lsof -ti tcp:8765 | xargs kill`.
-- Python's dev server sometimes drops a request under rapid reloads (`net::ERR_CONNECTION_RESET` on a script, roughly one run in three). That's the server, not the app: rerun before chasing it.
+- Serve the repo with a bigger connection queue. Plain `python3 -m http.server` accepts only 5 queued connections, and the page requests about 60 files at once, so it randomly resets some (`net::ERR_CONNECTION_RESET`, `ERR_SOCKET_NOT_CONNECTED`) and a script like `core.js` fails to load. Use:
+  ```bash
+  (python3 -c "
+  import http.server, functools
+  class S(http.server.ThreadingHTTPServer): request_queue_size = 256
+  S(('', 8765), functools.partial(http.server.SimpleHTTPRequestHandler, directory='.')).serve_forever()
+  " >/dev/null 2>&1 &)
+  ```
+  Start it detached like this; a plain background `&` in a one-shot shell can exit with the shell. Stop it with `lsof -ti tcp:8765 | xargs kill`.
 - The SQL engine (`vendor/sql.js`, a Web Worker plus WASM) needs HTTP. It doesn't work from `file://`.
 
 Driving the app:
@@ -17,6 +24,7 @@ Driving the app:
 - **Force a mode for one visit:** `#/<lesson>?view=explore|guided|narrated`. `?mode=` changes the saved choice instead.
 - **Narrated mode fast:** set `dsl-narrator` to `{"speed":1.5,"muted":true}`. Muted lines hold for their reading time, and clicking `.nr-cap` skips the current line. Loop "click the caption until the thing you're waiting for appears", but don't click while `.nr-choices` is showing. Click `.nr-go` to start. Chapter dots (`.gd-dots button`, `title` = chapter title) only work after the film has started.
 - **Guided mode at a given step:** set `dsl-guided-<lesson>` to `{"index": N, "seen": N, "done": []}` before loading. Dots beyond `seen` are disabled, and Next stays disabled until the current beat is done.
+- **Guided beats reused by Narrated** report learner actions with `api.event(name, data)`; Guided's api has it as a no-op, Narrated's `n.mount(beat, { onEvent })` receives them.
 - **Classes get added for animation:** `LabKit.retrigger(el, "gd-pop")` adds a class, and `burst` adds elements. Check with `classList.contains(...)`, never `className === ...`.
 - **SQL labs run once on load** (the sandbox does, and so do labs with a starter query run by the page). Wait until `.sql-run` is enabled before typing and clicking Run; a click during a run is ignored.
 - **Phone width:** check `document.documentElement.scrollWidth <= innerWidth` at 390 px. Grids that hold wide tables need `grid-template-columns: minmax(0, 1fr)`, or the table widens the page. Take screenshots after the sidebar's slide animation has finished (about 300 ms).

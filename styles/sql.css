@@ -58,3 +58,13 @@
   .sql-input { font-size: 13px; }
   .sql-verdict { flex-basis: 100%; margin-left: 0; }
 }
+
+/* Challenge sets (DSL.Sql.challenges) */
+.sql-set { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 18px; }
+.sql-set-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.sql-set-tabs button { width: 36px; height: 36px; border: 1.5px solid var(--line-strong); border-radius: 10px; color: var(--muted); background: var(--surface); font-family: var(--mono); font-size: 13px; font-weight: 500; cursor: pointer; }
+.sql-set-tabs button[aria-selected="true"] { border-color: var(--ink); color: var(--ink); }
+.sql-set-tabs button.done { border-color: var(--green); color: #fff; background: var(--green); }
+.sql-set-prompt { margin: 0; font-size: 15px; line-height: 1.5; }
+.sql-hint summary { color: var(--green-deep); font-size: 12px; font-weight: 700; cursor: pointer; }
+.sql-hint p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
