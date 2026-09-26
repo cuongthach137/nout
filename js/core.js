@@ -5,6 +5,7 @@
     { id: "welcome", module: "Start here", title: "Course map", minutes: 3 },
     { id: "modeling", module: "Data modeling", title: "One fact, one place", minutes: 14 },
     { id: "select", module: "Writing SQL", title: "SELECT, filter, sort", minutes: 12 },
+    { id: "joins", module: "Writing SQL", title: "Join types", minutes: 12 },
     { id: "pages", module: "Storage", title: "Pages, not rows", minutes: 18 },
     { id: "btree", module: "Storage", title: "Walk a B-tree", minutes: 16 },
     { id: "index-layout", module: "Storage", title: "Physical data layout", minutes: 12 },

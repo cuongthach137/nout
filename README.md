@@ -22,49 +22,51 @@ Lessons are grouped into modules. A lesson's number is its position in `js/core.
 **Writing SQL**
 2. SELECT, filtering and sorting on the bakery's tables, graded live: columns, aliases, DISTINCT, WHERE and the AND/OR trap, ORDER BY and LIMIT, and the logical query order
 
+3. Join types on the bakery's tables: inner, left, right and full joins, anti-joins, the WHERE-after-LEFT-JOIN trap, fan-out and cross joins
+
 **Storage**
-3. Storage pages, buffer hits, and a scattered-order performance incident
-4. B-tree traversal and a composite-index key-order regression
-5. Heap, secondary-index, and clustered physical layouts with observable page-read costs
-6. Random UUIDv4 versus time-ordered UUIDv7 B-tree insert behavior
+4. Storage pages, buffer hits, and a scattered-order performance incident
+5. B-tree traversal and a composite-index key-order regression
+6. Heap, secondary-index, and clustered physical layouts with observable page-read costs
+7. Random UUIDv4 versus time-ordered UUIDv7 B-tree insert behavior
 
 **Indexes**
-7. B-tree, hash, LSM, and inverted indexes under feature-shaped load tests
-8. Sequential, plain index, bitmap heap, and index-only scans; covering and combined indexes
-9. Production-safe index creation across million- to billion-row tables
-10. Bloom-filter membership checks and false positives
-11. An evidence-based index design challenge
+8. B-tree, hash, LSM, and inverted indexes under feature-shaped load tests
+9. Sequential, plain index, bitmap heap, and index-only scans; covering and combined indexes
+10. Production-safe index creation across million- to billion-row tables
+11. Bloom-filter membership checks and false positives
+12. An evidence-based index design challenge
 
 **Query execution**
-12. Cost-based planning, selectivity, and stale-statistics diagnosis
-13. Nested-loop, hash, and merge joins under different workload shapes
-14. Per-operation `work_mem`, temporary-file spills, and concurrency risk
+13. Cost-based planning, selectivity, and stale-statistics diagnosis
+14. Nested-loop, hash, and merge joins under different workload shapes
+15. Per-operation `work_mem`, temporary-file spills, and concurrency risk
 
 **Transactions**
-15. Transaction boundaries, rollback, and partial-commit failures
-16. Lost updates, row locking, unique constraints, and an oversold-seat race
-17. Lock waits, deadlock cycles, consistent ordering, and transaction retries
-18. MVCC snapshots, non-repeatable reads, and phantom reads
-19. MVCC tuple versions, HOT updates, and index write amplification
-20. Standard `VACUUM`, long-running snapshots, reusable space, and `VACUUM FULL`
-21. Repeatable Read write skew, Serializable detection, and whole-transaction retries
-22. ACID consistency through `CHECK`, `UNIQUE`, `FOREIGN KEY`, and `EXCLUDE` constraints
-23. Synchronous versus asynchronous commit, WAL flushes, crashes, and REDO recovery
-24. An evidence-based ACID incident review
+16. Transaction boundaries, rollback, and partial-commit failures
+17. Lost updates, row locking, unique constraints, and an oversold-seat race
+18. Lock waits, deadlock cycles, consistent ordering, and transaction retries
+19. MVCC snapshots, non-repeatable reads, and phantom reads
+20. MVCC tuple versions, HOT updates, and index write amplification
+21. Standard `VACUUM`, long-running snapshots, reusable space, and `VACUUM FULL`
+22. Repeatable Read write skew, Serializable detection, and whole-transaction retries
+23. ACID consistency through `CHECK`, `UNIQUE`, `FOREIGN KEY`, and `EXCLUDE` constraints
+24. Synchronous versus asynchronous commit, WAL flushes, crashes, and REDO recovery
+25. An evidence-based ACID incident review
 
 **Engines for scale**
-25. Column strips versus whole receipts, then an LSM memtable, sorted chunks, and compaction
-26. Partition bounds, pruning, local indexes, planning overhead, and retention
+26. Column strips versus whole receipts, then an LSM memtable, sorted chunks, and compaction
+27. Partition bounds, pruning, local indexes, planning overhead, and retention
 
 **Distributed data**
-27. Leader/follower lag and read-your-writes routing policies
-28. A checkout incident capstone covering latency, duplicate orders, and stale confirmations
+28. Leader/follower lag and read-your-writes routing policies
+29. A checkout incident capstone covering latency, duplicate orders, and stale confirmations
 
 **Electives: engine depth**
-29. PostgreSQL/SQLite partial indexes, cross-engine expression indexes, and MySQL alternatives
-30. Specialized PostgreSQL, MySQL, and SQLite index families matched to query semantics
-31. Engine-specific index evidence, canary removal, rollback, and integrity guardrails
-32. A cross-engine migration capstone that surfaces hidden storage, locking, and DDL assumptions
+30. PostgreSQL/SQLite partial indexes, cross-engine expression indexes, and MySQL alternatives
+31. Specialized PostgreSQL, MySQL, and SQLite index families matched to query semantics
+32. Engine-specific index evidence, canary removal, rollback, and integrity guardrails
+33. A cross-engine migration capstone that surfaces hidden storage, locking, and DDL assumptions
 
 Course progress is stored in the browser with `localStorage`.
 
@@ -90,7 +92,7 @@ Audio is not committed. `deploy` uploads only the `audio/` folder as an assets-o
 
 ## SQL exercises
 
-SQL lessons run real queries in the browser: SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js), vendored under `vendor/sql.js`) inside a Web Worker. `js/components/sql.js` gives each exercise a fresh copy of its dataset, stops a runaway query after 3 seconds, and checks a learner's result against the rows the reference query returns (column names ignored; row order only when the exercise asks for it). The shared dataset is Maya's bakery: `customers`, `products`, `orders` and `order_items`, with deliberate NULLs, customers without orders and walk-in orders. `#/sql` is a free sandbox on the same data. The engine needs the site served over HTTP (`python3 -m http.server`), not opened from `file://`.
+SQL lessons run real queries in the browser: SQLite compiled to WebAssembly ([sql.js](https://github.com/sql-js/sql.js), vendored under `vendor/sql.js`) inside a Web Worker (`js/components/sql-worker.js`). `js/components/sql.js` gives each exercise a fresh copy of its dataset, stops a runaway query after 3 seconds, and checks a learner's result against the rows the reference query returns (column names ignored; row order only when the exercise asks for it). The shared dataset is Maya's bakery: `customers`, `products`, `orders` and `order_items`, with deliberate NULLs, customers without orders and walk-in orders. `#/sql` is a free sandbox on the same data. The engine needs the site served over HTTP (`python3 -m http.server`), not opened from `file://`.
 
 ## Architecture
 

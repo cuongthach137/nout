@@ -1,0 +1,146 @@
+{
+  "lesson": "joins",
+  "voice": "af_heart",
+  "speed": 1.0,
+  "speakers": {
+    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+  },
+  "keywords": {
+    "join-condition": {
+      "term": "Join condition",
+      "def": "The test after ON that says which rows belong together, like c.id = o.customer_id."
+    },
+    "inner-join": {
+      "term": "Inner join",
+      "def": "Keeps only rows that have a match on both sides. Anything without a partner, on either side, is dropped. Plain JOIN means inner join."
+    },
+    "left-join": {
+      "term": "Left join",
+      "def": "Keeps every row of the left table. Where there's no match on the right, the right side's columns are NULL."
+    },
+    "anti-join": {
+      "term": "Anti-join",
+      "def": "Finds rows with no match in another table, for example with a left join and a test for NULL on the right side."
+    },
+    "right-join": {
+      "term": "Right join",
+      "def": "The mirror of a left join: keeps every row of the right table. Usually written as a left join with the tables swapped."
+    },
+    "full-outer-join": {
+      "term": "Full outer join",
+      "def": "Keeps every row from both tables, matched where possible, with NULLs where a side has no partner."
+    },
+    "fan-out": {
+      "term": "Fan-out",
+      "def": "A join that matches several rows per row, so the first table's rows repeat. Totals from that side get counted more than once."
+    },
+    "cross-join": {
+      "term": "Cross join",
+      "def": "Every row of one table paired with every row of the other: rows times rows. What you get when a join has no condition."
+    }
+  },
+  "lines": {
+    "hook.1": "Maya's orders don't store her name. They store her customer ID, a key that points into the customers table.",
+    "hook.2": "Remember following those pointers by hand? In SQL, that's one clause: JOIN.",
+    "hook.3": "But every kind of join quietly drops some rows, or repeats them. Knowing which is what interviewers check.",
+
+    "inner.1": "Customers on the left, orders on the right. Each order carries a customer ID.",
+    "inner.2": {
+      "caption": "<code>JOIN customers c ON c.id = o.customer_id</code> matches each order to the customer it points at.",
+      "voice": "Join customers, on the customer's ID equals the order's customer ID. That matches each order to the customer it points at."
+    },
+    "inner.3": "The part after ON is the <k id=\"join-condition\">join condition</k>. It says which rows belong together.",
+    "inner.4": "Some rows have no partner. Lena and Theo never ordered, and two walk-in orders have no customer at all.",
+    "inner.ask": "Sixteen orders go in. How many rows come out?",
+    "inner.sixteen": "Close, but the two walk-ins have nobody to match. Fourteen.",
+    "inner.fourteen": "Fourteen. You were watching the walk-ins.",
+    "inner.ten": "More than that. Fourteen orders have a customer, so fourteen rows come back.",
+    "inner.5": "An <k id=\"inner-join\">inner join</k> keeps only matched pairs. Anything without a partner, on either side, is dropped.",
+    "inner.6": "Plain JOIN means inner join. It's the default.",
+
+    "left.1": "Now the bakery wants every customer, with their orders if they have any.",
+    "left.2": "Swap JOIN for <b>LEFT JOIN</b>. Every row from the left table stays.",
+    "left.3": "Lena and Theo stay too. Where an order should be, the columns are filled with NULL.",
+    "left.4": "That's a <k id=\"left-join\">left join</k>: all of the left table, plus its matches from the right, or NULLs.",
+
+    "never.1": "The bakery wants to send a welcome offer to customers who've never ordered.",
+    "never.2": "Here's the trick. After a left join, those customers are the rows where the order side is NULL.",
+    "never.ask": "Finish the WHERE clause, then run it.",
+    "never.hint": {
+      "caption": "Keep the rows where <b>o.id IS NULL</b>.",
+      "voice": "Keep the rows where the order's ID is null."
+    },
+    "never.error": "The database couldn't run that. The message under the editor says why.",
+    "never.extra": "Too many rows. Keep only the customers whose order side is NULL.",
+    "never.missing": "Someone's missing. Test the order's ID with IS NULL, not with equals.",
+    "never.columns": "Just the customer's name, please.",
+    "never.done": "Lena and Theo. Finding rows with no match is called an <k id=\"anti-join\">anti-join</k>.",
+
+    "trap.1": "Next request: every customer, with their paid orders. Customers with none should still show up.",
+    "trap.2": "A first try: a left join, then keep the paid orders in WHERE.",
+    "trap.ask": "Will Lena still be in the result?",
+    "trap.yes": "That's the intent. Let's see.",
+    "trap.no": "Good instinct. Let's see why.",
+    "trap.3": {
+      "caption": "Lena, Theo and Raj are gone. WHERE runs after the join, and a NULL status isn't <b>'paid'</b>.",
+      "voice": "Lena, Theo and Raj are gone. WHERE runs after the join, and a null status isn't paid, so their rows fail."
+    },
+    "trap.4": "A filter on the right-hand table in WHERE quietly turns a left join back into an inner join.",
+    "trap.5": "Move the test into ON. Now it only decides which orders match, and every customer stays.",
+    "trap.6": "Rule of thumb: in a left join, filters on the right-hand table belong in ON.",
+
+    "full.1": "A <k id=\"right-join\">right join</k> is the mirror image: it keeps every row of the right table. Most teams swap the tables and write LEFT.",
+    "full.2": "A <k id=\"full-outer-join\">full outer join</k> keeps both sides whole: customers with no orders, and orders with no customer.",
+    "full.3": "Eighteen rows. It's handy for reconciling two lists, to see what's missing on each side.",
+
+    "fanout.1": "Joins can also add rows. Each order has one or more items.",
+    "fanout.2": "Join orders to their items, and sixteen orders become twenty-two rows. Order one appears twice, once per item.",
+    "fanout.3": "That's <k id=\"fan-out\">fan-out</k>. Add up anything from the orders side now, and some orders count twice.",
+    "fanout.4": "Forget the join condition entirely, and every customer pairs with every order. Ten times sixteen: a hundred and sixty rows.",
+    "fanout.5": "That's a <k id=\"cross-join\">cross join</k>. Occasionally useful, usually a bug.",
+    "fanout.6": "Before trusting a joined total, ask: how many rows per order does this join make?",
+
+    "walk.1": "Last one. List every order's ID with the customer's name, and keep the walk-in orders.",
+    "walk.ask": "Write the join. Start from the orders.",
+    "walk.hint": {
+      "caption": "Start <b>FROM orders</b>, then <b>LEFT JOIN customers</b>.",
+      "voice": "Start from orders, then left join customers."
+    },
+    "walk.error": "The database couldn't run that. Read the message, then try again.",
+    "walk.extra": "Too many rows. Check the ON condition.",
+    "walk.missing": "Some orders are missing. The walk-ins need a left join that starts from orders.",
+    "walk.columns": "Just the order's ID and the customer's name.",
+    "walk.done": "Sixteen orders, two with no name. Which table comes first decides what a left join keeps.",
+
+    "quiz.intro": "Four quick questions.",
+    "quiz.q1": {
+      "caption": "customers has 10 rows, orders has 16, and 2 orders have no customer. How many rows does an inner join on the customer ID return?",
+      "voice": "Customers has ten rows. Orders has sixteen, and two have no customer. How many rows does an inner join on the customer ID return?",
+      "speaker": "interviewer"
+    },
+    "quiz.q1-why": "Each order with a customer matches exactly one row, so fourteen. The walk-ins, and customers who never ordered, are dropped.",
+    "quiz.q2": { "caption": "Which query finds customers who have never ordered?", "speaker": "interviewer" },
+    "quiz.q2-why": "A left join keeps every customer. Those with no order have NULL on the order side, so test for that.",
+    "quiz.q3": {
+      "caption": "<code>LEFT JOIN orders o ON … WHERE o.status = 'paid'</code>. What happens to customers with no paid orders?",
+      "voice": "A left join to orders, then where the status is paid. What happens to customers with no paid orders?",
+      "speaker": "interviewer"
+    },
+    "quiz.q3-why": "WHERE runs after the join, and NULL isn't paid, so those rows fail. Put the condition in ON.",
+    "quiz.q4": { "caption": "A report's revenue doubled right after someone added a join. What's the likely cause?", "speaker": "interviewer" },
+    "quiz.q4-why": "The new join matches several rows per order, so each order is repeated, and added up, more than once.",
+    "quiz.right1": "Right.",
+    "quiz.right2": "Exactly.",
+    "quiz.right3": "Correct.",
+    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
+    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
+
+    "keywords.1": "Before we wrap up, here are the words worth keeping.",
+    "keywords.ask": "Flip each card. Star the ones you want to practise later.",
+    "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
+    "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
+
+    "finish.1": "That's the lesson. Inner joins keep only matches. Outer joins keep a side whole, with NULLs. And joins can multiply rows.",
+    "finish.2": "Next up: how a database actually reads those rows from disk."
+  }
+}

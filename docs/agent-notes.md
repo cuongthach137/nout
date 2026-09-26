@@ -16,7 +16,7 @@ There are no committed tests yet. The working setup:
   " >/dev/null 2>&1 &)
   ```
   Start it detached like this; a plain background `&` in a one-shot shell can exit with the shell. Stop it with `lsof -ti tcp:8765 | xargs kill`.
-- The SQL engine (`vendor/sql.js`, a Web Worker plus WASM) needs HTTP. It doesn't work from `file://`.
+- The SQL engine (`vendor/sql.js` loaded by our own worker, `js/components/sql-worker.js`, plus WASM) needs HTTP. Don't switch to sql.js's bundled worker or `db.exec`: they return no column names for a query that matches no rows, which breaks the checker's messages. It doesn't work from `file://`.
 
 Driving the app:
 
@@ -27,6 +27,7 @@ Driving the app:
 - **Guided beats reused by Narrated** report learner actions with `api.event(name, data)`; Guided's api has it as a no-op, Narrated's `n.mount(beat, { onEvent })` receives them.
 - **Classes get added for animation:** `LabKit.retrigger(el, "gd-pop")` adds a class, and `burst` adds elements. Check with `classList.contains(...)`, never `className === ...`.
 - **SQL labs run once on load** (the sandbox does, and so do labs with a starter query run by the page). Wait until `.sql-run` is enabled before typing and clicking Run; a click during a run is ignored.
+- **Does every frame fit?** Guided and Narrated screens don't scroll, so a tall scene is clipped at the top as well as the bottom (it's centred). Walk every Guided step and storyboard frame at **1280×700** (a short laptop) and **390×800**, and compare the stage's box with the boxes of its visible parts (code, result container, lists, editor); measure containers, not rows inside a scrolling result. Tall SQL scenes rely on `.gd-scene`'s single `minmax(0, 1fr)` row (guided.css) so storyboard heights resolve and results scroll.
 - **Phone width:** check `document.documentElement.scrollWidth <= innerWidth` at 390 px. Grids that hold wide tables need `grid-template-columns: minmax(0, 1fr)`, or the table widens the page. Take screenshots after the sidebar's slide animation has finished (about 300 ms).
 
 ## SQLite (the course's engine) vs. what interviews assume
@@ -44,8 +45,15 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 
 - `uv run tools/voice.py build` needs the Kokoro models in `~/.cache/kokoro-onnx` and ffmpeg (both installed on this machine). The first build downloads about 340 MB.
 - Audio is not in git. After a PR that changes narration merges, run `uv run tools/voice.py deploy`. Never run `wrangler pages ...`.
+- Right after a deploy, new files can return 404 for a few seconds while the Worker version rolls out; re-check before assuming it failed. Check URLs with `curl`: Cloudflare answers Python's default `urllib` user agent with 403.
 - Changing the course order changes what comes "next". Each lesson's `finish.2` line names the next lesson's idea, so re-check it (and rebuild that line's audio) when a lesson is inserted before or after it.
 - Known story inconsistency: `narration/modeling.json` says "Maya runs a busy bakery" and then treats Maya as a customer (STYLE.md calls her a regular customer). The SQL dataset has Maya as customer #1. Treat the bakery as Maya's favourite shop, not hers, when writing new lines, and fix lesson 01's opening when it's next revised.
+
+## SQL lesson building blocks
+
+- `js/components/sql-scenes.js` (`DSL.SqlScenes`): `board()` (code + animated result grid running real queries), `flip()`, `predictBeat()`, `challengeBeat()`, `teach()`/`slice()` for storyboards, and `exercise()` (narrated exercise that reacts to each wrong-answer reason). Lesson files only add storyboards and their own widgets (e.g. the join board in `joins-guided.js`).
+- Scenes that show a result must sort it (`ORDER BY`) so frames are deterministic; engines don't promise an order.
+- PostgreSQL rejects `JOIN` without `ON`; show cross joins as `CROSS JOIN` or `FROM a, b`.
 
 ## Repo and workflow
 

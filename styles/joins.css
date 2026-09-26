@@ -1,0 +1,49 @@
+/* Joins lesson: the join board (two input lists with a line per match) and its result. */
+
+.jn-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; }
+.jn-inputs { display: grid; grid-template-columns: minmax(0, 1fr) clamp(40px, 12vw, 120px) minmax(0, 1fr); align-items: start; min-height: 0; }
+.jn-inputs[hidden], .jn-out[hidden] { display: none; }
+.jn-list { display: grid; gap: 3px; }
+.jn-item { display: flex; align-items: center; gap: 8px; height: 22px; padding: 0 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); font-family: var(--mono); font-size: 12px; white-space: nowrap; overflow: hidden; animation: sqIn .3s backwards; animation-delay: calc(var(--i) * 25ms); transition: background .25s, border-color .25s, opacity .3s; }
+.jn-item b { color: var(--muted); font-weight: 500; }
+.jn-item.jn-matched { border-color: var(--green); background: var(--green-soft); }
+.jn-item.jn-orphan { border-color: var(--coral); background: var(--coral-soft); }
+.jn-item.jn-orphan:not(.jn-kept) { opacity: .75; }
+.jn-item.jn-kept { border-color: var(--green-deep); background: var(--lime); font-weight: 600; }
+.jn-links { width: 100%; height: 100%; margin-top: 22px; overflow: visible; }
+.jn-links path { fill: none; stroke: var(--green); stroke-width: 1.5; opacity: .7; }
+.jn-links path.jn-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: jnDraw .45s ease-out forwards; }
+@keyframes jnDraw { to { stroke-dashoffset: 0; } }
+.jn-out { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-height: 0; overflow: auto; }
+.jn-out .sq-board { max-height: none; }
+.jn-out .sq-result { max-height: min(52vh, 420px); }
+@media (max-width: 899px) { .jn-board { grid-template-rows: auto; } }
+.jn-count { justify-self: end; padding: 2px 10px; border-radius: 99px; color: var(--green-deep); background: var(--lime); font-family: var(--mono); font-size: 12px; font-weight: 600; }
+.jn-gone { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; }
+.jn-gone span { color: var(--muted); }
+.jn-gone b { padding: 2px 10px; border-radius: 99px; color: var(--coral); background: var(--coral-soft); text-decoration: line-through; }
+
+@media (max-width: 760px) {
+  .jn-item { height: 19px; font-size: 11px; padding: 0 6px; gap: 5px; }
+  .jn-list { gap: 2px; }
+  .jn-links { margin-top: 20px; }
+  .jn-board { gap: 8px; }
+  .jn-out .sq-result { max-height: 44vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jn-links path.jn-draw { animation: none; stroke-dashoffset: 0; }
+}
+
+/* Wide screens: the query sits beside the tables, so 16 order rows fit under the Guided prompt. */
+@media (min-width: 900px) {
+  .jn-board { grid-template-columns: minmax(220px, 290px) minmax(0, 1fr); align-items: start; column-gap: 20px; max-width: 1040px; }
+  .jn-board > .sq-code { grid-column: 1; grid-row: 1; font-size: 12.5px; }
+  .jn-board > .jn-inputs, .jn-board > .jn-out { grid-column: 2; grid-row: 1; }
+  .jn-board:has(> .sq-code[hidden]) { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+  .jn-board:has(> .sq-code[hidden]) > .jn-inputs, .jn-board:has(> .sq-code[hidden]) > .jn-out { grid-column: 1; }
+}
+@media (max-height: 760px) {
+  .jn-item { height: 19px; font-size: 11px; }
+  .jn-list { gap: 2px; }
+  .jn-links { margin-top: 20px; }
+}

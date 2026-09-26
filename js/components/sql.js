@@ -1,15 +1,15 @@
 (function registerSql(DSL) {
   "use strict";
 
-  // In-browser SQL: SQLite (sql.js, vendored under vendor/sql.js) running in a Web Worker, a
-  // checker that compares a learner's result with the expected rows, and a lab widget (schema,
-  // editor, result, verdict) that Explore, Guided and Narrated lessons all mount.
+  // In-browser SQL: SQLite (sql.js, vendored under vendor/sql.js) running in a Web Worker
+  // (js/components/sql-worker.js), a checker that compares a learner's result with the expected
+  // rows, and a lab widget (schema, editor, result, verdict) that all three modes mount.
   //
   // Every query runs against a fresh copy of its dataset, so nothing a learner runs (an UPDATE, a
   // DROP) carries over. The worker is started on first use; a query that runs too long (a
   // recursive CTE with no stop, say) is cut off by terminating the worker.
 
-  const WORKER_URL = "vendor/sql.js/worker.sql-wasm.js";
+  const WORKER_URL = "js/components/sql-worker.js";
   const TIMEOUT_MS = 3000;
   const SHOW_ROWS = 100;
 
@@ -160,18 +160,9 @@ INSERT INTO order_items VALUES
         resolve({ error: `The query ran for more than ${TIMEOUT_MS / 1000} seconds, so it was stopped. A recursive query with no stopping condition, or a join with no ON?`, timedOut: true });
       }, TIMEOUT_MS);
     });
-    const work = (async () => {
-      await send({ action: "open" });
-      if (schema) await send({ action: "exec", sql: schema });
-      const started = performance.now();
-      try {
-        const { results } = await send({ action: "exec", sql });
-        const last = results[results.length - 1];
-        return { columns: last ? last.columns : [], rows: last ? last.values : [], ms: performance.now() - started };
-      } catch (error) {
-        return { error: friendly(error.message), raw: error.message };
-      }
-    })().catch((error) => ({ error: error.message === "timeout" ? "" : friendly(error.message) }));
+    const work = send({ schema, sql })
+      .then(({ columns, rows, ms }) => ({ columns, rows, ms }))
+      .catch((error) => (error.message === "timeout" ? { error: "" } : { error: friendly(error.message), raw: error.message }));
     const result = await Promise.race([work, timeout]);
     window.clearTimeout(timer);
     return result;

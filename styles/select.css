@@ -15,8 +15,10 @@
 .sel-notes .sq-kw, .sel-table .sq-kw { color: var(--green-deep); font-weight: 600; }
 
 /* Board */
-.sq-board { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; }
-.sq-result { position: relative; min-height: 0; overflow: auto; }
+/* A column: code and controls keep their size, the result takes what's left and scrolls. */
+.sq-board { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 760px; max-height: 100%; min-height: 0; }
+.sq-board > * { flex: none; }
+.sq-result { position: relative; flex: 0 1 auto; min-height: 90px; overflow: auto; }
 .sq-label { display: block; margin: 0 0 6px 2px; color: var(--green-deep); font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .sq-grid { position: relative; display: grid; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-family: var(--mono); font-size: 12.5px; overflow: hidden; }
 .sq-row { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); border-bottom: 1px solid var(--line); transition: background .25s, opacity .35s, max-height .45s, border-color .25s; max-height: 48px; }
@@ -114,3 +116,9 @@
   .sq-ops { grid-template-columns: minmax(0, 1fr); }
   .sq-hook { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Give the storyboard stage a definite height when it holds a SQL board, so the board's
+   max-height applies and a long result scrolls instead of pushing the query off screen. */
+.gd-story-stage:has(> .sq-board, > .jn-board) { grid-template-rows: minmax(0, 1fr); }
+.gd-scene > .gd-story-stage:has(> .sq-board, > .jn-board) { height: 100%; }
+.jn-board { grid-template-rows: minmax(0, 1fr); }

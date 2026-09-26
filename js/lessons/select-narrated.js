@@ -6,23 +6,6 @@
 
   const S = DSL.SelectScenes;
 
-  // A written exercise: wait for a match, reacting to each wrong run without talking over the learner.
-  async function exercise(n, beat, chapter) {
-    const reactions = new Map(["error", "timeout", "extra", "duplicates", "missing", "rows", "columns", "order"].map((reason) => {
-      const line = { error: "error", timeout: "error", extra: "extra", duplicates: "extra", missing: "missing", rows: "missing", columns: "columns", order: "order" }[reason];
-      return [reason, DSL.Narrator.throttled(n, `${chapter}.${line}`, 2500)];
-    }));
-    const done = n.mount(beat, {
-      onEvent(name, data) {
-        if (name === "result" && reactions.has(data.reason)) reactions.get(data.reason)();
-      },
-    });
-    await n.say(`${chapter}.1`);
-    await n.say(`${chapter}.ask`);
-    await n.ask(done, { hint: `${chapter}.hint`, highlight: ".sql-editor" });
-    await n.say(`${chapter}.done`);
-  }
-
   function makeChapters() {
     const M = DSL.SelectModel;
     const story = (n, scene, board) => DSL.Narrator.story(n, scene, board);
@@ -107,7 +90,7 @@
         id: "filter",
         title: "Your turn: filter",
         async script(n) {
-          await exercise(n, S.filterChallenge(), "filter");
+          await DSL.SqlScenes.exercise(n, S.filterChallenge(), "filter");
         },
       },
       {
@@ -143,7 +126,7 @@
         id: "recent",
         title: "Your turn: newest first",
         async script(n) {
-          await exercise(n, S.recentChallenge(), "recent");
+          await DSL.SqlScenes.exercise(n, S.recentChallenge(), "recent");
         },
       },
       {
