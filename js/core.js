@@ -36,14 +36,65 @@
     { id: "migration-capstone", module: "Electives: engine depth", title: "Cross-engine migration", minutes: 20 },
   ];
 
+  // Everything the course saves lives in this browser's localStorage, under "dsl-" keys. All reads
+  // and writes go through store, so blocked or full storage never breaks a page, and Back up /
+  // Restore can move every key at once. Values are JSON; a few early keys were saved as plain
+  // text, so get() falls back to the raw string when a value isn't JSON.
+  const STORE_PREFIX = "dsl-";
+  const STORE_SCHEMA = 1;
+  const store = {
+    get(key, fallback) {
+      let raw;
+      try {
+        raw = localStorage.getItem(STORE_PREFIX + key);
+      } catch (error) {
+        return fallback;
+      }
+      if (raw === null) return fallback;
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return raw;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem(STORE_PREFIX + key, JSON.stringify(value));
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+    // A backup of every saved key, as a plain object ready to download.
+    exportAll() {
+      const data = {};
+      try {
+        for (let i = 0; i < localStorage.length; i += 1) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(STORE_PREFIX)) data[key] = localStorage.getItem(key);
+        }
+      } catch (error) {
+        // Nothing readable to back up.
+      }
+      return { app: "data-systems-lab", schema: STORE_SCHEMA, exportedAt: new Date().toISOString(), data };
+    },
+    // Restore a backup made by exportAll(); returns how many keys were written.
+    importAll(backup) {
+      if (!backup || backup.app !== "data-systems-lab" || typeof backup.data !== "object") throw new Error("That file isn't a Data Systems Lab backup.");
+      let count = 0;
+      Object.entries(backup.data).forEach(([key, value]) => {
+        if (!key.startsWith(STORE_PREFIX) || typeof value !== "string") return;
+        localStorage.setItem(key, value);
+        count += 1;
+      });
+      return count;
+    },
+  };
+  if (store.get("schema", 0) < STORE_SCHEMA) store.set("schema", STORE_SCHEMA);
+
   function readCompletedLessons() {
-    try {
-      const stored = JSON.parse(localStorage.getItem("dsl-completed") || "[]");
-      return new Set(Array.isArray(stored) ? stored : []);
-    } catch (error) {
-      console.warn("Could not restore course progress", error);
-      return new Set();
-    }
+    const stored = store.get("completed", []);
+    return new Set(Array.isArray(stored) ? stored : []);
   }
 
   const state = {
@@ -79,6 +130,17 @@
     return `Lab ${lessonNumber(id)}${suffix}`;
   }
 
+  // Consecutive lessons that share a module, in course order: [{ name, lessons }].
+  function modules(list = lessons) {
+    const groups = [];
+    list.forEach((lesson) => {
+      let group = groups[groups.length - 1];
+      if (!group || group.name !== lesson.module) groups.push((group = { name: lesson.module, lessons: [] }));
+      group.lessons.push(lesson);
+    });
+    return groups;
+  }
+
   function getLesson(id) {
     return lessons.find((lesson) => lesson.id === id);
   }
@@ -90,7 +152,6 @@
   }
 
   // Guided and Narrated modes: a lesson may register extra renderers beside Explore.
-  const MODE_KEY = "dsl-mode";
   const MODES = ["narrated", "guided", "explore"];
 
   function registerGuided(id, renderer) {
@@ -108,20 +169,12 @@
 
   // The mode the learner picked with the toggle, or null if they never picked one.
   function getMode() {
-    try {
-      const saved = localStorage.getItem(MODE_KEY);
-      return MODES.includes(saved) ? saved : null;
-    } catch (error) {
-      return null;
-    }
+    const saved = store.get("mode", null);
+    return MODES.includes(saved) ? saved : null;
   }
 
   function setMode(mode) {
-    try {
-      localStorage.setItem(MODE_KEY, MODES.includes(mode) ? mode : "narrated");
-    } catch (error) {
-      // The preference is a convenience; the default still works.
-    }
+    store.set("mode", MODES.includes(mode) ? mode : "narrated");
   }
 
   // The mode a lesson actually renders in: the learner's pick if the lesson offers it; otherwise
@@ -214,6 +267,8 @@
     guided: Object.create(null),
     narrated: Object.create(null),
     narratedComplete: new Set(),
+    store,
+    modules,
     getLesson,
     lessonNumber,
     lessonRef,

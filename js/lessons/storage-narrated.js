@@ -5,7 +5,6 @@
   // Lines live in narration/pages.json.
 
   const S = DSL.StorageScenes;
-  const { retrigger, burst } = DSL.LabKit;
 
   // Resolves with the id of the row the learner taps (only rows that aren't disabled).
   const tapRow = (shelf) => (finish) => shelf.addEventListener("click", (event) => {
@@ -13,12 +12,6 @@
     if (row && !row.disabled) finish(Number(row.dataset.id));
   });
 
-  // Put a storyboard on stage; frame(line, i) speaks a line while frame i animates.
-  function storyStage(n, scene, story) {
-    scene.innerHTML = `<div class="gd-story-stage"></div>`;
-    const ctx = story.build(scene.firstElementChild);
-    return (line, i) => Promise.all([n.say(line), n.show(() => story.frames[i].enter(ctx, n))]);
-  }
 
   function makeChapters() {
     const M = DSL.StorageModel;
@@ -29,7 +22,7 @@
         id: "teach-page",
         title: "What is a page?",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.pageStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.pageStory(M));
           await frame("teach-page.1", 0);
           await frame("teach-page.2", 1);
           await frame("teach-page.3", 2);
@@ -91,7 +84,7 @@
         id: "teach-cache",
         title: "Memory is a cache",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.cacheStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.cacheStory(M));
           for (let i = 0; i < 5; i += 1) await frame(`teach-cache.${i + 1}`, i);
           await n.say("teach-cache.6");
         },
@@ -130,7 +123,7 @@
         id: "teach-evict",
         title: "Who gets evicted?",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.evictStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.evictStory(M));
           await frame("teach-evict.1", 0);
           await frame("teach-evict.2", 1);
           await n.say("teach-evict.ask");
@@ -174,7 +167,7 @@
         id: "teach-locality",
         title: "Where do rows live?",
         async script(n, scene) {
-          const frame = storyStage(n, scene, S.localityStory(M));
+          const frame = DSL.Narrator.story(n, scene, S.localityStory(M));
           for (let i = 0; i < 4; i += 1) await frame(`teach-locality.${i + 1}`, i);
         },
       },
@@ -204,41 +197,7 @@
           await n.say(`cache.${reply}`);
         },
       },
-      {
-        id: "quiz",
-        title: "Quick check",
-        async script(n, scene) {
-          scene.innerHTML = `<div class="gd-quiz nr-quiz">
-            <span class="gd-q-count"></span>
-            <div class="nr-marks">${M.QUIZ.map(() => "<i></i>").join("")}</div>
-          </div>`;
-          const count = scene.querySelector(".gd-q-count");
-          const marks = [...scene.querySelectorAll(".nr-marks i")];
-          let right = 0;
-          await n.say("quiz.intro");
-          for (const [i, question] of M.QUIZ.entries()) {
-            count.textContent = `Question ${i + 1} of ${M.QUIZ.length}`;
-            marks[i].className = "current";
-            await n.say(`quiz.q${i + 1}`);
-            const pick = await n.choose(question.options.map((option, j) => [String(j), option]), { label: "Your answer" });
-            const correct = Number(pick) === question.answer;
-            marks[i].className = correct ? "ok" : "bad";
-            marks[i].textContent = correct ? "✓" : "✗";
-            retrigger(marks[i], "gd-pop");
-            if (correct) {
-              right += 1;
-              burst(marks[i], { count: 12 });
-              await n.say(`quiz.right${(i % 3) + 1}`);
-            } else {
-              await n.say(`quiz.q${i + 1}-why`);
-            }
-          }
-          count.textContent = `${right} / ${M.QUIZ.length}`;
-          const passed = right >= 3;
-          if (passed) M.progress.complete("quiz");
-          await n.say(passed ? "quiz.pass" : "quiz.retry", { right });
-        },
-      },
+      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
       DSL.Vocab.reviewChapter("pages"),
       {
         id: "finish",

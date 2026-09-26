@@ -41,7 +41,7 @@
   const DISH = { "Lemon cake": "🍋", "Carrot cake": "🥕", Sourdough: "🍞", Croissant: "🥐", "Rye loaf": "🥖", Eclair: "🍫", Babka: "🍰", Scone: "🧁" };
   const dish = (name) => `${DISH[name] || ""} ${name}`.trim();
 
-  const { reducedMotion, retrigger, wonder, labSide } = DSL.LabKit;
+  const { reducedMotion, retrigger, wonder, labSide, setStatus } = DSL.LabKit;
   const progress = DSL.LabKit.createProgress({
     lessonId: "modeling",
     storageKey: "dsl-modeling-labs",
@@ -73,12 +73,6 @@
     { prompt: "Cancelling a customer’s only order also erases her phone number. The cheapest structural fix?", options: ["Forbid deleting orders", "Move the phone to a Customers list and let orders point to it", "Copy the phone into a backup table"], answer: 1, why: "The phone was a fact about the person, stored on the wrong list. Moving it to where it belongs makes orders deletable without losing the customer." },
     { prompt: "A nightly report joins six lists and takes 40 minutes. The safest first move?", options: ["Copy all tables into one wide table with no sync owner", "Make the joins cheap with keys and indexes; consider an owned, refreshed copy only if it is still slow", "Split every table further"], answer: 1, why: ("Slow joins are usually missing fast paths, not a shape problem. Copies without an owner are the drift bug from " + DSL.labLabel("modeling", "A") + ", back on purpose.") },
   ];
-
-  function setStatus(el, message, tone) {
-    el.textContent = message;
-    el.classList.remove("warn", "ok");
-    if (tone) el.classList.add(tone);
-  }
 
   function slotsMarkup(prefix) {
     return `<div class="assembled" id="${prefix}-result" aria-live="polite">${SLOTS.map(([key, label]) => `<span class="slot" data-slot="${key}">${label}</span>`).join("")}</div>`;

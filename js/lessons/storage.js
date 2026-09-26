@@ -1,7 +1,7 @@
 (function registerStorageLesson(DSL) {
   "use strict";
 
-  const { retrigger, wonder, labSide, fly, burst, floater, countTo } = DSL.LabKit;
+  const { retrigger, wonder, labSide, fly, burst, floater, countTo, setStatus } = DSL.LabKit;
   const progress = DSL.LabKit.createProgress({
     lessonId: "pages",
     labs: [{ id: "anatomy", name: `${DSL.lessonNumber("pages")}A Page` }, { id: "buffer", name: `${DSL.lessonNumber("pages")}B Buffer pool` }, { id: "drill", name: "Drill" }, { id: "quiz", name: "Quiz" }],
@@ -43,12 +43,6 @@
     { prompt: "A buffer pool has 2 slots. One page is needed by every other query. Which eviction rule keeps it in memory?", options: ["First in, first out", "Least recently used", "Whichever page is biggest"], answer: 1, why: "LRU refreshes a page every time it is used, so a hot page never becomes the oldest. FIFO evicts by arrival time, even if the page was used a moment ago." },
     { prompt: "GET /orders returns 12 rows but reads 10 scattered pages on a cold cache. Best first fix?", options: ["Return fewer JSON fields", "An index in the query’s order (customer_id, created_at) that also holds the shown columns", "Retry the request when it is slow"], answer: 1, why: "The rows are few but physically scattered. An index that matches the query’s order and covers its columns turns 10 random pages into a few neighbouring ones." },
   ];
-
-  function setStatus(el, message, tone) {
-    el.textContent = message;
-    el.classList.remove("warn", "ok");
-    if (tone) el.classList.add(tone);
-  }
 
   function segmented(id, label, options, selected) {
     return `<div class="control"><span class="control-label">${label}</span><div class="segmented" id="${id}" role="group" aria-label="${label}">${options.map(([value, text]) => `<button type="button" data-value="${value}" aria-pressed="${value === selected}">${text}</button>`).join("")}</div></div>`;

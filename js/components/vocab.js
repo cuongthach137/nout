@@ -8,29 +8,21 @@
   // the lesson's narration bundle. Progress is saved per browser, like course progress.
 
   const { retrigger, burst } = DSL.LabKit;
-  const KEY = "dsl-vocab";
+  const KEY = "vocab";
   const DAY = 864e5;
   const MINUTE = 6e4;
   const NEW_PER_SESSION = 20;
   const RATINGS = [["again", "Again"], ["hard", "Hard"], ["good", "Good"], ["easy", "Easy"]];
 
   function read() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(KEY) || "{}");
-      return saved && typeof saved === "object" ? saved : {};
-    } catch (error) {
-      return {};
-    }
+    const saved = DSL.store.get(KEY, {});
+    return saved && typeof saved === "object" ? saved : {};
   }
 
   let cards = read();
 
   function save() {
-    try {
-      localStorage.setItem(KEY, JSON.stringify(cards));
-    } catch (error) {
-      // Flashcards still work for this visit.
-    }
+    DSL.store.set(KEY, cards);
     // Lets open views (the narrator's Keywords counter) follow along.
     window.dispatchEvent(new CustomEvent("dsl-vocab"));
   }
