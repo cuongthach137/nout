@@ -32,9 +32,9 @@ window.ROADMAP = {
     ] },
     { id: "health", name: "Code health", short: "Health", items: [
       { id: "h-store", title: "Centralize saved data and shared helpers", detail: "DSL.store with Back up / Restore, DSL.modules(), shared setStatus, narrator story/quizChapter/throttled.", status: "done", note: "PR #15. All 32 lessons render identical text; old saved progress carries over." },
-      { id: "h-roadmap", title: "Roadmap lives in the repo", detail: "docs/roadmap/data.js is the source of truth; docs/roadmap/index.html renders it live.", status: "progress", note: "PR #16 (snapshot), PR #17 (live page)." },
+      { id: "h-roadmap", title: "Roadmap lives in the repo", detail: "docs/roadmap/data.js is the source of truth; docs/roadmap/index.html renders it live.", status: "done", note: "PR #16 (snapshot), PR #17 (live page)." },
       { id: "h-verify", title: "Re-verify flows after the refactor", detail: "Course map, keywords and flashcards, lesson 02 quizzes in all three modes.", status: "done", note: "Headless Chrome playthrough, 57 checks pass." },
-      { id: "h-docs", title: "How to add a lesson", detail: "docs/adding-a-lesson.md: registering, the three modes, narration, checks.", status: "progress" },
+      { id: "h-docs", title: "How to add a lesson", detail: "docs/adding-a-lesson.md: registering, the three modes, narration, checks.", status: "done", note: "PR #18. Lessons are designed Narrated first, then Guided, then Explore." },
       { id: "h-tests", title: "Tests and CI", detail: "Commit the playthroughs; include a check that audio matches the narration scripts." },
       { id: "h-modules", title: "ES modules and one folder per lesson", detail: "Replace ordered script tags and window globals." },
       { id: "h-stamp", title: "Stamp ?v= automatically", detail: "A script that bumps cache-busting versions on changed files." },
