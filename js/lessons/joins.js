@@ -75,9 +75,22 @@
       },
     ],
     checks: [
-      { id: "items-products", goal: "match", prompt: "<code>order_items</code> has 22 rows, <code>products</code> has 8, and Rye loaf has never sold. An inner join on <code>product_id</code> returns how many rows?", options: ["8", "22", "176"], answer: 1, why: "Each item points at exactly one product, so all 22 match. Rye loaf has no items, so it drops out without costing a row." },
-      { id: "unsold-bug", goal: "keep", prompt: "\"Every product, with its order lines, including unsold ones\": <code>products p LEFT JOIN order_items i ON i.product_id = p.id WHERE i.quantity &gt; 0</code>. What's wrong?", options: ["Nothing: it's correct", "Rye loaf disappears: WHERE throws away its NULL-padded row", "It fails: you can't compare NULL"], answer: 1, why: "WHERE runs after the join, and a NULL quantity isn't greater than 0, so the left join turns back into an inner join. Put the test in ON." },
-      { id: "maya-rows", goal: "multiply", prompt: "Maya has 4 orders, with 2, 2, 1 and 2 items. <code>customers JOIN orders JOIN order_items</code>: how many rows for Maya?", options: ["1", "4", "7"], answer: 2, why: "Every join repeats the rows before it once per match: 1 customer becomes 4 orders, and those become 2 + 2 + 1 + 2 = 7 rows." },
+      { id: "items-products", goal: "match", prompt: "<code>order_items</code> has 22 rows, <code>products</code> has 8, and Rye loaf has never sold. An inner join on <code>product_id</code> returns how many rows?", options: ["8", "22", "176"], answer: 1, why: "Each item points at exactly one product, so all 22 match. Rye loaf has no items, so it drops out without costing a row.",
+        visual: { sql: "SELECT COUNT(*) FROM order_items i\nJOIN products p ON p.id = i.product_id", note: "All 22 lines match; Rye loaf costs no rows." },
+      },
+      { id: "unsold-bug", goal: "keep", prompt: "\"Every product, with its order lines, including unsold ones\": <code>products p LEFT JOIN order_items i ON i.product_id = p.id WHERE i.quantity &gt; 0</code>. What's wrong?", options: ["Nothing: it's correct", "Rye loaf disappears: WHERE throws away its NULL-padded row", "It fails: you can't compare NULL"], answer: 1, why: "WHERE runs after the join, and a NULL quantity isn't greater than 0, so the left join turns back into an inner join. Put the test in ON.",
+        visual: {
+          sql: "SELECT DISTINCT p.name FROM products p\nLEFT JOIN order_items i ON i.product_id = p.id\nWHERE i.quantity > 0\nORDER BY p.name",
+          show: 8,
+          note: "Seven products: Rye loaf is gone.",
+        },
+      },
+      { id: "maya-rows", goal: "multiply", prompt: "Maya has 4 orders, with 2, 2, 1 and 2 items. <code>customers JOIN orders JOIN order_items</code>: how many rows for Maya?", options: ["1", "4", "7"], answer: 2, why: "Every join repeats the rows before it once per match: 1 customer becomes 4 orders, and those become 2 + 2 + 1 + 2 = 7 rows.",
+        visual: {
+          sql: "SELECT o.id AS order_id, i.product_id FROM customers c\nJOIN orders o ON o.customer_id = c.id\nJOIN order_items i ON i.order_id = o.id\nWHERE c.id = 1 ORDER BY o.id",
+          note: "7 rows: one per item.",
+        },
+      },
     ],
     warmups: [
       { id: "never-ordered", goal: "keep", prompt: "How would you find customers who have never placed an order?", options: ["<code>customers c JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL</code>", "<code>customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id IS NULL</code>", "<code>customers c LEFT JOIN orders o ON o.customer_id = c.id WHERE o.id = NULL</code>"], answer: 1, why: "A left join keeps every customer; those with no order have NULL on the order side. <code>= NULL</code> is never true, and an inner join has no NULL rows to find. <code>NOT EXISTS</code> works too." },

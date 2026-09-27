@@ -73,9 +73,31 @@
       },
     ],
     checks: [
-      { id: "old-price", goal: "document", prompt: "Each order document embeds the price of every item. The bakery raises the croissant's price. What should happen to the old order documents?", options: ["Update every one with the new price", "Leave them: the embedded price is what the customer paid at the time", "Delete them and rebuild from the products table"], answer: 1, why: "Not every copy is a bug. An order should freeze the price it was sold at. Embed facts that should freeze; point at facts that must stay current, like a phone number." },
-      { id: "phone-list", goal: "schema", prompt: "A new app version stores <code>customer.phone</code> as a list of numbers; older documents hold a single string. With schema on read, who deals with the difference?", options: ["The database rejects the new documents", "Every piece of code that reads phones must handle both shapes", "The old documents are converted automatically"], answer: 1, why: "Schema on read moves the check from the write to every reader. Nothing converts old documents unless you run a migration yourself." },
-      { id: "hops", goal: "graph", prompt: "Why does a plain JOIN struggle to find everyone Maya brought in, at any depth?", options: ["A JOIN can't use the same table twice", "Each JOIN follows exactly one hop, and the number of hops isn't known in advance", "Referrals need a foreign key first"], answer: 1, why: "Two hops is two joins; three hops, three. A recursive CTE, or a graph query, repeats the hop until no new people appear." },
+      { id: "old-price", goal: "document", prompt: "Each order document embeds the price of every item. The bakery raises the croissant's price. What should happen to the old order documents?", options: ["Update every one with the new price", "Leave them: the embedded price is what the customer paid at the time", "Delete them and rebuild from the products table"], answer: 1, why: "Not every copy is a bug. An order should freeze the price it was sold at. Embed facts that should freeze; point at facts that must stay current, like a phone number.",
+        visual: {
+          before: [
+            { label: "Order #1, as a document", columns: ["item", "price"], rows: [["Croissant", "3.20"], ["Sourdough loaf", "6.50"]] },
+            { label: "products, today", columns: ["name", "price"], rows: [["Croissant", "3.50"]] },
+          ],
+          mark: (row, phase) => (phase === "after" && row[0] === "Croissant" ? (row[1] === "3.20" ? "good" : "hot") : ""),
+          note: "The order keeps the price it was sold at.",
+        },
+      },
+      { id: "phone-list", goal: "schema", prompt: "A new app version stores <code>customer.phone</code> as a list of numbers; older documents hold a single string. With schema on read, who deals with the difference?", options: ["The database rejects the new documents", "Every piece of code that reads phones must handle both shapes", "The old documents are converted automatically"], answer: 1, why: "Schema on read moves the check from the write to every reader. Nothing converts old documents unless you run a migration yourself.",
+        visual: {
+          before: { label: "order_docs", columns: ["id", "customer.phone"], rows: [[1, "\"555-0101\""], [17, "[\"555-0101\", \"555-0199\"]"]] },
+          mark: (row, phase) => (phase === "after" ? "hot" : ""),
+          note: "Every reader must handle both shapes.",
+        },
+      },
+      { id: "hops", goal: "graph", prompt: "Why does a plain JOIN struggle to find everyone Maya brought in, at any depth?", options: ["A JOIN can't use the same table twice", "Each JOIN follows exactly one hop, and the number of hops isn't known in advance", "Referrals need a foreign key first"], answer: 1, why: "Two hops is two joins; three hops, three. A recursive CTE, or a graph query, repeats the hop until no new people appear.",
+        visual: {
+          dataset: "bakeryModels",
+          before: { label: "referrals", columns: ["referrer", "referred"], rows: [["Maya", "Ana"], ["Maya", "Omar"], ["Ana", "Ines"], ["Omar", "Yuki"], ["Yuki", "Priya"]] },
+          after: "WITH RECURSIVE net(id, hops) AS (\n  SELECT referred_id, 1 FROM referrals WHERE referrer_id = 1\n  UNION\n  SELECT r.referred_id, net.hops + 1 FROM referrals r\n  JOIN net ON r.referrer_id = net.id\n)\nSELECT c.name, hops FROM net\nJOIN customers c ON c.id = net.id ORDER BY hops, c.name",
+          note: "Three hops deep; one JOIN per hop wouldn't know when to stop.",
+        },
+      },
     ],
     warmups: [
       { id: "when-docs", goal: "document", prompt: "When would you choose a document database over a relational one?", options: ["When data is read as one self-contained tree, like an order or a profile, and rarely joined to much else", "Whenever the data is large", "When the data has many-to-many relationships"], answer: 0, why: "Documents win on locality for tree-shaped reads. Many-to-many data and reports that cut across records suit tables better." },

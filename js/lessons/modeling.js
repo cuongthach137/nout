@@ -119,9 +119,31 @@
       },
     ],
     checks: [
-      { id: "gym", goal: "copies", prompt: "A gym writes each member's email on every class booking. A member cancels their only booking, and the row is deleted. What else is gone?", options: ["Nothing: it was just a booking", "The member's email: it only lived on that row", "The class itself"], answer: 1, why: "The email was a fact about the member, stored on a booking. Delete the booking and the fact goes with it: a deletion anomaly." },
-      { id: "wrong-column", goal: "lists", prompt: "An orders list has <code>order_id, customer_id, customer_city, ordered_at</code>. Which column breaks \"one fact, one place\"?", options: ["customer_id", "customer_city", "ordered_at"], answer: 1, why: "A city is about the customer, not the order. It belongs on the Customers list; customer_id already points there." },
-      { id: "summary", goal: "owner", prompt: "A product page joins five lists and is slow. The team copies the result into a <code>product_summary</code> table. What else does the plan need?", options: ["Nothing: copies are always faster", "Something responsible for refreshing the copy when the lists change", "A second copy, as a backup"], answer: 1, why: "A copy with no owner drifts from the source. A job or trigger that refreshes it bounds how stale it can get. And first, check the joins have indexes." },
+      { id: "gym", goal: "copies", prompt: "A gym writes each member's email on every class booking. A member cancels their only booking, and the row is deleted. What else is gone?", options: ["Nothing: it was just a booking", "The member's email: it only lived on that row", "The class itself"], answer: 1, why: "The email was a fact about the member, stored on a booking. Delete the booking and the fact goes with it: a deletion anomaly.",
+        visual: {
+          before: { label: "Bookings", columns: ["booking", "class", "member email"], rows: [[1, "Yoga", "ana@mail.com"], [2, "Spin", "ana@mail.com"], [3, "Yoga", "raj@mail.com"]] },
+          mark: (row, phase) => (row[2] !== "raj@mail.com" ? "" : phase === "after" ? "bad" : "hot"),
+          note: "raj@mail.com only lived on booking 3.",
+        },
+      },
+      { id: "wrong-column", goal: "lists", prompt: "An orders list has <code>order_id, customer_id, customer_city, ordered_at</code>. Which column breaks \"one fact, one place\"?", options: ["customer_id", "customer_city", "ordered_at"], answer: 1, why: "A city is about the customer, not the order. It belongs on the Customers list; customer_id already points there.",
+        visual: {
+          before: { label: "Orders: what each column describes", columns: ["column", "describes"], rows: [["order_id", "?"], ["customer_id", "?"], ["customer_city", "?"], ["ordered_at", "?"]] },
+          after: { label: "Orders: what each column describes", columns: ["column", "describes"], rows: [["order_id", "the order"], ["customer_id", "→ points at a customer"], ["customer_city", "the customer ✗"], ["ordered_at", "the order"]] },
+          mark: (row, phase) => (phase === "after" && row[0] === "customer_city" ? "bad" : ""),
+          note: "It belongs on the Customers list.",
+        },
+      },
+      { id: "summary", goal: "owner", prompt: "A product page joins five lists and is slow. The team copies the result into a <code>product_summary</code> table. What else does the plan need?", options: ["Nothing: copies are always faster", "Something responsible for refreshing the copy when the lists change", "A second copy, as a backup"], answer: 1, why: "A copy with no owner drifts from the source. A job or trigger that refreshes it bounds how stale it can get. And first, check the joins have indexes.",
+        visual: {
+          before: [
+            { label: "products (the source)", columns: ["product", "price"], rows: [["Croissant", "3.40"], ["Baguette", "2.80"]] },
+            { label: "product_summary (the copy)", columns: ["product", "price", "copied"], rows: [["Croissant", "3.20", "Monday"], ["Baguette", "2.80", "Monday"]] },
+          ],
+          mark: (row, phase) => (phase === "after" && row[1] === "3.20" ? "bad" : ""),
+          note: "With no owner refreshing it, the copy still says 3.20.",
+        },
+      },
     ],
     warmups: [
       { id: "normalization", goal: "lists", prompt: "What is normalization, and why do it?", options: ["Compressing tables to save disk space", "Storing each fact once, on the table of the thing it describes, so updates and deletes can't contradict or lose data", "Adding indexes so reads are faster"], answer: 1, why: "Normalization removes redundant copies, so one change is one edit, and deleting one thing never erases another." },

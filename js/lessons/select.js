@@ -46,9 +46,19 @@
       { id: "sort", icon: "🏁", title: "Sort, then cut", snippet: "ORDER BY price DESC LIMIT 3", example: { sql: "SELECT name, price FROM products ORDER BY price DESC LIMIT 3", note: "Sorted first, then cut. Runs FROM → WHERE → SELECT → ORDER BY → LIMIT.", mark: () => "good" }, text: "Sort and take the top N, and explain the order SQL runs its clauses in.", recap: "ORDER BY, then LIMIT: without a sort, \"top 3\" means any 3. SQL runs FROM, WHERE, SELECT, ORDER BY, LIMIT, which is why an alias works in ORDER BY but not in WHERE." },
     ],
     checks: [
-      { id: "distinct-pairs", goal: "shape", prompt: "<code>SELECT DISTINCT city, name FROM customers</code>. Ten customers, seven different cities. How many rows?", options: ["7", "10", "3"], answer: 1, why: "DISTINCT compares whole rows. Every (city, name) pair is different, because every name is, so all 10 stay." },
-      { id: "or-bug", goal: "filter", prompt: "\"Paid orders from Maya or Omar\": <code>WHERE status = 'paid' AND customer_id = 1 OR customer_id = 2</code>. What's wrong?", options: ["Nothing: it's correct", "It also returns Omar's unpaid orders", "It returns no rows"], answer: 1, why: "AND binds first: (paid AND Maya) OR (anything from Omar). Omar's pending order sneaks in. Write <code>status = 'paid' AND customer_id IN (1, 2)</code>." },
-      { id: "alias-order", goal: "sort", prompt: "<code>SELECT name, price * 1.1 AS new_price FROM products ORDER BY new_price DESC LIMIT 2</code> in PostgreSQL:", options: ["Works: the two priciest after the rise", "Fails: new_price doesn't exist yet", "Fails: LIMIT can't follow ORDER BY"], answer: 0, why: "ORDER BY runs after SELECT, so the alias exists there. It's WHERE, which runs before SELECT, that can't see it." },
+      { id: "distinct-pairs", goal: "shape", prompt: "<code>SELECT DISTINCT city, name FROM customers</code>. Ten customers, seven different cities. How many rows?", options: ["7", "10", "3"], answer: 1, why: "DISTINCT compares whole rows. Every (city, name) pair is different, because every name is, so all 10 stay.",
+        visual: { sql: "SELECT DISTINCT city, name FROM customers ORDER BY city, name", show: 5, note: "All 10 rows: every (city, name) pair is different." },
+      },
+      { id: "or-bug", goal: "filter", prompt: "\"Paid orders from Maya or Omar\": <code>WHERE status = 'paid' AND customer_id = 1 OR customer_id = 2</code>. What's wrong?", options: ["Nothing: it's correct", "It also returns Omar's unpaid orders", "It returns no rows"], answer: 1, why: "AND binds first: (paid AND Maya) OR (anything from Omar). Omar's pending order sneaks in. Write <code>status = 'paid' AND customer_id IN (1, 2)</code>.",
+        visual: {
+          sql: "SELECT id, customer_id, status FROM orders\nWHERE status = 'paid' AND customer_id = 1\n   OR customer_id = 2\nORDER BY id",
+          mark: (row, phase) => (phase === "after" && row[2] !== "paid" ? "bad" : ""),
+          note: "Omar's pending order #12 sneaks in.",
+        },
+      },
+      { id: "alias-order", goal: "sort", prompt: "<code>SELECT name, price * 1.1 AS new_price FROM products ORDER BY new_price DESC LIMIT 2</code> in PostgreSQL:", options: ["Works: the two priciest after the rise", "Fails: new_price doesn't exist yet", "Fails: LIMIT can't follow ORDER BY"], answer: 0, why: "ORDER BY runs after SELECT, so the alias exists there. It's WHERE, which runs before SELECT, that can't see it.",
+        visual: { sql: "SELECT name, price * 1.1 AS new_price FROM products\nORDER BY new_price DESC LIMIT 2", note: "ORDER BY runs after SELECT, so it sees the alias." },
+      },
     ],
     warmups: [
       { id: "select-star", goal: "shape", prompt: "Why is <code>SELECT *</code> discouraged in production code?", options: ["It's slower for the database to parse", "It fetches columns you don't need, and the result changes when the table does", "It isn't standard SQL"], answer: 1, why: "Extra columns cost I/O and network, can't be served by a covering index, and a new column silently changes what the application receives." },

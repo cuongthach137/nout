@@ -74,9 +74,23 @@
       },
     ],
     checks: [
-      { id: "cities", goal: "aggregate", prompt: "<code>SELECT COUNT(city), COUNT(DISTINCT city) FROM customers</code>. Raj has no city; three customers live in Lisbon, two in Osaka, and one each in Oslo, Accra, Lyon and Pune. What comes back?", options: ["10 and 7", "9 and 6", "9 and 7"], answer: 1, why: "COUNT(city) skips Raj's NULL, so 9. DISTINCT counts each city once: 6. A NULL is never counted, not even as a value of its own." },
-      { id: "bare-name", goal: "grain", prompt: "<code>SELECT category, name, SUM(price) FROM products GROUP BY category</code>. What's wrong?", options: ["Nothing: one row per category", "<code>name</code> is a bare column: PostgreSQL rejects it, SQLite picks some product's name", "SUM can't be used with GROUP BY"], answer: 1, why: "Each category holds several products, so there's no single name for its row. Group by it too, or aggregate it, like MIN(name)." },
-      { id: "paid-best", goal: "having", prompt: "Products with at least 5 units sold, counting only <b>paid</b> orders. Where does each condition go?", options: ["<code>WHERE o.status = 'paid'</code>, then <code>HAVING SUM(i.quantity) &gt;= 5</code>", "<code>WHERE SUM(i.quantity) &gt;= 5</code>, then <code>HAVING o.status = 'paid'</code>", "Both in <code>HAVING</code>"], answer: 0, why: "The status is a fact about one row, so WHERE drops unpaid rows before grouping. The sum only exists per group, so it goes in HAVING." },
+      { id: "cities", goal: "aggregate", prompt: "<code>SELECT COUNT(city), COUNT(DISTINCT city) FROM customers</code>. Raj has no city; three customers live in Lisbon, two in Osaka, and one each in Oslo, Accra, Lyon and Pune. What comes back?", options: ["10 and 7", "9 and 6", "9 and 7"], answer: 1, why: "COUNT(city) skips Raj's NULL, so 9. DISTINCT counts each city once: 6. A NULL is never counted, not even as a value of its own.",
+        visual: { sql: "SELECT COUNT(city), COUNT(DISTINCT city)\nFROM customers", note: "Raj's NULL is skipped by both." },
+      },
+      { id: "bare-name", goal: "grain", prompt: "<code>SELECT category, name, SUM(price) FROM products GROUP BY category</code>. What's wrong?", options: ["Nothing: one row per category", "<code>name</code> is a bare column: PostgreSQL rejects it, SQLite picks some product's name", "SUM can't be used with GROUP BY"], answer: 1, why: "Each category holds several products, so there's no single name for its row. Group by it too, or aggregate it, like MIN(name).",
+        visual: {
+          sql: "SELECT category, name, SUM(price)\nFROM products GROUP BY category\nORDER BY category",
+          mark: (row, phase) => (phase === "after" ? "hot" : ""),
+          note: "SQLite picked some name per category. PostgreSQL refuses.",
+        },
+      },
+      { id: "paid-best", goal: "having", prompt: "Products with at least 5 units sold, counting only <b>paid</b> orders. Where does each condition go?", options: ["<code>WHERE o.status = 'paid'</code>, then <code>HAVING SUM(i.quantity) &gt;= 5</code>", "<code>WHERE SUM(i.quantity) &gt;= 5</code>, then <code>HAVING o.status = 'paid'</code>", "Both in <code>HAVING</code>"], answer: 0, why: "The status is a fact about one row, so WHERE drops unpaid rows before grouping. The sum only exists per group, so it goes in HAVING.",
+        visual: {
+          before: { label: "Two conditions", columns: ["condition", "goes in"], rows: [["o.status = 'paid'", "?"], ["SUM(i.quantity) >= 5", "?"]] },
+          after: "SELECT p.name, SUM(i.quantity) FROM order_items i\nJOIN orders o ON o.id = i.order_id\nJOIN products p ON p.id = i.product_id\nWHERE o.status = 'paid'\nGROUP BY p.name HAVING SUM(i.quantity) >= 5\nORDER BY 2 DESC",
+          note: "Row fact in WHERE; group fact in HAVING.",
+        },
+      },
     ],
     warmups: [
       { id: "where-having", goal: "having", prompt: "What's the difference between WHERE and HAVING?", options: ["WHERE filters rows before grouping; HAVING filters groups after aggregation", "HAVING is a faster WHERE", "WHERE works on aggregates; HAVING works on columns"], answer: 0, why: "WHERE runs before GROUP BY, on single rows, so it can't see a count. HAVING runs after, on whole groups. Put each condition as early as it can go." },

@@ -79,9 +79,37 @@
       },
     ],
     checks: [
-      { id: "unique-inserts", goal: "identify", prompt: "<code>phone</code> has a UNIQUE constraint. Three new customers arrive with the phones 555-0101 (Maya's), NULL and NULL. Which inserts succeed?", options: ["Only the first NULL", "Both NULLs; the copy of Maya's number is refused", "All three"], answer: 1, why: "UNIQUE compares values, and NULL isn't equal to anything, not even another NULL. So both empty phones go in, and only the real duplicate clashes." },
-      { id: "set-null", goal: "point", prompt: "<code>orders.customer_id REFERENCES customers (id) ON DELETE SET NULL</code>. You delete Maya. What happens to her 4 orders?", options: ["They're deleted with her", "They stay, with no customer, like the walk-in orders", "The delete is refused"], answer: 1, why: "SET NULL keeps the child rows and empties their pointer. CASCADE would delete them; with no ON DELETE clause, the delete is refused." },
-      { id: "loyalty", goal: "shape", prompt: "Each customer has at most one loyalty card, and each card belongs to one customer. Where does the key go?", options: ["<code>loyalty_cards.customer_id</code> references customers, and is UNIQUE", "A junction table between customers and cards", "A list of card IDs on customers"], answer: 0, why: "One-to-one is one-to-many with the many side capped at one: the same foreign key, made UNIQUE." },
+      { id: "unique-inserts", goal: "identify", prompt: "<code>phone</code> has a UNIQUE constraint. Three new customers arrive with the phones 555-0101 (Maya's), NULL and NULL. Which inserts succeed?", options: ["Only the first NULL", "Both NULLs; the copy of Maya's number is refused", "All three"], answer: 1, why: "UNIQUE compares values, and NULL isn't equal to anything, not even another NULL. So both empty phones go in, and only the real duplicate clashes.",
+        visual: {
+          dataset: "bakeryStrict",
+          before: { label: "Three new customers", columns: ["id", "name", "phone"], rows: [[98, "Copy", "555-0101"], [99, "Dee", null], [100, "Eli", null]] },
+          after: "CREATE UNIQUE INDEX u ON customers (phone);\nINSERT OR IGNORE INTO customers VALUES\n  (98, 'Copy', NULL, '555-0101', '2024-10-01'),\n  (99, 'Dee', NULL, NULL, '2024-10-01'),\n  (100, 'Eli', NULL, NULL, '2024-10-01');\nSELECT id, name, phone FROM customers WHERE id >= 98",
+          mark: (row, phase) => (phase === "after" ? "good" : ""),
+          note: "Copy was refused; both NULLs went in.",
+        },
+      },
+      { id: "set-null", goal: "point", prompt: "<code>orders.customer_id REFERENCES customers (id) ON DELETE SET NULL</code>. You delete Maya. What happens to her 4 orders?", options: ["They're deleted with her", "They stay, with no customer, like the walk-in orders", "The delete is refused"], answer: 1, why: "SET NULL keeps the child rows and empties their pointer. CASCADE would delete them; with no ON DELETE clause, the delete is refused.",
+        visual: {
+          before: { label: "Maya's orders", columns: ["order", "customer_id"], rows: [[1, 1], [3, 1], [8, 1], [16, 1]] },
+          after: { label: "After DELETE Maya, with SET NULL", columns: ["order", "customer_id"], rows: [[1, null], [3, null], [8, null], [16, null]] },
+          mark: (row, phase) => (phase === "after" ? "hot" : ""),
+          note: "The orders stay, pointing at no one.",
+        },
+      },
+      { id: "loyalty", goal: "shape", prompt: "Each customer has at most one loyalty card, and each card belongs to one customer. Where does the key go?", options: ["<code>loyalty_cards.customer_id</code> references customers, and is UNIQUE", "A junction table between customers and cards", "A list of card IDs on customers"], answer: 0, why: "One-to-one is one-to-many with the many side capped at one: the same foreign key, made UNIQUE.",
+        visual: {
+          before: [
+            { label: "customers", columns: ["id", "name"], rows: [[1, "Maya"], [3, "Ana"]] },
+            { label: "loyalty_cards", columns: ["card", "?"], rows: [["L1", "?"], ["L2", "?"]] },
+          ],
+          after: [
+            { label: "customers", columns: ["id", "name"], rows: [[1, "Maya"], [3, "Ana"]] },
+            { label: "loyalty_cards", columns: ["card", "customer_id (FK, UNIQUE)"], rows: [["L1", 1], ["L2", 3]] },
+          ],
+          mark: (row, phase) => (phase === "after" && typeof row[0] === "string" ? "good" : ""),
+          note: "One-to-many, capped at one.",
+        },
+      },
     ],
     warmups: [
       { id: "what-fk", goal: "point", prompt: "What's a foreign key, and what does it protect you from?", options: ["A column whose values must match a row in another table; it stops orphans, pointers to rows that don't exist", "An index that makes joins faster", "A second primary key for the table"], answer: 0, why: "It's a rule, not an index: PostgreSQL won't index it for you. Add an index too, or every join and parent delete scans the child table." },
