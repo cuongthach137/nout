@@ -303,6 +303,7 @@
   function makeBeats() {
     const M = DSL.GroupModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-agg", "Many rows, one value.", aggStory(), "With no GROUP BY, an aggregate query always returns exactly one row, even when no rows match: COUNT gives 0, the others give NULL."),
       countPredict(),
       teach("teach-count", "COUNT(*) vs COUNT(column).", countStory()),
@@ -314,9 +315,13 @@
       teach("teach-having-order", "WHERE, then HAVING.", slice(havingStory(), 3, 5), "Put a condition in WHERE whenever it doesn't need an aggregate: fewer rows to group means less work."),
       bestChallenge(),
       teach("teach-fanout", "Counting after a join.", fanoutStory(), "The other fix is to aggregate before joining: count orders per customer in a subquery, then join that."),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "group",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🧮", "Aggregate", "many rows, one value"], ["🗂️", "Group", "one row per group"], ["🚦", "HAVING", "filter the groups"]],
       }),
     ];

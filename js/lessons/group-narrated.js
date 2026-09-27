@@ -22,6 +22,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "agg",
         title: "Many rows, one value",
@@ -109,7 +110,9 @@
           await n.say("fanout.5");
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("group"),
       {
         id: "finish",
@@ -117,6 +120,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "group",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🧮", "Aggregate", "many rows, one value"], ["🗂️", "Group", "one row per group"], ["🚦", "HAVING", "filter the groups"]],
           }));
           await n.say("finish.1");

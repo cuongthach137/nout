@@ -9,7 +9,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "group",
-    labs: [{ id: "aggregate", name: `${DSL.labLabel("group", "A")} Aggregate` }, { id: "groups", name: `${DSL.labLabel("group", "B")} Group` }, { id: "having", name: `${DSL.labLabel("group", "C")} Filter groups` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "aggregate", name: `${DSL.labLabel("group", "A")} Aggregate` }, { id: "groups", name: `${DSL.labLabel("group", "B")} Group` }, { id: "having", name: `${DSL.labLabel("group", "C")} Filter groups` }, { id: "quiz", name: "Practice" }],
   });
 
   const CHALLENGES = {
@@ -33,16 +33,71 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "A table has 10 rows, and 3 of them have a NULL phone. What do <code>COUNT(*)</code> and <code>COUNT(phone)</code> return?", options: ["10 and 10", "10 and 7", "7 and 10"], answer: 1, why: "COUNT(*) counts rows. COUNT of a column skips NULLs." },
-    { prompt: "You need customers with more than 5 orders. Where does the condition go?", options: ["WHERE COUNT(*) > 5", "HAVING COUNT(*) > 5", "ORDER BY COUNT(*) > 5"], answer: 1, why: "The count only exists after grouping, so it's a HAVING condition. WHERE runs before any group exists." },
-    { prompt: "<code>SELECT customer_id, ordered_at, COUNT(*) FROM orders GROUP BY customer_id</code>. What does PostgreSQL do?", options: ["Uses the first date in each group", "Rejects the query", "Returns one row per order"], answer: 1, why: "ordered_at is a bare column: neither grouped nor aggregated. PostgreSQL rejects it. Wrap it, like MAX(ordered_at)." },
-    { prompt: "Orders per customer looks too high after joining <code>order_items</code>. The fix?", options: ["COUNT(DISTINCT o.id)", "Add an ORDER BY", "Switch to a LEFT JOIN"], answer: 0, why: "The join repeats each order once per item. Count distinct order IDs, or count before joining." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "What's <code>AVG(x)</code> over the values 2, 4 and NULL?", options: ["2", "3", "NULL"], answer: 1, why: "Aggregates skip NULLs, so it's (2 + 4) / 2. If NULL should count as 0, say so: AVG(COALESCE(x, 0))." },
-    { prompt: "<code>SELECT COUNT(*) FROM orders WHERE 1 = 0</code> returns…", options: ["No rows", "One row: 0", "One row: NULL"], answer: 1, why: "An aggregate with no GROUP BY always returns exactly one row. Add GROUP BY, and no input rows means no groups, so no rows." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "group",
+    goals: [
+      {
+        id: "aggregate", icon: "🧮", title: "Squeeze rows", snippet: "COUNT(*) → 10, COUNT(phone) → 7",
+        text: "Turn many rows into one value with COUNT, SUM, AVG, MIN and MAX, and know which NULLs they skip.",
+        recap: "An <b>aggregate</b> squeezes many rows into one value. <code>COUNT(*)</code> counts rows; <code>COUNT(phone)</code> skips the three missing phones: 10 versus 7.",
+        example: {
+          before: "SELECT name, phone FROM customers ORDER BY id",
+          sql: "SELECT COUNT(*), COUNT(phone) FROM customers",
+          show: 6,
+          mark: (row, phase) => (phase === "before" && row[1] === null ? "bad" : ""),
+          note: "COUNT(phone) skips Omar, Kofi and Ines.",
+        },
+      },
+      {
+        id: "grain", icon: "🗂️", title: "Set the grain", snippet: "GROUP BY status\n→ one row per status",
+        text: "Group rows with GROUP BY, say what one result row stands for, and keep every selected column grouped or aggregated.",
+        recap: "<b>GROUP BY</b> turns each pile of rows into one row: that's the result's <b>grain</b>. Every other column needs an aggregate, like <code>MAX(ordered_at)</code>, never a bare column.",
+        example: {
+          before: "SELECT id, status FROM orders ORDER BY status, id",
+          sql: "SELECT status, COUNT(*) FROM orders GROUP BY status ORDER BY status",
+          show: 6,
+          note: "16 orders, 3 piles, 3 rows.",
+        },
+      },
+      {
+        id: "having", icon: "🚦", title: "Filter at the right moment", snippet: "WHERE o.status = 'paid'\nGROUP BY c.name\nHAVING COUNT(*) >= 2",
+        text: "Filter rows with WHERE and groups with HAVING, and count correctly after a join.",
+        recap: "WHERE drops rows before grouping; <b>HAVING</b> drops groups after they're counted. After a one-to-many join, count <code>DISTINCT o.id</code>, or Maya's 4 orders look like 7.",
+        example: {
+          before: "SELECT c.name, COUNT(*) FROM orders o JOIN customers c ON c.id = o.customer_id GROUP BY c.name HAVING COUNT(*) >= 2 ORDER BY c.name",
+          sql: "SELECT c.name, COUNT(*) FROM orders o JOIN customers c ON c.id = o.customer_id WHERE o.status = 'paid' GROUP BY c.name HAVING COUNT(*) >= 2 ORDER BY c.name",
+          mark: (row, phase) => (phase === "before" && row[0] === "Omar" ? "bad" : ""),
+          note: "Count only paid orders, and Omar's pending one drops him.",
+        },
+      },
+    ],
+    checks: [
+      { id: "cities", goal: "aggregate", prompt: "<code>SELECT COUNT(city), COUNT(DISTINCT city) FROM customers</code>. Raj has no city; three customers live in Lisbon, two in Osaka, and one each in Oslo, Accra, Lyon and Pune. What comes back?", options: ["10 and 7", "9 and 6", "9 and 7"], answer: 1, why: "COUNT(city) skips Raj's NULL, so 9. DISTINCT counts each city once: 6. A NULL is never counted, not even as a value of its own." },
+      { id: "bare-name", goal: "grain", prompt: "<code>SELECT category, name, SUM(price) FROM products GROUP BY category</code>. What's wrong?", options: ["Nothing: one row per category", "<code>name</code> is a bare column: PostgreSQL rejects it, SQLite picks some product's name", "SUM can't be used with GROUP BY"], answer: 1, why: "Each category holds several products, so there's no single name for its row. Group by it too, or aggregate it, like MIN(name)." },
+      { id: "paid-best", goal: "having", prompt: "Products with at least 5 units sold, counting only <b>paid</b> orders. Where does each condition go?", options: ["<code>WHERE o.status = 'paid'</code>, then <code>HAVING SUM(i.quantity) &gt;= 5</code>", "<code>WHERE SUM(i.quantity) &gt;= 5</code>, then <code>HAVING o.status = 'paid'</code>", "Both in <code>HAVING</code>"], answer: 0, why: "The status is a fact about one row, so WHERE drops unpaid rows before grouping. The sum only exists per group, so it goes in HAVING." },
+    ],
+    warmups: [
+      { id: "where-having", goal: "having", prompt: "What's the difference between WHERE and HAVING?", options: ["WHERE filters rows before grouping; HAVING filters groups after aggregation", "HAVING is a faster WHERE", "WHERE works on aggregates; HAVING works on columns"], answer: 0, why: "WHERE runs before GROUP BY, on single rows, so it can't see a count. HAVING runs after, on whole groups. Put each condition as early as it can go." },
+      { id: "count-star", goal: "aggregate", prompt: "When do <code>COUNT(*)</code> and <code>COUNT(column)</code> give different answers?", options: ["Never: they're the same", "When the column has NULLs: COUNT(column) skips them", "When the column has duplicates"], answer: 1, why: "COUNT(*) counts rows. COUNT(column) counts non-NULL values. Duplicates only matter for COUNT(DISTINCT column)." },
+    ],
+    open: {
+      id: "spend-report",
+      goal: "grain",
+      prompt: "Write a query for each customer's number of orders and total spend. Then tell me what could make those numbers wrong.",
+      points: [
+        "Join customers, orders, order_items and products, and <b>GROUP BY</b> the customer (its ID, plus the name).",
+        "Say the grain: one row per customer.",
+        "After joining the items there's one row per item, so orders need <code>COUNT(DISTINCT o.id)</code>, not <code>COUNT(*)</code>.",
+        "Spend is <code>SUM(i.quantity * p.price)</code>, summed at the item grain, where the value lives.",
+        "Inner joins drop customers with no orders; a LEFT JOIN with <code>COALESCE(…, 0)</code> keeps them.",
+        "Filter statuses (paid only?) in WHERE; filter on the totals in HAVING.",
+      ],
+      answer: "I'd join customers to orders, order_items and products, and group by the customer's ID and name, so the grain is one row per customer. After the item join there's one row per order line, so the order count has to be COUNT(DISTINCT o.id); COUNT(*) would count lines. Spend is SUM(quantity * price), which is correct at the item grain. Two more things can go wrong: an inner join silently drops customers who never ordered, so if they should show as zero I'd use a LEFT JOIN and COALESCE; and refunded or pending orders should be filtered out in WHERE, before grouping, while a condition on the totals would go in HAVING.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const ORDER = [["FROM / JOIN", "build the rows"], ["WHERE", "drop rows"], ["GROUP BY", "form groups"], ["HAVING", "drop groups"], ["SELECT", "compute columns, aggregates"], ["DISTINCT", "drop repeated rows"], ["ORDER BY", "sort"], ["LIMIT", "cut"]];
 
@@ -59,6 +114,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "From rows to numbers: <em>GROUP BY</em> and HAVING.", "How many, how much, and who: every reporting question in an interview is an aggregate over groups. Know what one row of your result stands for, and filter at the right moment.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>An aggregate turns many rows into one value. <b>GROUP BY</b> decides how many rows you get back: one per group. That's the result's <b>grain</b>, and most reporting bugs are a grain nobody checked.</p></div>
@@ -86,10 +142,7 @@
           <ol class="sel-order">${ORDER.map(([clause, what], i) => `<li style="--i:${i}"><b>${clause}</b><span>${what}</span></li>`).join("")}</ol>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about aggregates</h2><p class="lab-copy">Counting, grouping, and filtering at the right moment.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="group-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "GROUP BY review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> before any aggregate, say the grain out loud: "one row per ___". Then check that every join and filter keeps it.</p></div>
         ${DSL.lessonFooter("group")}
@@ -102,15 +155,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("group-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "GROUP BY review passed",
-      successCopy: "You can count, group, and filter groups, and say what each row means.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.GroupModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.GroupModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("group", renderGroup);
 })(window.DataSystemsLab);

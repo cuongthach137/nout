@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("group", {
   "hook.1": "So far, every query returned rows. Now the bakery wants numbers.",
   "hook.2": "How many orders came in? What sells best? Who are the regulars?",
   "hook.3": "Each answer squeezes many rows into a few. That's what this lesson is about.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Turn many rows into one value with COUNT, SUM, AVG, MIN and MAX, and know which NULLs they skip.",
+  "goals.2": "Two. Group rows with GROUP BY, say what one result row stands for, and keep every column grouped or aggregated.",
+  "goals.3": "Three. Filter rows with WHERE and groups with HAVING, and count correctly after a join.",
   "agg.1": "Here are all sixteen orders.",
   "agg.2": "COUNT star turns them into one row, with one number: sixteen.",
   "agg.3": "COUNT, SUM, AVG, MIN and MAX each turn many rows into one value. They're called <k id=\"aggregate\">aggregate functions</k>.",
@@ -63,41 +67,59 @@ window.DataSystemsLab.Narrator.register("group", {
   "fanout.3": "COUNT star counts rows, and fan-out made extra rows.",
   "fanout.4": "<k id=\"count-distinct\">COUNT DISTINCT</k> on the order ID counts each order once. Maya's back to four.",
   "fanout.5": "When a joined total looks too big, check the grain before you trust it.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "A table has 10 rows, and 3 of them have a NULL phone. What do <code>COUNT(*)</code> and <code>COUNT(phone)</code> return?",
-   "voice": "A table has ten rows, and three have a null phone. What do count star and count of phone return?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "An aggregate squeezes many rows into one value. COUNT star counts rows. COUNT of phone skips the three missing phones: ten versus seven.",
+  "recap.2": "GROUP BY turns each pile of rows into one row. That's the grain. Every other column needs an aggregate, never a bare column.",
+  "recap.3": "WHERE drops rows before grouping. HAVING drops groups after they're counted. Count only paid orders, and Omar is no longer a regular.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>COUNT(city)</code> and <code>COUNT(DISTINCT city)</code> on the customers. Raj has no city; the rest live in six different cities. What comes back?",
+   "voice": "Count of city, and count distinct city, on the customers. Raj has no city, and the rest live in six different cities. What comes back?"
+  },
+  "check.q1-why": "Nine and six. COUNT of city skips Raj's NULL. DISTINCT counts each city once, and NULL is never counted.",
+  "check.q2": {
+   "caption": "<code>SELECT category, name, SUM(price) FROM products GROUP BY category</code>. What's wrong?",
+   "voice": "Select the category, the name, and the sum of the prices from products, grouped by category. What's wrong?"
+  },
+  "check.q2-why": "Name is a bare column. Each category has several products, so there's no single name. Postgres rejects it; SQLite quietly picks one.",
+  "check.q3": "Products with at least five units sold, counting only paid orders. Where does each condition go?",
+  "check.q3-why": "The status is a fact about one row, so it goes in WHERE, before grouping. The sum only exists per group, so it goes in HAVING.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "What's the difference between WHERE and HAVING?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "COUNT star counts rows. COUNT of a column skips NULLs.",
-  "quiz.q2": {
-   "caption": "You need customers with more than 5 orders. Where does the condition go?",
+  "interview.w1-why": "WHERE runs before grouping, on single rows, so it can't see a count. HAVING runs after, on whole groups.",
+  "interview.w2": {
+   "caption": "When do <code>COUNT(*)</code> and <code>COUNT(column)</code> give different answers?",
+   "voice": "When do count star and count of a column give different answers?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "The count only exists after grouping, so it's a HAVING condition. WHERE runs before any group exists.",
-  "quiz.q3": {
-   "caption": "<code>SELECT customer_id, ordered_at, COUNT(*) FROM orders GROUP BY customer_id</code>. What does PostgreSQL do?",
-   "voice": "Select customer ID, the order date, and count star, from orders, grouped by customer ID. What does Postgres do?",
+  "interview.w2-why": "When the column has NULLs. COUNT star counts rows; COUNT of a column counts the values that aren't NULL.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Write a query for each customer's number of orders and total spend. Then tell me what could make those numbers wrong.",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "ordered_at is a bare column: neither grouped nor aggregated. Postgres rejects it. Wrap it, like MAX of ordered at.",
-  "quiz.q4": {
-   "caption": "Orders per customer looks too high after joining order_items. The fix?",
-   "voice": "Orders per customer looks too high after joining order items. What's the fix?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "The join repeats each order per item. Count distinct order IDs, or count before joining.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -205,6 +227,54 @@ window.DataSystemsLab.Narrator.register("group", {
    "hash": "b6207e054955",
    "ms": 4752
   },
+  "check.intro": {
+   "hash": "e2ce00ee353d",
+   "ms": 5796
+  },
+  "check.pass": {
+   "hash": "c8130accb1a3",
+   "ms": 2412
+  },
+  "check.q1": {
+   "hash": "0e68712d2a6e",
+   "ms": 9036
+  },
+  "check.q1-why": {
+   "hash": "0055bbf804a8",
+   "ms": 10044
+  },
+  "check.q2": {
+   "hash": "1b409cfa1a98",
+   "ms": 6948
+  },
+  "check.q2-why": {
+   "hash": "63123a72f248",
+   "ms": 9936
+  },
+  "check.q3": {
+   "hash": "c7cfde87746e",
+   "ms": 5796
+  },
+  "check.q3-why": {
+   "hash": "cfc229bb2c56",
+   "ms": 9216
+  },
+  "check.retry": {
+   "hash": "17e6ed537d47",
+   "ms": 5220
+  },
+  "check.right1": {
+   "hash": "5df4176b3959",
+   "ms": 864
+  },
+  "check.right2": {
+   "hash": "e99e52b00ddc",
+   "ms": 972
+  },
+  "check.right3": {
+   "hash": "bbb1d6dfd81d",
+   "ms": 864
+  },
   "city.1": {
    "hash": "a20a0717c20a",
    "ms": 3564
@@ -285,6 +355,22 @@ window.DataSystemsLab.Narrator.register("group", {
    "hash": "f30faff2d67c",
    "ms": 5760
   },
+  "goals.1": {
+   "hash": "c13cb91cc4da",
+   "ms": 8748
+  },
+  "goals.2": {
+   "hash": "8e77a4291ec4",
+   "ms": 7920
+  },
+  "goals.3": {
+   "hash": "00df4f82cb47",
+   "ms": 5796
+  },
+  "goals.intro": {
+   "hash": "7105eda85e67",
+   "ms": 2700
+  },
   "group.1": {
    "hash": "dea412bd7406",
    "ms": 4320
@@ -349,6 +435,66 @@ window.DataSystemsLab.Narrator.register("group", {
    "hash": "b7229b9938df",
    "ms": 5796
   },
+  "interview.got": {
+   "hash": "aabb8fade94b",
+   "ms": 2916
+  },
+  "interview.hint": {
+   "hash": "ec946fd698df",
+   "ms": 1476
+  },
+  "interview.intro": {
+   "hash": "a64cb106fc49",
+   "ms": 5580
+  },
+  "interview.missed": {
+   "hash": "cf7b5457ae7f",
+   "ms": 4824
+  },
+  "interview.open": {
+   "hash": "9ecd6208ea31",
+   "ms": 7092
+  },
+  "interview.partly": {
+   "hash": "4cd133f7622f",
+   "ms": 3816
+  },
+  "interview.rate": {
+   "hash": "33112c8f4502",
+   "ms": 2304
+  },
+  "interview.reveal": {
+   "hash": "2ab0cad8958c",
+   "ms": 3600
+  },
+  "interview.right1": {
+   "hash": "4defc0b4ea6a",
+   "ms": 1044
+  },
+  "interview.right2": {
+   "hash": "15b09ac0e501",
+   "ms": 1656
+  },
+  "interview.think": {
+   "hash": "04527f670030",
+   "ms": 7092
+  },
+  "interview.w1": {
+   "hash": "b3919685bfed",
+   "ms": 3564
+  },
+  "interview.w1-why": {
+   "hash": "cd2060400b9f",
+   "ms": 7776
+  },
+  "interview.w2": {
+   "hash": "8e242a0149c6",
+   "ms": 4392
+  },
+  "interview.w2-why": {
+   "hash": "433abe96da91",
+   "ms": 7164
+  },
   "keywords.1": {
    "hash": "52c9899fd888",
    "ms": 2916
@@ -365,61 +511,21 @@ window.DataSystemsLab.Narrator.register("group", {
    "hash": "520960a4916d",
    "ms": 3060
   },
-  "quiz.intro": {
-   "hash": "08fdf9d19fee",
-   "ms": 1476
+  "recap.1": {
+   "hash": "7c686b6254fe",
+   "ms": 9432
   },
-  "quiz.pass": {
-   "hash": "1e2c41acf108",
-   "ms": 2016
+  "recap.2": {
+   "hash": "a8116fb36f2a",
+   "ms": 8280
   },
-  "quiz.q1": {
-   "hash": "c2be34ee961e",
-   "ms": 6840
+  "recap.3": {
+   "hash": "e5951b47c51d",
+   "ms": 8784
   },
-  "quiz.q1-why": {
-   "hash": "c74a99505946",
-   "ms": 3924
-  },
-  "quiz.q2": {
-   "hash": "fb11d818fd37",
-   "ms": 4356
-  },
-  "quiz.q2-why": {
-   "hash": "47bbf9422a66",
-   "ms": 6084
-  },
-  "quiz.q3": {
-   "hash": "6adfb66a7d69",
-   "ms": 8928
-  },
-  "quiz.q3-why": {
-   "hash": "4b2132ca8ca4",
-   "ms": 9324
-  },
-  "quiz.q4": {
-   "hash": "9ef119a6b0d8",
-   "ms": 5004
-  },
-  "quiz.q4-why": {
-   "hash": "4a416714ba92",
-   "ms": 6624
-  },
-  "quiz.retry": {
-   "hash": "674b74cededc",
-   "ms": 4067
-  },
-  "quiz.right1": {
-   "hash": "5df4176b3959",
-   "ms": 864
-  },
-  "quiz.right2": {
-   "hash": "e99e52b00ddc",
-   "ms": 1116
-  },
-  "quiz.right3": {
-   "hash": "bbb1d6dfd81d",
-   "ms": 864
+  "recap.intro": {
+   "hash": "f29481f34c13",
+   "ms": 2340
   }
  }
 });
