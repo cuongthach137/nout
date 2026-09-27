@@ -79,8 +79,8 @@
     lessonId: "modeling",
     goals: [
       {
-        id: "copies", icon: "🧾", title: "Spot the copies", snippet: "#101 555-0199 ≠ #103 555-0101",
-        text: "Spot a fact copied onto rows that don't own it, and name the bugs it causes.",
+        id: "copies", icon: "🧾", title: "Spot the anomalies", snippet: "#101 555-0199 ≠ #103 555-0101",
+        text: "Explain the update and deletion anomalies that copied data causes, and spot them in a table.",
         recap: "Maya's phone was written on each of her orders. Update one copy and the notebook disagrees with itself: an <b>update anomaly</b>. Cancel Ana's only order and her phone goes too: a <b>deletion anomaly</b>.",
         example: {
           before: notebook("The notebook", [PHONE_OLD, PHONE_OLD]),
@@ -90,8 +90,8 @@
         },
       },
       {
-        id: "lists", icon: "🔗", title: "One fact, one place", snippet: "#103 → C1 → Maya, 555-0199",
-        text: "Split data into a list per kind of thing, linked by keys, and join it back.",
+        id: "lists", icon: "🔗", title: "Normalize", snippet: "#103 → C1 → Maya, 555-0199",
+        text: "Give each kind of thing its own table, link the tables with keys, and join them back when you read.",
         recap: "People, cakes and orders each get their own list, and orders point with a <b>key</b>: → C1 is Maya. That's <b>normalization</b>. A <b>join</b> follows the pointers back.",
         example: {
           before: notebook("The notebook", [PHONE_OLD, PHONE_OLD]),
@@ -104,8 +104,8 @@
         },
       },
       {
-        id: "owner", icon: "🧷", title: "Copies need an owner", snippet: "copy + owner → stale ≤ 1 day",
-        text: "Speed up slow reads with fast joins first, and make any copy someone's job to keep correct.",
+        id: "owner", icon: "🧷", title: "Denormalize on purpose", snippet: "copy + owner → stale ≤ 1 day",
+        text: "Know when copying data to speed up reads is worth it, and make sure something keeps the copy correct.",
         recap: "The slow report tempted a wide copy of everything. Nobody updated it, so it drifted. Indexes keep one copy of each fact; a copy with an owner, like a nightly refresh, is <b>denormalization</b> on purpose.",
         example: {
           after: {
