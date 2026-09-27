@@ -242,6 +242,7 @@
   function makeBeats() {
     const M = DSL.ModelsModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-rel", "Tables: join on read.", relStory()),
       teach("teach-doc", "Documents: embed what's read together.", slice(docStory(), 0, 3), "MongoDB, Couchbase and DynamoDB store documents like this; PostgreSQL's jsonb columns can too."),
       copiesPredict(),
@@ -252,9 +253,13 @@
       netChallenge(),
       teach("teach-pick", "Which shape when.", pickStory()),
       graphPredict(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "models",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🗃️", "Tables", "each fact once"], ["📄", "Documents", "read together, stored together"], ["🕸️", "Graphs", "links to any depth"]],
       }),
     ];
