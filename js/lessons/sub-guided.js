@@ -244,6 +244,7 @@
   function makeBeats() {
     const M = DSL.SubModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-scalar", "A question inside a question.", scalarStory(), "A scalar subquery must return exactly one row. PostgreSQL raises an error on two; SQLite silently uses the first, which hides bugs."),
       laterChallenge(),
       teach("teach-list", "A list, with IN.", listStory(), "IN only asks \"is it in the list?\", so duplicates don't repeat customers. A join on the same tables would."),
@@ -254,9 +255,13 @@
       neverChallenge(),
       teach("teach-cte", "Name the steps.", cteStory(), "WITH RECURSIVE goes further: a step that reads its own output, for date ranges, org charts and paths. There's one to try in Explore."),
       aboveChallenge(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "sub",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🪆", "Nest", "a value or a list"], ["🔁", "Per row", "correlated, EXISTS"], ["🏷️", "Name it", "WITH, step by step"]],
       }),
     ];

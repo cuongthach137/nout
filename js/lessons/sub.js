@@ -9,7 +9,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "sub",
-    labs: [{ id: "nested", name: `${DSL.labLabel("sub", "A")} Nest` }, { id: "correlated", name: `${DSL.labLabel("sub", "B")} Per row` }, { id: "ctes", name: `${DSL.labLabel("sub", "C")} Name the steps` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "nested", name: `${DSL.labLabel("sub", "A")} Nest` }, { id: "correlated", name: `${DSL.labLabel("sub", "B")} Per row` }, { id: "ctes", name: `${DSL.labLabel("sub", "C")} Name the steps` }, { id: "quiz", name: "Practice" }],
   });
 
   const ORDER_TOTALS = "WITH totals AS (\n  SELECT o.id, o.customer_id, SUM(i.quantity * p.price) AS total\n  FROM orders o\n  JOIN order_items i ON i.order_id = o.id\n  JOIN products p ON p.id = i.product_id\n  GROUP BY o.id\n)\n";
@@ -35,16 +35,64 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "<code>WHERE price &gt; (SELECT AVG(price) FROM products)</code>. What must the subquery return?", options: ["Exactly one value", "Any number of rows", "One row per product"], answer: 0, why: "It's compared with one price, so it must be one value: one row, one column." },
-    { prompt: "What makes a subquery correlated?", options: ["It's in the FROM clause", "It uses a column of the outer query", "It uses EXISTS"], answer: 1, why: "It uses a column from the outer query, so its result depends on the outer row." },
-    { prompt: "Why do people write <code>EXISTS (SELECT 1 …)</code>?", options: ["1 is faster to read than *", "EXISTS ignores what's selected; it only asks whether a row exists", "It makes the subquery return the number 1"], answer: 1, why: "EXISTS only asks whether a row exists. What the subquery selects is ignored, so 1 is a convention." },
-    { prompt: "Why use a CTE instead of nesting subqueries?", options: ["It's always faster", "It names each step, so the query reads top to bottom and can reuse a step", "It saves the result permanently"], answer: 1, why: "It names each step, so the query reads top to bottom, and a step can be used more than once." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "In PostgreSQL, a scalar subquery that returns two rows…", options: ["uses the first row", "raises an error", "returns NULL"], answer: 1, why: "\"More than one row returned by a subquery used as an expression.\" SQLite silently uses the first row, which hides bugs." },
-    { prompt: "What does a recursive CTE need so it doesn't run forever?", options: ["An ORDER BY", "A step whose WHERE eventually returns no new rows", "A LIMIT inside the anchor"], answer: 1, why: "It stops when the recursive step adds no rows, so the step needs a condition that eventually fails, like day < '2024-09-25'." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "sub",
+    goals: [
+      {
+        id: "nest", icon: "🪆", title: "Nest a question", snippet: "WHERE price > (SELECT AVG(price) …)",
+        text: "Answer the question behind the question with a scalar or list subquery, and know what each must return.",
+        recap: "A <b>scalar subquery</b> returns one value, here the average price, and the outer query compares with it. <code>IN</code> takes a list.",
+        example: {
+          before: "SELECT AVG(price) FROM products",
+          sql: "SELECT name, price FROM products WHERE price > (SELECT AVG(price) FROM products) ORDER BY price DESC",
+          note: "The inner query ran first; four products beat 4.51.",
+        },
+      },
+      {
+        id: "per-row", icon: "🔁", title: "Ask per row", snippet: "WHERE NOT EXISTS (\n  SELECT 1 FROM orders o\n  WHERE o.customer_id = c.id …)",
+        text: "Write correlated subqueries that re-run for each outer row, and test for a match with EXISTS and NOT EXISTS.",
+        recap: "A <b>correlated subquery</b> uses the outer row, so it runs once per row. <b>NOT EXISTS</b> keeps customers with no matching row: no paid order at all.",
+        example: {
+          sql: "SELECT c.name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id AND o.status = 'paid') ORDER BY c.name",
+          note: "Raj counts too: his only order was refunded.",
+        },
+      },
+      {
+        id: "steps", icon: "🧱", title: "Name the steps", snippet: "WITH counts AS (…)\nSELECT … FROM counts",
+        text: "Break a multi-step question into named steps with WITH, and read a derived table in FROM.",
+        recap: "A <b>CTE</b> names a step, and the next step reads it like a table: count each customer's orders, then keep those above the 1.75 average.",
+        example: {
+          sql: "WITH counts AS (\n  SELECT customer_id, COUNT(*) AS n FROM orders\n  WHERE customer_id IS NOT NULL GROUP BY customer_id\n)\nSELECT customer_id, n FROM counts\nWHERE n > (SELECT AVG(n) FROM counts)\nORDER BY customer_id",
+          note: "Maya, Omar, Ana and Yuki. The step is used twice.",
+        },
+      },
+    ],
+    checks: [
+      { id: "lisbon", goal: "nest", prompt: "<code>WHERE customer_id = (SELECT id FROM customers WHERE city = 'Lisbon')</code>. Three customers live in Lisbon. What does PostgreSQL do?", options: ["Matches all three Lisbon customers", "Raises an error: the subquery returned more than one row", "Uses the first Lisbon customer"], answer: 1, why: "<code>=</code> needs one value. PostgreSQL stops with an error; SQLite quietly uses the first row, which hides the bug. For a list, use <code>IN</code>." },
+      { id: "runs", goal: "per-row", prompt: "<code>WHERE p.price &gt; (SELECT AVG(x.price) FROM products x WHERE x.category = p.category)</code> on the 8 products. How many times does the inner query run, by its meaning?", options: ["Once", "Once per category: 3", "Once per product: 8"], answer: 2, why: "It uses the outer row's category, so it's evaluated for each of the 8 products. A planner may cache or rewrite it, but that's what it means." },
+      { id: "twice", goal: "steps", prompt: "Orders worth more than the average order. Why compute the order totals in a CTE?", options: ["Because WHERE can't use SUM", "Because the totals are needed twice: once per order, and once to average", "Because CTEs are always faster"], answer: 1, why: "You compare each order's total with the average of all the totals. Name the totals once with WITH, then use them twice." },
+    ],
+    warmups: [
+      { id: "above-avg", goal: "nest", prompt: "How would you find the products priced above the average price?", options: ["<code>WHERE price &gt; AVG(price)</code>", "<code>WHERE price &gt; (SELECT AVG(price) FROM products)</code>", "<code>HAVING price &gt; AVG(price)</code>"], answer: 1, why: "WHERE sees one row at a time, so it can't take an average. A scalar subquery computes it first, then every price is compared with that one value." },
+      { id: "exists-in", goal: "per-row", prompt: "What's the difference between EXISTS and IN?", options: ["EXISTS asks, for each outer row, whether any row matches; IN compares a value with a list", "They're the same in every case", "IN always runs faster"], answer: 0, why: "EXISTS only asks whether a matching row exists and ignores what it selects. IN builds a list of values to compare with. For \"no match\", NOT EXISTS is the safe choice." },
+    ],
+    open: {
+      id: "biggest-order",
+      goal: "steps",
+      prompt: "Find each customer's biggest order by total value. Walk me through how you'd structure the query.",
+      points: [
+        "Two steps: first each order's total, <code>SUM(quantity * price)</code> grouped by order; then the maximum per customer.",
+        "Name step one with a <b>CTE</b> (or a derived table), so the query reads top to bottom.",
+        "Aggregating twice is safe because step one's grain is one row per order.",
+        "Join customers for the names; walk-in orders have no customer.",
+        "If they want the order itself, not just the amount: a correlated subquery (total equals that customer's maximum) or a window function, and say what happens on ties.",
+      ],
+      answer: "It's two questions, so I'd write two steps. First a CTE, order_totals, that joins order_items to products and sums quantity times price, grouped by order, so its grain is one row per order with its customer. Then I select from it, join customers for the name, and take MAX(total) grouped by customer. Aggregating twice is fine because the CTE already fixed the grain. If they want the order's ID too, I'd match each order's total against its customer's maximum with a correlated subquery, or rank with a window function, and I'd mention that ties return more than one order per customer.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const KINDS = [
     ["Scalar", "one value", "WHERE price > (SELECT AVG(price) FROM products)"],
@@ -68,6 +116,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Questions inside questions: <em>subqueries</em> and CTEs.", "Above average, never ordered, biggest per customer: many interview questions need one answer before another. Nest the first question, or name it with WITH.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>A subquery can stand in for a <b>value</b>, a <b>list</b>, or a <b>table</b>, depending on where you put it. Match its shape to its place: one value after <code>=</code>, a list after <code>IN</code>, a table after <code>FROM</code>.</p></div>
@@ -95,10 +144,7 @@
           <div class="sel-ops"><table class="sel-table"><thead><tr><th>Kind</th><th>Returns</th><th>Example</th></tr></thead><tbody>${KINDS.map(([kind, returns, example]) => `<tr><td><code>${kind}</code></td><td>${returns}</td><td>${code(example)}</td></tr>`).join("")}</tbody></table></div>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about nested queries</h2><p class="lab-copy">Shapes, correlation, EXISTS, and CTEs.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="sub-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Subqueries review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> break a hard question into named steps. Each step should have a grain you can say out loud: one row per order, one row per customer.</p></div>
         ${DSL.lessonFooter("sub")}
@@ -111,15 +157,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("sub-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Subqueries review passed",
-      successCopy: "You can nest a question, correlate it, and name the steps.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.SubModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.SubModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("sub", renderSub);
 })(window.DataSystemsLab);
