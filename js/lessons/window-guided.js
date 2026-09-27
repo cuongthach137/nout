@@ -220,6 +220,7 @@
   function makeBeats() {
     const M = DSL.WindowModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-over", "Keep every row.", overStory(), "Window functions run at SELECT time, after WHERE, GROUP BY and HAVING. That's why they can't be filtered in WHERE."),
       avgChallenge(),
       teach("teach-rank", "Numbers with ties.", slice(rankStory(), 0, 3)),
@@ -230,9 +231,13 @@
       teach("teach-run", "Running totals.", runStory(), "With ORDER BY and no frame, rows tied on the ORDER BY value share a running total. ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW makes it strictly row by row."),
       teach("teach-lag", "Look back a row.", lagStory()),
       gapChallenge(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "window",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🪟", "OVER", "every row kept"], ["🥇", "Rank", "ties, and top N"], ["📈", "Along the rows", "totals and LAG"]],
       }),
     ];

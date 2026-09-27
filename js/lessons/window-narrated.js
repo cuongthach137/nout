@@ -22,6 +22,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "over",
         title: "OVER and PARTITION BY",
@@ -100,7 +101,9 @@
           await exercise(n, S.gapChallenge(), "gap", { reactions: ["error", "extra", "missing", "columns"] });
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("window"),
       {
         id: "finish",
@@ -108,6 +111,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "window",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🪟", "OVER", "every row kept"], ["🥇", "Rank", "ties, and top N"], ["📈", "Along the rows", "totals and LAG"]],
           }));
           await n.say("finish.1");

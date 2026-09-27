@@ -9,7 +9,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "window",
-    labs: [{ id: "keep", name: `${DSL.labLabel("window", "A")} Keep rows` }, { id: "rank", name: `${DSL.labLabel("window", "B")} Rank` }, { id: "along", name: `${DSL.labLabel("window", "C")} Along the rows` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "keep", name: `${DSL.labLabel("window", "A")} Keep rows` }, { id: "rank", name: `${DSL.labLabel("window", "B")} Rank` }, { id: "along", name: `${DSL.labLabel("window", "C")} Along the rows` }, { id: "quiz", name: "Practice" }],
   });
 
   const UNITS = "WITH units AS (\n  SELECT p.name, SUM(i.quantity) AS units\n  FROM order_items i\n  JOIN products p ON p.id = i.product_id\n  GROUP BY p.name\n)\n";
@@ -36,16 +36,66 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "<code>GROUP BY category</code> returns 3 rows. How many does <code>AVG(price) OVER (PARTITION BY category)</code> return, on 8 products?", options: ["3", "8", "1"], answer: 1, why: "A window function keeps every row. Eight products in, eight rows out." },
-    { prompt: "Scores 90, 80, 80, 70. What does <code>DENSE_RANK</code> give the 70?", options: ["3", "4", "2"], answer: 0, why: "The 80s share rank 2, and DENSE_RANK doesn't skip, so 70 is 3. RANK would say 4." },
-    { prompt: "Why can't you write <code>WHERE ROW_NUMBER() OVER (…) = 1</code>?", options: ["ROW_NUMBER needs a GROUP BY", "Window functions are computed after WHERE, so filter in an outer query", "WHERE can't compare numbers"], answer: 1, why: "Window functions are computed after WHERE. Number the rows in a CTE or subquery, then filter outside." },
-    { prompt: "What does <code>LAG(ordered_at)</code> return on a customer's first order?", options: ["NULL", "The same date", "An error"], answer: 0, why: "There's no previous row, so it's NULL, unless you give LAG a default: LAG(x, 1, default)." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "\"Top 3 products by units\", with a tie for third. Which function might return 4 rows when you keep numbers ≤ 3?", options: ["ROW_NUMBER", "RANK", "Neither"], answer: 1, why: "RANK gives both tied rows 3, so you get 4 rows. ROW_NUMBER returns exactly 3, but picks one of the tied rows arbitrarily. Say which one the business wants." },
-    { prompt: "<code>SUM(x) OVER (ORDER BY day)</code> when two rows share the same day…", options: ["Each row gets its own running total", "Both rows show the total through the end of that day", "It's an error"], answer: 1, why: "With ORDER BY and no frame, the default frame is RANGE … CURRENT ROW, which includes rows tied with the current one. Use ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW for a strict row-by-row total." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "window",
+    goals: [
+      {
+        id: "keep", icon: "🪟", title: "Keep every row", snippet: "AVG(price) OVER (PARTITION BY category)",
+        text: "Put a group's number beside every row with OVER and PARTITION BY, and tell a window from a GROUP BY.",
+        recap: "A <b>window function</b> computes over a group but keeps every row: 8 products in, 8 rows out, each with its category's average beside it.",
+        example: {
+          before: "SELECT category, AVG(price) FROM products GROUP BY category ORDER BY category",
+          sql: "SELECT name, category, AVG(price) OVER (PARTITION BY category) AS avg FROM products ORDER BY category, name",
+          show: 5,
+          note: "All 8 products stay; GROUP BY kept 3 rows.",
+        },
+      },
+      {
+        id: "rank", icon: "🏅", title: "Rank and pick the top", snippet: "ROW_NUMBER() OVER (\n  PARTITION BY category\n  ORDER BY price DESC)",
+        text: "Rank rows with ROW_NUMBER, RANK and DENSE_RANK, and return the top N per group.",
+        recap: "Ties share a RANK, with a gap after; DENSE_RANK doesn't skip. For <b>top N per group</b>, number rows in a CTE and filter outside.",
+        example: {
+          sql: "WITH ranked AS (\n  SELECT name, category, ROW_NUMBER() OVER (\n    PARTITION BY category ORDER BY price DESC) AS rn\n  FROM products\n)\nSELECT name, category FROM ranked\nWHERE rn = 1 ORDER BY category",
+          note: "The dearest product in each category.",
+        },
+      },
+      {
+        id: "line", icon: "📈", title: "Read along the line", snippet: "LAG(ordered_at) OVER (ORDER BY ordered_at)",
+        text: "Build running totals and compare a row with the one before it, using ORDER BY inside the window and LAG.",
+        recap: "With ORDER BY inside OVER, <b>SUM</b> becomes a running total and <b>LAG</b> reads the previous row: Maya's gaps between orders are 3, 7 and 13 days.",
+        example: {
+          sql: "SELECT id, ordered_at, LAG(ordered_at) OVER (ORDER BY ordered_at) AS previous FROM orders WHERE customer_id = 1 ORDER BY ordered_at",
+          mark: (row) => (row[2] === null ? "hot" : ""),
+          note: "Her first order has no previous one: NULL.",
+        },
+      },
+    ],
+    checks: [
+      { id: "rows-out", goal: "keep", prompt: "<code>SELECT category, COUNT(*) OVER (PARTITION BY category) FROM products</code>, on 8 products in 3 categories. How many rows come back?", options: ["3", "8", "24"], answer: 1, why: "A window function never removes rows. Each of the 8 products gets its category's count beside it." },
+      { id: "ties", goal: "rank", prompt: "Four prices, ordered from high to low: 6.50, 5.90, 5.90, 2.80. What does each function give the 2.80?", options: ["ROW_NUMBER 4, RANK 4, DENSE_RANK 3", "ROW_NUMBER 4, RANK 3, DENSE_RANK 3", "All three give 4"], answer: 0, why: "ROW_NUMBER just counts: 4. RANK gives the tie 2 and 2, then skips to 4. DENSE_RANK doesn't skip, so 3." },
+      { id: "running", goal: "line", prompt: "A running total of daily revenue: <code>SUM(revenue) OVER ( ? )</code>. What goes in the brackets?", options: ["<code>PARTITION BY day</code>", "<code>ORDER BY day</code>", "<code>GROUP BY day</code>"], answer: 1, why: "ORDER BY lines the days up, so each row adds itself to everything before it. PARTITION BY day would restart every day, and GROUP BY can't go inside OVER." },
+    ],
+    warmups: [
+      { id: "rank-kinds", goal: "rank", prompt: "What's the difference between ROW_NUMBER, RANK and DENSE_RANK?", options: ["ROW_NUMBER always counts 1, 2, 3; RANK gives ties the same number and then skips; DENSE_RANK gives ties the same number without skipping", "They're the same except for how they treat NULLs", "RANK skips NULLs; DENSE_RANK doesn't"], answer: 0, why: "They only differ on ties: ROW_NUMBER breaks them arbitrarily, RANK leaves a gap after them, DENSE_RANK doesn't." },
+      { id: "why-window", goal: "keep", prompt: "When would you use a window function instead of GROUP BY?", options: ["When I need a group's value beside each row, keeping every row", "When the table is too big for GROUP BY", "Never: GROUP BY can do everything a window can"], answer: 0, why: "GROUP BY collapses each group into one row. A window keeps the rows, so you can compare each one with its group: its rank, its share, the average." },
+    ],
+    open: {
+      id: "top-spenders",
+      goal: "rank",
+      prompt: "Find the top three customers by total spend in each city. Walk me through the query, and tell me what happens with ties.",
+      points: [
+        "Step one: each customer's total spend: join orders, items and products, <code>SUM(quantity * price)</code>, grouped by customer and city.",
+        "Step two: rank within each city: <code>ROW_NUMBER()</code> or <code>RANK() OVER (PARTITION BY city ORDER BY spend DESC)</code>.",
+        "Window functions run after WHERE, so number the rows in a CTE and filter <code>rn &lt;= 3</code> outside.",
+        "Ties: ROW_NUMBER returns exactly three and breaks ties arbitrarily; RANK or DENSE_RANK can return more. Ask which the business wants, or add a tiebreaker.",
+        "Customers with no city (NULL) form a partition of their own.",
+      ],
+      answer: "First a CTE with each customer's total spend: join orders to order_items and products, sum quantity times price, grouped by customer and city. Then a second step ranks inside each city with ROW_NUMBER() OVER (PARTITION BY city ORDER BY spend DESC). I can't filter on that in the same WHERE, because window functions are computed after it, so I filter rn <= 3 in the outer query. On ties, ROW_NUMBER gives exactly three rows but picks arbitrarily between tied customers; RANK keeps everyone tied at third, so a city can return four. I'd ask which one they want, or add a tiebreaker like the customer ID. And customers without a city end up in a NULL partition.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const PARTS = [
     ["PARTITION BY", "which rows share a window", "PARTITION BY category"],
@@ -74,6 +124,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Keep every row: <em>window functions</em>.", "Rank within a group, compare a row with its group, total as you go, look at the previous row. Window functions answer the questions GROUP BY can't, and they're a staple of SQL interviews.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>GROUP BY collapses rows into groups. A window function keeps every row and adds a value computed over a <b>window</b> of related rows: ${code("AVG(price) OVER (PARTITION BY category)")}.</p></div>
@@ -101,10 +152,7 @@
           <div class="sel-ops" style="margin-top:14px"><table class="sel-table"><thead><tr><th>Function</th><th>Gives</th></tr></thead><tbody>${FUNCS.map(([fn, gives]) => `<tr><td><code>${fn}</code></td><td>${gives}</td></tr>`).join("")}</tbody></table></div>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about window functions</h2><p class="lab-copy">Rows kept, ties, filtering, and frames.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="window-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Window functions review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> when a question says "for each … the top", "compared with its group", "so far", or "previous", reach for a window function, and decide how ties should behave before writing it.</p></div>
         ${DSL.lessonFooter("window")}
@@ -117,15 +165,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("window-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Window functions review passed",
-      successCopy: "You can rank, compare with a group, and read along the rows.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.WindowModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.WindowModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("window", renderWindow);
 })(window.DataSystemsLab);

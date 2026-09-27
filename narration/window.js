@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("window", {
   "hook.1": "GROUP BY squeezes each group into one row. Sometimes you want to keep every row, with the group's number beside it.",
   "hook.2": "Each product next to its category's average. Each order ranked. A running total, day by day.",
   "hook.3": "That's what window functions do. Every row stays.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Put a group's number beside every row with OVER and PARTITION BY, and tell a window from a GROUP BY.",
+  "goals.2": "Two. Rank rows with ROW_NUMBER, RANK and DENSE_RANK, and return the top N per group.",
+  "goals.3": "Three. Build running totals, and compare a row with the one before it, using ORDER BY inside the window and LAG.",
   "over.1": "Here are the eight products, with their categories.",
   "over.2": "GROUP BY category gives three rows, one per category. The products are gone.",
   "over.3": "AVG of price, OVER, partition by category, keeps all eight rows, and writes each category's average beside every product.",
@@ -63,42 +67,58 @@ window.DataSystemsLab.Narrator.register("window", {
   "gap.missing": "Some rows or dates are off. Order the window by the order date.",
   "gap.columns": "Three columns: the order's ID, its date, and the previous date.",
   "gap.done": "Four orders, and the first has no previous one. That's LAG.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "<code>GROUP BY category</code> returns 3 rows. How many does <code>AVG(price) OVER (PARTITION BY category)</code> return, on 8 products?",
-   "voice": "Group by category returns three rows. How many does average price over partition by category return, on eight products?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "A window function works over a group but keeps every row. Eight products in, eight rows out, each with its category's average.",
+  "recap.2": "Ties share a rank. RANK leaves a gap after them, DENSE_RANK doesn't. For top N per group, number the rows in a CTE, then filter outside.",
+  "recap.3": "With ORDER BY inside the window, SUM becomes a running total, and LAG reads the row before. Maya's first order has no previous one.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>COUNT(*) OVER (PARTITION BY category)</code> on 8 products in 3 categories. How many rows come back?",
+   "voice": "Count star, over, partition by category, on eight products in three categories. How many rows come back?"
+  },
+  "check.q1-why": "Eight. A window function never removes rows. Each product gets its category's count beside it.",
+  "check.q2": "Four prices, from high to low: six fifty, five ninety, five ninety, two eighty. What does each function give the two eighty?",
+  "check.q2-why": "ROW_NUMBER just counts, so four. RANK gives the tie two and two, then skips to four. DENSE_RANK doesn't skip, so three.",
+  "check.q3": {
+   "caption": "A running total of daily revenue: <code>SUM(revenue) OVER ( ? )</code>. What goes in the brackets?",
+   "voice": "A running total of daily revenue: the sum of revenue, over what?"
+  },
+  "check.q3-why": "ORDER BY day. It lines the days up, so each row adds itself to everything before it. PARTITION BY day would restart every day.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "What's the difference between ROW_NUMBER, RANK and DENSE_RANK?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "A window function keeps every row. Eight products in, eight rows out.",
-  "quiz.q2": {
-   "caption": "Scores 90, 80, 80, 70. What does DENSE_RANK give the 70?",
-   "voice": "Scores ninety, eighty, eighty, seventy. What does dense rank give the seventy?",
+  "interview.w1-why": "They only differ on ties. ROW_NUMBER breaks them arbitrarily, RANK leaves a gap after them, and DENSE_RANK doesn't.",
+  "interview.w2": {
+   "caption": "When would you use a window function instead of GROUP BY?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "The eighties share rank two, and DENSE_RANK doesn't skip, so seventy is three. RANK would say four.",
-  "quiz.q3": {
-   "caption": "Why can't you write <code>WHERE ROW_NUMBER() OVER (\u2026) = 1</code>?",
-   "voice": "Why can't you filter on row number over something in the WHERE clause?",
+  "interview.w2-why": "When you need the group's value beside each row. GROUP BY collapses the group; a window keeps every row.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Find the top three customers by total spend in each city. Walk me through the query, and tell me what happens with ties.",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "Window functions are computed after WHERE. Number the rows in a CTE or subquery, then filter outside.",
-  "quiz.q4": {
-   "caption": "What does <code>LAG(ordered_at)</code> return on a customer's first order?",
-   "voice": "What does lag of ordered at return on a customer's first order?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "There's no previous row, so it's NULL, unless you give LAG a default.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -174,6 +194,54 @@ window.DataSystemsLab.Narrator.register("window", {
    "hash": "6ff6e08d56f1",
    "ms": 4907
   },
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "0c967980efaf",
+   "ms": 6464
+  },
+  "check.q1-why": {
+   "hash": "410ccd688683",
+   "ms": 5760
+  },
+  "check.q2": {
+   "hash": "89fd5748172a",
+   "ms": 7744
+  },
+  "check.q2-why": {
+   "hash": "5b68510f4676",
+   "ms": 7147
+  },
+  "check.q3": {
+   "hash": "7770feb26e3a",
+   "ms": 3733
+  },
+  "check.q3-why": {
+   "hash": "a9f3b7a2706c",
+   "ms": 8000
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
+  },
   "finish.1": {
    "hash": "4b14afa0154f",
    "ms": 9707
@@ -214,6 +282,22 @@ window.DataSystemsLab.Narrator.register("window", {
    "hash": "27ab97f57a70",
    "ms": 3648
   },
+  "goals.1": {
+   "hash": "70ecd0f907f3",
+   "ms": 6080
+  },
+  "goals.2": {
+   "hash": "92f6713fbff3",
+   "ms": 5227
+  },
+  "goals.3": {
+   "hash": "01daf5fe09a1",
+   "ms": 7360
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "hook.1": {
    "hash": "e41cbfc9a78b",
    "ms": 6720
@@ -225,6 +309,66 @@ window.DataSystemsLab.Narrator.register("window", {
   "hook.3": {
    "hash": "50171055a967",
    "ms": 2901
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "5fbabfcff23b",
+   "ms": 7616
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "c1a6845c6e49",
+   "ms": 3883
+  },
+  "interview.w1-why": {
+   "hash": "0346ac5745d9",
+   "ms": 7061
+  },
+  "interview.w2": {
+   "hash": "aac917dc4f10",
+   "ms": 3563
+  },
+  "interview.w2-why": {
+   "hash": "8e9271b87d63",
+   "ms": 6037
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -274,62 +418,6 @@ window.DataSystemsLab.Narrator.register("window", {
    "hash": "c832e353a78d",
    "ms": 6379
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
-  },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
-  },
-  "quiz.q1": {
-   "hash": "cc29eb5806fe",
-   "ms": 8363
-  },
-  "quiz.q1-why": {
-   "hash": "560c19f5041f",
-   "ms": 4181
-  },
-  "quiz.q2": {
-   "hash": "8b1d7809aba9",
-   "ms": 5184
-  },
-  "quiz.q2-why": {
-   "hash": "7f5cea731d48",
-   "ms": 5739
-  },
-  "quiz.q3": {
-   "hash": "84959b39c424",
-   "ms": 4267
-  },
-  "quiz.q3-why": {
-   "hash": "7b47e66e006a",
-   "ms": 7104
-  },
-  "quiz.q4": {
-   "hash": "41a307fd1b96",
-   "ms": 3947
-  },
-  "quiz.q4-why": {
-   "hash": "c6d13350c3f3",
-   "ms": 4309
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
-  },
   "rank.1": {
    "hash": "7f1e070b1deb",
    "ms": 6400
@@ -361,6 +449,22 @@ window.DataSystemsLab.Narrator.register("window", {
   "rank.six": {
    "hash": "8acec41fa643",
    "ms": 1749
+  },
+  "recap.1": {
+   "hash": "23b6339cbdce",
+   "ms": 7616
+  },
+  "recap.2": {
+   "hash": "aa937a228b6d",
+   "ms": 9045
+  },
+  "recap.3": {
+   "hash": "5431b92bb990",
+   "ms": 9365
+  },
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "run.1": {
    "hash": "ce57925dbf43",
