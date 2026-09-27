@@ -3,7 +3,10 @@
   "voice": "af_heart",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+    "interviewer": {
+      "voice": "bm_george",
+      "label": "Interviewer"
+    }
   },
   "keywords": {
     "latency": {
@@ -42,12 +45,14 @@
   "lines": {
     "hook.1": "Some customers say the bakery's website feels slow. But the dashboard says the average page takes a hundred and seventy milliseconds.",
     "hook.2": "Both are true. This lesson is about measuring speed honestly, the way interviewers expect you to.",
-
+    "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+    "goals.1": "One. Tell latency from throughput, and explain why the average hides what users feel.",
+    "goals.2": "Two. Compute p50, p95 and p99 in SQL, and say what each one means for users.",
+    "goals.3": "Three. Predict how the tail grows when a page fans out to many calls, and how latency explodes as a server nears full load.",
     "terms.1": "Two different words first. Each dot is one request to the site.",
     "terms.2": "How long one request takes, start to finish, is its <k>latency</k>.",
     "terms.3": "How many requests finish each second is <k>throughput</k>.",
     "terms.4": "They're not the same. A busy site can finish lots of requests per second, while each one still waits a long time.",
-
     "dist.1": "Here are two hundred requests to the bakery's site, grouped by how long they took.",
     "dist.2": "Most are quick, under about a hundred and twenty milliseconds. But a few take seconds. That long stretch on the right is the tail.",
     "dist.3": {
@@ -59,7 +64,6 @@
     "dist.median": "Right. The middle request: a hundred and one milliseconds.",
     "dist.fifty": "Lower than most. The middle request takes a hundred and one milliseconds.",
     "dist.4": "The middle value is the <k>median</k>, or p50. It's a <k>percentile</k>: half the requests are at or below it.",
-
     "tail.1": {
       "caption": "Now the slow end. The 95th percentile, <b>p95</b>, is <b>327 ms</b>.",
       "voice": "Now the slow end. The ninety-fifth percentile, p95, is three hundred and twenty-seven milliseconds."
@@ -70,7 +74,6 @@
     },
     "tail.3": "That's <k id=\"tail-latency\">tail latency</k>. And the slow requests are often the valuable ones: the biggest baskets, the loyal customers with the most history.",
     "tail.4": "So report percentiles, not the average: p50 for the typical user, p95 and p99 for the unlucky ones.",
-
     "p99.1": {
       "caption": "Your turn. The table <b>requests</b> has one row per request, with its time in <b>ms</b>. Find the p99.",
       "voice": "Your turn. The table requests has one row per request, with its time in milliseconds. Find the p99."
@@ -85,7 +88,6 @@
     "p99.missing": "Not quite. Sort ascending, skip a hundred and ninety-seven, and take one.",
     "p99.columns": "One column: the time.",
     "p99.done": "Two thousand and ninety-three milliseconds. That's the number the unlucky customers feel.",
-
     "amp.1": "It gets worse. To show the checkout page, the site calls several services: prices, stock, the basket, loyalty points.",
     "amp.2": "The page can't finish until the slowest call does. So if any one call hits its slow tail, the whole page is slow.",
     "amp.ask": "Each call is slow one time in a hundred. The page makes ten calls. How often is the page slow?",
@@ -93,12 +95,10 @@
     "amp.ten": "Right. About one in ten. Nearly ten percent.",
     "amp.half": "Not quite that bad yet. About one page in ten, for ten calls.",
     "amp.3": "With a hundred calls, nearly two pages in three are slow. That's <k id=\"tail-amplification\">tail amplification</k>. It's why big systems obsess over p99.",
-
     "queue.1": "One more source of slowness: waiting in line. A request can't start until the server is free.",
     "queue.2": "At half busy, requests barely wait. At eighty percent, waits start to build.",
     "queue.3": "At ninety-five percent busy, response time is four times what it was at eighty. The last bit of capacity is the most expensive.",
     "queue.4": "That wait before any work starts is <k id=\"queueing-delay\">queueing delay</k>. Throughput barely rises, while latency shoots up.",
-
     "checkout.1": "Your turn again. The team promises: ninety-five percent of checkouts in under one second. Check it.",
     "checkout.ask": "Find the p95 for the checkout endpoint. There are fifty checkout requests, so it's the forty-eighth fastest.",
     "checkout.hint": {
@@ -110,27 +110,63 @@
     "checkout.missing": "Not quite. Only checkout requests, sorted, skip forty-seven, take one.",
     "checkout.columns": "One column: the time.",
     "checkout.done": "Nine hundred and eighty-four milliseconds: the promise holds, just. A promise stated as a percentile is an <k>SLO</k>.",
-
-    "quiz.intro": "Four quick questions.",
-    "quiz.q1": { "caption": "Average response time is 170 ms, but the median is 101 ms. What does that tell you?", "voice": "Average response time is a hundred and seventy milliseconds, but the median is a hundred and one. What does that tell you?", "speaker": "interviewer" },
-    "quiz.q1-why": "A few very slow requests pull the average up. The distribution has a long tail, so report percentiles.",
-    "quiz.q2": { "caption": "What does \"p99 is 2 seconds\" mean?", "voice": "What does p99 is two seconds mean?", "speaker": "interviewer" },
-    "quiz.q2-why": "Ninety-nine in a hundred requests take two seconds or less. One in a hundred takes longer.",
-    "quiz.q3": { "caption": "A page calls 10 services in parallel, each slow 1% of the time. Roughly how often is the page slow?", "voice": "A page calls ten services in parallel, each slow one percent of the time. Roughly how often is the page slow?", "speaker": "interviewer" },
-    "quiz.q3-why": "It waits for the slowest call: one minus point nine nine to the tenth power, about ten percent.",
-    "quiz.q4": { "caption": "A server goes from 80% to 95% busy. What happens to response time?", "voice": "A server goes from eighty percent to ninety-five percent busy. What happens to response time?", "speaker": "interviewer" },
-    "quiz.q4-why": "Queues grow steeply near full capacity. In the simple queueing model it goes from five times the service time to twenty: four times worse.",
-    "quiz.right1": "Right.",
-    "quiz.right2": "Exactly.",
-    "quiz.right3": "Correct.",
-    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
-    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
-
+    "recap.intro": "Let's look back at what you can do now.",
+    "recap.1": "Latency is how long one request takes. Throughput is how many finish each second. A few very slow requests drag the average far above the median.",
+    "recap.2": "A percentile says how many requests are at or below a value. The p99 is over two seconds: one request in a hundred waits longer.",
+    "recap.3": "A page waiting on ten calls is slow about one time in ten. And near full load, queueing delay makes latency shoot up.",
+    "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+    "check.q1": {
+      "caption": "The site handles 500 requests a second. The team doubles the servers, and it now handles 1,000. What happened to each request's latency?",
+      "voice": "The site handles five hundred requests a second. The team doubles the servers, and now it handles a thousand. What happened to each request's latency?"
+    },
+    "check.q1-why": "Not necessarily anything. Throughput counts requests per second; latency is how long each one takes. Each request only speeds up if it was waiting in a queue.",
+    "check.q2": {
+      "caption": "The promise: 95% of checkouts in under a second. The checkout p95 is 984 ms, and a few take over 2 s. Is the promise kept?",
+      "voice": "The promise: ninety-five percent of checkouts in under a second. The checkout p95 is nine hundred and eighty-four milliseconds, and a few take over two seconds. Is the promise kept?"
+    },
+    "check.q2-why": "Yes. The promise is about p95, and that's under a second. If the slowest few matter too, promise a p99 as well.",
+    "check.q3": "Page A calls one service. Page B calls fifty services in parallel. Every service is slow one time in a hundred. Which is right?",
+    "check.q3-why": "Page B is slow about forty percent of the time. Parallel calls finish only when the slowest one does: fifty chances to be unlucky.",
+    "check.right1": "Right.",
+    "check.right2": "Exactly.",
+    "check.right3": "Correct.",
+    "check.pass": {
+      "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+      "voice": "Nicely done. The ideas are sticking."
+    },
+    "check.retry": {
+      "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+      "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+    },
+    "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+    "interview.w1": {
+      "caption": "Why would you report p99 latency rather than the average?",
+      "speaker": "interviewer"
+    },
+    "interview.w1-why": "The average hides the slow tail that some users actually hit. p50 describes the typical user; p99, the unlucky one in a hundred.",
+    "interview.w2": {
+      "caption": "A server goes from 80% to 95% busy. What happens to response time?",
+      "voice": "A server goes from eighty to ninety-five percent busy. What happens to response time?",
+      "speaker": "interviewer"
+    },
+    "interview.w2-why": "It roughly quadruples. Queues grow steeply near full capacity, so the last bit of capacity is the most expensive.",
+    "interview.right1": "Good answer.",
+    "interview.right2": "That's the one they want.",
+    "interview.open": {
+      "caption": "Users say the site feels slow, but the average response time looks fine. How would you investigate, and how would you report it?",
+      "speaker": "interviewer"
+    },
+    "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+    "interview.hint": "Press Reveal when you're ready.",
+    "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+    "interview.rate": "Be honest. How did you do?",
+    "interview.got": "Nice. That's an answer that lands.",
+    "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+    "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
     "keywords.1": "Before we wrap up, here are the words worth keeping.",
     "keywords.ask": "Flip each card. Star the ones you want to practise later.",
     "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
     "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
-
     "finish.1": "That's the lesson, and level one. Measure percentiles, not averages, watch the tail as calls fan out, and leave headroom before the queue explodes.",
     "finish.2": "Next up: how a database actually reads those rows from disk."
   }
