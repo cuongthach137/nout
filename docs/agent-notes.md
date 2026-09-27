@@ -56,6 +56,7 @@ The checker (`DSL.Sql.compare`) ignores column names (aliases vary) but not colu
 - The bakery is "Maya's bakery" as in her favourite shop: STYLE.md makes Maya a regular customer, and the SQL dataset has her as customer #1. Never write that she runs or owns it (lesson 01 once did).
 
 - A practice recap example (`goal.example` in `js/components/practice.js`) can be plain tables instead of SQL, for lessons without a SQL lab (see `modeling.js`). Keep each recap card short enough that all three fit at 1280×700: `show` limits the rows per table, and measure `.pr-scene`'s `scrollHeight - clientHeight` after the replay finishes.
+- Recap SQL is shown in full above its result, so a long query is what usually breaks the 1280×700 fit. What worked: fewer columns, one-row results (`group_concat`, scalar subqueries side by side), and `show` for long tables. Newlines in the example's SQL are kept (`pre-wrap`), so break long queries by hand. A "before" step may be a statement that fails (keys shows a refused DELETE); its error replaces the table.
 
 ## SQL lesson building blocks
 
