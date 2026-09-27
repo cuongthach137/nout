@@ -8,10 +8,11 @@
   const { retrigger, burst } = DSL.LabKit;
 
   const LEVELS = [
-    ["📓", "Level 1", "The notebook", "Shape data so it stays correct"],
+    ["📓", "Level 1", "The notebook", "Shape data and query it in SQL"],
     ["🖥️", "Level 2", "One server", "How a database stores, finds and protects data"],
     ["🏪", "Level 3", "A chain", "Scale out without losing data"],
-    ["⚙️", "Level 4", "Engine depth", "Electives on specific engines"],
+    ["🧩", "Level 4", "The system", "Caches, streams and analytics in sync"],
+    ["⚙️", "Level 5", "Engine depth", "Electives on specific engines"],
   ];
 
   // The course as it stands: one stop per module.
@@ -28,6 +29,16 @@
         id: "welcome",
         title: "Welcome",
         async script(n, scene) {
+          // The hook: two customers buy the last croissant at once, and both purchases go through.
+          scene.innerHTML = `<div class="gw-race">
+            <div class="gw-stock"><i aria-hidden="true">🥐</i><span>Last croissant · <b>1</b> left</span></div>
+            <div class="gw-receipts">${["Ana", "Omar"].map((name, i) => `<div class="gw-receipt" style="--i:${i}"><small>Receipt #${1041 + i}</small><b>${name}</b><span>1 × croissant</span><em>✓ paid</em></div>`).join("")}</div>
+          </div>`;
+          const race = scene.firstElementChild;
+          const stock = race.querySelector(".gw-stock");
+          await Promise.all([n.say("welcome.1"), n.show(() => { race.classList.add("sold"); DSL.Sfx.play("tick"); })]);
+          await Promise.all([n.say("welcome.2"), n.show(() => { stock.classList.add("bad"); stock.querySelector("b").textContent = "−1"; retrigger(stock, "gw-shake"); DSL.Sfx.play("wrong"); })]);
+
           scene.innerHTML = `<div class="gw-hero">
             <div class="gw-logo" aria-hidden="true">🧁</div>
             <h2>Databases, from the inside</h2>
@@ -35,13 +46,13 @@
           </div>`;
           const hero = scene.firstElementChild;
           retrigger(hero, "gw-in");
-          await n.say("welcome.1");
+          await n.say("welcome.3");
           hero.classList.add("icons-in");
-          await n.say("welcome.2");
+          await n.say("welcome.4");
           await n.say("welcome.ask");
           const goal = await n.choose([["interview", "A backend interview"], ["design", "A system design interview"], ["curious", "Just curious"]], { label: "Your goal" });
           await n.say(`welcome.${goal}`);
-          await n.say("welcome.3");
+          await n.say("welcome.5");
         },
       },
       {
@@ -64,7 +75,7 @@
             await Promise.all([n.say(`story.${i + 2}`), n.show(() => reveal(i))]);
           }
           levels.forEach((level) => level.classList.remove("current"));
-          await n.say("story.6");
+          await n.say(`story.${LEVELS.length + 2}`);
         },
       },
       {
