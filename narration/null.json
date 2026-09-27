@@ -3,7 +3,10 @@
   "voice": "af_heart",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+    "interviewer": {
+      "voice": "bm_george",
+      "label": "Interviewer"
+    }
   },
   "keywords": {
     "three-valued-logic": {
@@ -35,13 +38,15 @@
     "hook.1": "Raj never gave his city. Three customers have no phone. Two orders have no customer.",
     "hook.2": "Each gap is a NULL, and NULL doesn't mean zero or empty. It means unknown.",
     "hook.3": "Unknown values break queries quietly: no error, just wrong answers. Here are the traps interviewers love.",
-
+    "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+    "goals.1": "One. Explain three-valued logic, find missing values with IS NULL, and keep the NULL rows that not-equals would drop.",
+    "goals.2": "Two. Spot why NOT IN returns nothing when its list holds a NULL, and rewrite it with NOT EXISTS.",
+    "goals.3": "Three. Predict how NULL spreads through expressions and aggregates, and choose a default with COALESCE.",
     "unknown.1": "Find the customers with no city. The obvious query says: city equals NULL.",
     "unknown.2": "Nothing comes back. Not even Raj.",
     "unknown.3": "Is Raj's unknown city equal to unknown? Nobody knows. So the answer isn't true or false. It's unknown.",
     "unknown.4": "That's <k id=\"three-valued-logic\">three-valued logic</k>: true, false, or unknown. And WHERE keeps only the rows where the test is true.",
     "unknown.5": "To find missing values, ask directly: city <k id=\"is-null\">IS NULL</k>. There's Raj.",
-
     "not.1": "Now the bakery wants every customer who isn't in Lisbon. Ten customers, three in Lisbon.",
     "not.ask": "City not equal to Lisbon. How many rows come back?",
     "not.seven": "That's the right answer to the question. But not what the query returns.",
@@ -53,7 +58,6 @@
       "voice": "Say what you mean: city is not Lisbon, or city is null. Now it's seven."
     },
     "not.4": "Or use <k id=\"is-distinct-from\">IS DISTINCT FROM</k>, which treats NULL as a value. SQLite spells it IS NOT.",
-
     "away.1": "Your turn. List every customer who isn't in Lisbon, including anyone whose city is unknown.",
     "away.ask": "Fix the WHERE clause so Raj is included.",
     "away.hint": {
@@ -65,7 +69,6 @@
     "away.missing": "Someone's missing. Is Raj there? His city is NULL.",
     "away.columns": "Just the customer's name.",
     "away.done": "Seven customers, Raj included.",
-
     "notin.1": "The worst trap. Customers who never ordered: id NOT IN the customer IDs on orders.",
     "notin.ask": "Lena and Theo have never ordered. How many rows does this return?",
     "notin.two": "It should be two. It's zero.",
@@ -75,7 +78,6 @@
     "notin.3": "NOT IN means: not equal to one, and not equal to two, and not equal to NULL. That last part is unknown, for every customer.",
     "notin.4": "One NULL in the list, and NOT IN returns nothing. That's the <k id=\"not-in-null\">NOT IN trap</k>.",
     "notin.5": "The fix: NOT EXISTS, which has no such problem. Or filter the NULLs out of the list.",
-
     "never.1": "Your turn. Fix the query so it finds Lena and Theo.",
     "never.ask": "Rewrite it with NOT EXISTS, or filter the NULLs out of the list.",
     "never.hint": {
@@ -87,14 +89,12 @@
     "never.missing": "Still missing rows. Is there a NULL left in the list?",
     "never.columns": "Just the customer's name.",
     "never.done": "Lena and Theo. Same question, one NULL handled.",
-
     "expr.1": "NULL spreads through expressions too. Build a text message: Call, name, on, phone.",
     "expr.2": "Omar has no phone, so his whole message is NULL. Ten plus NULL is NULL too. That's <k id=\"null-propagation\">NULL propagation</k>.",
     "expr.3": {
       "caption": "<k>COALESCE</k> picks the first value that isn't NULL: <b>COALESCE(phone, 'no phone')</b>.",
       "voice": "COALESCE picks the first value that isn't null. Coalesce phone, no phone."
     },
-
     "avg.1": "And in aggregates. What's the average spend per customer?",
     "avg.2": "Lena and Theo never ordered, so their total is NULL, not zero. AVG skips them.",
     "avg.3": {
@@ -102,7 +102,6 @@
       "voice": "So the average comes out at eighteen forty-one, over eight customers. Count them as zero, and it's fourteen seventy-two, over ten."
     },
     "avg.4": "Neither is wrong. Decide what the question means, then say it in SQL.",
-
     "phone.1": "Last one. Show every customer's name and phone, with the words no phone where it's missing.",
     "phone.ask": "Use COALESCE in the SELECT.",
     "phone.hint": {
@@ -114,35 +113,63 @@
     "phone.missing": "The rows don't match. Is the default exactly: no phone?",
     "phone.columns": "Two columns: the name, and the phone or the default.",
     "phone.done": "Ten customers, three with no phone. No NULLs left to trip over.",
-
-    "quiz.intro": "Four quick questions.",
-    "quiz.q1": { "caption": "What does <code>WHERE city = NULL</code> return?", "voice": "What does where city equals null return?", "speaker": "interviewer" },
-    "quiz.q1-why": "Comparing with NULL is unknown, never true, so no row passes. Use IS NULL.",
-    "quiz.q2": {
-      "caption": "10 customers: 3 in Lisbon, 1 with a NULL city. How many rows does <code>WHERE city &lt;&gt; 'Lisbon'</code> return?",
-      "voice": "Ten customers: three in Lisbon, one with a null city. How many rows does where city is not Lisbon return?",
+    "recap.intro": "Let's look back at what you can do now.",
+    "recap.1": "A comparison with NULL is unknown, and WHERE keeps only true. Not equal to Lisbon drops Raj. Add OR city IS NULL, and he's back.",
+    "recap.2": "One NULL in the list, and NOT IN is never true. The walk-in orders empty the result. NOT EXISTS asks the same question safely.",
+    "recap.3": "NULL spreads through expressions, and aggregates skip it. COALESCE returns the first value that isn't NULL, when you mean a default.",
+    "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+    "check.q1": {
+      "caption": "<code>WHERE phone &lt;&gt; '555-0101'</code> on the 10 customers. That's Maya's phone, and three customers have none. How many rows?",
+      "voice": "Where the phone isn't Maya's number, on the ten customers. Three customers have no phone at all. How many rows come back?"
+    },
+    "check.q1-why": "Six. Maya fails the test, and the three missing phones are unknown, not different. So WHERE drops them too.",
+    "check.q2": {
+      "caption": "<code>WHERE id NOT IN (1, 2, NULL)</code> on the customers. What comes back?",
+      "voice": "Where the ID is not in one, two, and NULL. What comes back?"
+    },
+    "check.q2-why": "No rows. Not equal to NULL is unknown for every customer, so the whole test is never true.",
+    "check.q3": "Average spend per customer. Lena and Theo never ordered, so their totals are NULL. What does AVG do with them?",
+    "check.q3-why": "It skips them, and averages over the eight who ordered. If they should count as zero, say so with COALESCE.",
+    "check.right1": "Right.",
+    "check.right2": "Exactly.",
+    "check.right3": "Correct.",
+    "check.pass": {
+      "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+      "voice": "Nicely done. The ideas are sticking."
+    },
+    "check.retry": {
+      "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+      "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+    },
+    "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+    "interview.w1": {
+      "caption": "Why doesn't <code>WHERE city = NULL</code> find the customers with no city?",
+      "voice": "Why doesn't where city equals NULL find the customers with no city?",
       "speaker": "interviewer"
     },
-    "quiz.q2-why": "The NULL city is unknown, not different, so it's dropped: six, not seven.",
-    "quiz.q3": {
-      "caption": "<code>WHERE id NOT IN (SELECT customer_id FROM orders)</code> returns nothing, though some customers never ordered. Why?",
-      "voice": "Where the ID is not in the customer IDs from orders returns nothing, though some customers never ordered. Why?",
+    "interview.w1-why": "Comparing with NULL is unknown, never true, so WHERE drops every row. IS NULL asks the right question.",
+    "interview.w2": {
+      "caption": "To find customers who never ordered, would you use NOT IN or NOT EXISTS?",
       "speaker": "interviewer"
     },
-    "quiz.q3-why": "The list contains a NULL, so NOT IN is never true. Use NOT EXISTS, or filter out the NULLs.",
-    "quiz.q4": { "caption": "What does <code>COALESCE(phone, 'no phone')</code> return when phone is NULL?", "voice": "What does coalesce phone, no phone return when phone is null?", "speaker": "interviewer" },
-    "quiz.q4-why": "COALESCE returns its first argument that isn't NULL.",
-    "quiz.right1": "Right.",
-    "quiz.right2": "Exactly.",
-    "quiz.right3": "Correct.",
-    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
-    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
-
+    "interview.w2-why": "NOT EXISTS. One NULL from the subquery, and NOT IN returns nothing at all. NOT EXISTS can't be broken that way.",
+    "interview.right1": "Good answer.",
+    "interview.right2": "That's the one they want.",
+    "interview.open": {
+      "caption": "What does NULL mean in SQL, and what are the ways it can make a query quietly return the wrong answer?",
+      "speaker": "interviewer"
+    },
+    "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+    "interview.hint": "Press Reveal when you're ready.",
+    "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+    "interview.rate": "Be honest. How did you do?",
+    "interview.got": "Nice. That's an answer that lands.",
+    "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+    "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
     "keywords.1": "Before we wrap up, here are the words worth keeping.",
     "keywords.ask": "Flip each card. Star the ones you want to practise later.",
     "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
     "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
-
     "finish.1": "That's the lesson, and the SQL module. NULL means unknown. Test it with IS NULL, never trust NOT IN near it, and give it a default when you mean one.",
     "finish.2": "Next up: keys the database enforces, and the shapes relationships take."
   }
