@@ -74,9 +74,23 @@
       },
     ],
     checks: [
-      { id: "not-maya", goal: "unknown", prompt: "<code>WHERE phone &lt;&gt; '555-0101'</code> on the 10 customers. Maya's phone is 555-0101, and three customers have no phone. How many rows?", options: ["9", "6", "7"], answer: 1, why: "Maya fails the test, and the three NULL phones are unknown, not different, so WHERE drops them too: 10 − 1 − 3 = 6." },
-      { id: "list-null", goal: "notin", prompt: "<code>WHERE id NOT IN (1, 2, NULL)</code> on the customers. What comes back?", options: ["Everyone except customers 1 and 2", "No rows", "An error"], answer: 1, why: "NOT IN means id <> 1 AND id <> 2 AND id <> NULL. The last part is unknown for every row, so the whole test is never true. (IN with a NULL still works: it only needs one match.)" },
-      { id: "avg-skip", goal: "default", prompt: "Average spend per customer. Lena and Theo never ordered, so their totals are NULL. What does <code>AVG</code> do with them?", options: ["Counts them as 0", "Skips them: it averages over the 8 customers who ordered", "Returns NULL for the whole average"], answer: 1, why: "Aggregates skip NULLs, so it's 18.41 over 8. If never ordering should count as zero, say it: <code>AVG(COALESCE(total, 0))</code> gives 14.72 over 10." },
+      { id: "not-maya", goal: "unknown", prompt: "<code>WHERE phone &lt;&gt; '555-0101'</code> on the 10 customers. Maya's phone is 555-0101, and three customers have no phone. How many rows?", options: ["9", "6", "7"], answer: 1, why: "Maya fails the test, and the three NULL phones are unknown, not different, so WHERE drops them too: 10 − 1 − 3 = 6.",
+        visual: {
+          sql: "SELECT name, phone FROM customers\nWHERE phone <> '555-0101' ORDER BY id",
+          note: "6 rows: no Maya, and none of the NULL phones.",
+        },
+      },
+      { id: "list-null", goal: "notin", prompt: "<code>WHERE id NOT IN (1, 2, NULL)</code> on the customers. What comes back?", options: ["Everyone except customers 1 and 2", "No rows", "An error"], answer: 1, why: "NOT IN means id <> 1 AND id <> 2 AND id <> NULL. The last part is unknown for every row, so the whole test is never true. (IN with a NULL still works: it only needs one match.)",
+        visual: { sql: "SELECT name FROM customers\nWHERE id NOT IN (1, 2, NULL)", note: "No rows at all." },
+      },
+      { id: "avg-skip", goal: "default", prompt: "Average spend per customer. Lena and Theo never ordered, so their totals are NULL. What does <code>AVG</code> do with them?", options: ["Counts them as 0", "Skips them: it averages over the 8 customers who ordered", "Returns NULL for the whole average"], answer: 1, why: "Aggregates skip NULLs, so it's 18.41 over 8. If never ordering should count as zero, say it: <code>AVG(COALESCE(total, 0))</code> gives 14.72 over 10.",
+        visual: {
+          before: { label: "Spend per customer", columns: ["name", "total"], rows: [["Maya", 49.3], ["Ana", 23.95], ["Omar", 23.8], ["Yuki", 18.35], ["Ines", 10.5], ["Kofi", 9.3], ["Priya", 6.8], ["Raj", 5.25], ["Lena", null], ["Theo", null]] },
+          after: { label: "Two averages", columns: ["AVG(total)", "AVG(COALESCE(total, 0))"], rows: [["18.41 (over 8)", "14.72 (over 10)"]] },
+          show: 10,
+          mark: (row, phase) => (phase === "before" && row[1] === null ? "hot" : phase === "after" ? "good" : ""),
+        },
+      },
     ],
     warmups: [
       { id: "eq-null", goal: "unknown", prompt: "Why doesn't <code>WHERE city = NULL</code> find the customers with no city?", options: ["Comparing with NULL is unknown, never true; use IS NULL", "NULL values aren't indexed", "It does, in most databases"], answer: 0, why: "Is an unknown city equal to unknown? Nobody knows, so the test is unknown and WHERE drops the row. IS NULL asks the right question." },

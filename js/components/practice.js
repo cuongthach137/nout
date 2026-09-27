@@ -13,8 +13,15 @@
   //              example = { sql, before?, dataset?, show?, mark?(row, phase) → class, note }, replayed
   //              in the recap. show: rows per table (7 by default). For lessons without SQL, before
   //              and after (in place of sql) are tables { label, columns, rows }, or lists of them.
-  //     checks:  [{ id, goal, prompt, options, answer, why }],          // apply an idea, tied to a goal
-  //     warmups: [{ id, goal, prompt, options, answer, why }],          // interviewer, multiple choice
+  //     checks:  [{ id, goal, prompt, options, answer, why, visual }],  // apply an idea, tied to a goal
+  //     warmups: [{ id, goal, prompt, options, answer, why, visual? }], // interviewer, multiple choice
+  //              visual = { before, after, sql, dataset?, show?, mark?(row, phase), runBefore?, note? }:
+  //              the question's illustration, in the example's format. `before` shows while the
+  //              question is open and `after` once it's answered, so the reveal can show the answer.
+  //              A query in `before` is shown as code only (its result would give the answer away)
+  //              unless runBefore; in `after` it's shown and run. `sql` means the same query in both.
+  //              With no `after`, the answer re-marks the `before` tables (mark's phase is "after").
+  //              Without a visual, a check shows its goal and a warm-up shows the interviewer.
   //     open:    { id, goal, prompt, points: [html], answer: html },    // interviewer, open
   //   }
   // Narrated lines it expects, in the lesson's script: goals.intro, goals.1…N; recap.intro,
@@ -87,7 +94,6 @@
   // The goal cards: icon, short title, the can-do sentence and a code snippet, joined by a path.
   // recap: add the takeaway and a slot where the goal's example replays.
   function cardsMarkup(practice, { recap = false, compact = false } = {}) {
-    const hl = (sql) => (DSL.Sql ? DSL.Sql.highlight(sql) : sql);
     return `<div class="pr-cards ${compact ? "compact" : ""} ${recap ? "recap" : ""}">${practice.goals.map((goal, i) => `<article class="pr-card" data-goal="${goal.id}" data-hue="${i % 3}" style="--i:${i}">
       <header><span class="pr-card-icon" aria-hidden="true">${goal.icon || "🎯"}</span><span class="pr-card-num">Goal ${i + 1}</span><span class="pr-stamp" aria-hidden="true">✓ unlocked</span></header>
       <h3>${goal.title || goal.text}</h3>
@@ -97,24 +103,84 @@
     </article>`).join("")}</div>`;
   }
 
+  // ---------- Tables and queries in a card (recap examples, question illustrations) ----------
+
+  const hl = (sql) => (DSL.Sql ? DSL.Sql.highlight(sql) : sql);
+  const cell = (v) => (v === null ? "<i>NULL</i>" : typeof v === "number" && !Number.isInteger(v) ? Number(v.toFixed(2)) : v);
+
+  // One result or table { label?, columns, rows } as a small table; spec gives show and mark.
+  function miniTable(result, spec, phase = "") {
+    if (result.error) return `<div class="pr-mini ${phase}"><p class="sq-err">${result.error}</p></div>`;
+    return `<div class="pr-mini ${phase}">${result.label ? `<small class="pr-label">${result.label}</small>` : ""}<table><thead><tr>${result.columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${result.rows.slice(0, spec.show || 7).map((row) => `<tr class="${spec.mark ? spec.mark(row, phase) : ""}">${row.map((v) => `<td>${cell(v)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  }
+
+  // A step is a query (shown, then run unless run is false) or tables shown as they are.
+  async function stepMarkup(what, phase, spec, { run = true } = {}) {
+    if (typeof what === "string") {
+      const code = `<code class="pr-snippet">${hl(what)}</code>`;
+      if (!run) return `${code}<div class="pr-pending"><b>?</b><small>The result appears once you answer.</small></div>`;
+      return `${code}${miniTable(await DSL.Sql.run(spec.dataset || "bakery", what), spec, phase)}`;
+    }
+    return [].concat(what).map((table) => miniTable(table, spec, phase)).join("");
+  }
+
   // Replay a goal's example into its card: an optional "before" step, then the real one.
   async function playExample(card, goal, wait = (ms) => new Promise((r) => setTimeout(r, ms))) {
     const ex = goal.example;
     const host = card.querySelector(".pr-example");
     if (!ex || !host) return;
-    const dataset = ex.dataset || "bakery";
-    const mini = (result, cls = "") => `<div class="pr-mini ${cls}">${result.label ? `<small class="pr-label">${result.label}</small>` : ""}${result.error ? `<p class="sq-err">${result.error}</p>` : `<table><thead><tr>${result.columns.map((c) => `<th>${c}</th>`).join("")}</tr></thead><tbody>${result.rows.slice(0, ex.show || 7).map((row) => `<tr class="${ex.mark ? ex.mark(row, cls) : ""}">${row.map((v) => `<td>${v === null ? "<i>NULL</i>" : typeof v === "number" && !Number.isInteger(v) ? Number(v.toFixed(2)) : v}</td>`).join("")}</tr>`).join("")}</tbody></table>`}</div>`;
-    // A step is a query (shown, then run) or tables shown as they are.
-    const step = async (what, cls) => (typeof what === "string"
-      ? `<code class="pr-snippet">${DSL.Sql.highlight(what)}</code>${mini(await DSL.Sql.run(dataset, what), cls)}`
-      : [].concat(what).map((table) => mini(table, cls)).join(""));
     if (ex.before) {
-      host.innerHTML = await step(ex.before, "before");
+      host.innerHTML = await stepMarkup(ex.before, "before", ex);
       retrigger(host, "sq-code-in");
       await wait(1400);
     }
-    host.innerHTML = `${await step(ex.after || ex.sql, "after")}${ex.note ? `<small class="pr-note">${ex.note}</small>` : ""}`;
+    host.innerHTML = `${await stepMarkup(ex.after || ex.sql, "after", ex)}${ex.note ? `<small class="pr-note">${ex.note}</small>` : ""}`;
     retrigger(host, "sq-code-in");
+  }
+
+  // ---------- Question illustrations ----------
+
+  const goalOf = (practice, goalId) => Math.max(0, practice.goals.findIndex((g) => g.id === goalId));
+
+  function visualFrame(practice, q) {
+    return `<figure class="pr-visual" data-hue="${goalOf(practice, q.goal) % 3}" aria-hidden="true"></figure>`;
+  }
+
+  // Fill a question's illustration in its open state. kind: "checks" or "warmups".
+  async function showVisual(fig, practice, q, kind) {
+    const v = q.visual;
+    if (v) {
+      const before = v.before !== undefined ? v.before : v.sql;
+      fig.className = "pr-visual";
+      fig.innerHTML = `<div class="pr-visual-body">${await stepMarkup(before, "before", v, { run: Boolean(v.runBefore) })}</div>`;
+    } else if (kind === "warmups") {
+      fig.className = "pr-visual pr-interviewer";
+      fig.innerHTML = `<div class="pr-avatar"><span>🧑‍💼</span></div><div class="pr-bubble"><i></i><i></i><i></i></div><small>Interviewer</small>`;
+    } else {
+      const goal = practice.goals[goalOf(practice, q.goal)];
+      fig.className = "pr-visual pr-goalart";
+      fig.innerHTML = `<span class="pr-goalart-icon">${goal.icon || "🎯"}</span><b>${goal.title || ""}</b>${goal.snippet ? `<code class="pr-snippet">${hl(goal.snippet)}</code>` : ""}<em class="pr-verdict"></em>`;
+    }
+    retrigger(fig, "pr-visual-in");
+  }
+
+  // Show the answer: the illustration's "after" state, or the interviewer's reaction.
+  async function revealVisual(fig, practice, q, kind, correct) {
+    const v = q.visual;
+    fig.classList.add(correct ? "right" : "wrong");
+    if (v) {
+      const body = fig.querySelector(".pr-visual-body");
+      const after = v.after !== undefined ? v.after : v.sql !== undefined ? v.sql : v.before;
+      body.innerHTML = `${await stepMarkup(after, "after", v)}${v.note ? `<small class="pr-note">${v.note}</small>` : ""}`;
+      retrigger(body, "sq-code-in");
+    } else if (kind === "warmups") {
+      fig.querySelector(".pr-bubble").innerHTML = correct ? "👍 That's the one." : "🤔 Hmm, not quite.";
+      retrigger(fig.querySelector(".pr-avatar"), correct ? "pr-nod" : "pr-shake");
+    } else {
+      const verdict = fig.querySelector(".pr-verdict");
+      verdict.textContent = correct ? "✓ Goal on track" : "Revisit this goal";
+      retrigger(verdict, "gd-pop");
+    }
   }
 
   function unlock(card) {
@@ -223,13 +289,17 @@
   // Multiple-choice rounds (checks, or interview warm-ups), recorded per question.
   async function choiceRound(n, scene, practice, { kind, questions, lead, speakerLabel, rightLines }) {
     let right = 0;
+    const fig = scene.querySelector(".pr-visual");
     for (const [i, q] of questions.entries()) {
-      scene.querySelector(".pr-q").innerHTML = `${goalTag(practice, q.goal)}<span class="pr-count">${i + 1} / ${questions.length}</span><p>${speakerLabel ? `<span class="pr-who">${speakerLabel}</span>` : ""}${q.prompt}</p>`;
+      scene.querySelector(".pr-q").innerHTML = `<div class="pr-q-head">${goalTag(practice, q.goal)}<span class="pr-count">${i + 1} / ${questions.length}</span></div><p>${speakerLabel ? `<span class="pr-who">${speakerLabel}</span>` : ""}${q.prompt}</p>`;
+      fig.dataset.hue = String(goalOf(practice, q.goal) % 3);
       retrigger(scene.querySelector(".pr-q"), "gd-card-in");
+      await showVisual(fig, practice, q, kind);
       await n.say(`${lead}${i + 1}`);
       const pick = await n.choose(q.options.map((option, j) => [String(j), option]), { label: "Your answer" });
       const correct = Number(pick) === q.answer;
       DSL.Sfx.play(correct ? "correct" : "wrong");
+      await revealVisual(fig, practice, q, kind, correct);
       record(practice.lessonId, kind, q.id, correct);
       const mark = scene.querySelectorAll(".pr-marks i")[i];
       mark.className = correct ? "ok" : "bad";
@@ -244,7 +314,7 @@
       id: "check",
       title: "Check your understanding",
       async script(n, scene) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">Check your understanding</p><div class="pr-q gd-quiz"></div><div class="nr-marks pr-marks">${practice.checks.map(() => "<i></i>").join("")}</div></div>`;
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">Check your understanding</p><div class="pr-qlayout">${visualFrame(practice, practice.checks[0])}<div class="pr-qcol"><div class="pr-q gd-quiz"></div><div class="nr-marks pr-marks">${practice.checks.map(() => "<i></i>").join("")}</div></div></div></div>`;
         await n.say("check.intro");
         const right = await choiceRound(n, scene, practice, { kind: "checks", questions: practice.checks, lead: "check.q", rightLines: ["check.right1", "check.right2", "check.right3"] });
         const passed = right >= Math.ceil(practice.checks.length * 0.66);
@@ -259,7 +329,7 @@
       id: "interview",
       title: "Interview round",
       async script(n, scene) {
-        scene.innerHTML = `<div class="pr-scene"><p class="pr-kicker">Interview round</p><div class="pr-q gd-quiz"></div><div class="nr-marks pr-marks">${practice.warmups.map(() => "<i></i>").join("")}</div></div>`;
+        scene.innerHTML = `<div class="pr-scene wide"><p class="pr-kicker">Interview round</p><div class="pr-qlayout">${visualFrame(practice, practice.warmups[0])}<div class="pr-qcol"><div class="pr-q gd-quiz"></div><div class="nr-marks pr-marks">${practice.warmups.map(() => "<i></i>").join("")}</div></div></div></div>`;
         await n.say("interview.intro");
         await choiceRound(n, scene, practice, { kind: "warmups", questions: practice.warmups, lead: "interview.w", speakerLabel: "Interviewer", rightLines: ["interview.right1", "interview.right2"] });
         scene.innerHTML = `<div class="pr-scene">${goalTag(practice, practice.open.goal)}${openMarkup(practice)}</div>`;
@@ -325,19 +395,22 @@
         let right = 0;
         function render() {
           const question = questions[q];
-          scene.innerHTML = `<div class="gd-quiz pr-scene">
-            ${goalTag(practice, question.goal)}<span class="gd-q-count">${q + 1} / ${questions.length}</span>
+          scene.innerHTML = `<div class="pr-scene wide"><div class="pr-qlayout">${visualFrame(practice, question)}<div class="gd-quiz pr-q">
+            <div class="pr-q-head">${goalTag(practice, question.goal)}<span class="gd-q-count">${q + 1} / ${questions.length}</span></div>
             <p class="gd-q">${speaker ? `<span class="pr-who">${speaker}</span>` : ""}${question.prompt}</p>
             <div class="gd-answers">${question.options.map((option, i) => `<button type="button" class="gd-answer" data-i="${i}">${option}</button>`).join("")}</div>
-          </div>`;
+          </div></div></div>`;
           retrigger(scene.querySelector(".gd-quiz"), "gd-card-in");
+          const fig = scene.querySelector(".pr-visual");
+          showVisual(fig, practice, question, kind);
           scene.querySelectorAll(".gd-answer").forEach((button) => button.addEventListener("click", async () => {
             const correct = Number(button.dataset.i) === question.answer;
             DSL.Sfx.play(correct ? "correct" : "wrong");
+            revealVisual(fig, practice, question, kind, correct);
             record(practice.lessonId, kind, question.id, correct);
             scene.querySelectorAll(".gd-answer").forEach((b) => { b.disabled = true; if (Number(b.dataset.i) === question.answer) b.classList.add("correct"); });
             if (correct) { right += 1; burst(button, { count: 12 }); api.say(`✓ ${question.why}`, "ok"); } else { button.classList.add("wrong"); api.say(`✗ ${question.why}`, "warn"); }
-            await api.wait(correct ? 1800 : 3200);
+            await api.wait(correct ? 2600 : 3800);
             q += 1;
             if (q < questions.length) { render(); api.say(""); return; }
             const passed = right >= Math.ceil(questions.length * 0.66);
@@ -393,14 +466,26 @@
 
   function mountExplore(root, practice, { onPass } = {}) {
     root.querySelectorAll(".pr-card").forEach((card, i) => { card.classList.add("pr-lit", "pr-unlocked"); playExample(card, practice.goals[i], () => Promise.resolve()); });
-    const recordAll = (kind, list) => (idx, correct) => record(practice.lessonId, kind, list[idx].id, correct);
     const checks = root.querySelector(".pr-checks");
     const warmups = root.querySelector(".pr-warmups");
     let passedChecks = false;
     let passedWarmups = false;
     const maybePass = () => { if (passedChecks && passedWarmups && onPass) onPass(); };
-    DSL.Quiz.mount(checks, practice.checks, { noun: "question", passScore: Math.ceil(practice.checks.length * 0.66), onAnswer: recordAll("checks", practice.checks), onComplete: ({ passed }) => { passedChecks = passed; maybePass(); } });
-    DSL.Quiz.mount(warmups, practice.warmups, { noun: "question", passScore: practice.warmups.length, onAnswer: recordAll("warmups", practice.warmups), onComplete: ({ passed }) => { passedWarmups = passed; maybePass(); } });
+    // Each quiz card gets its question's illustration, revealed on the first answer.
+    const illustrate = (host, kind, list) => {
+      const figs = [...host.querySelectorAll("[data-quiz-question]")].map((card, i) => {
+        card.querySelector(".quiz-question-head").insertAdjacentHTML("afterend", visualFrame(practice, list[i]));
+        const fig = card.querySelector(".pr-visual");
+        showVisual(fig, practice, list[i], kind);
+        return fig;
+      });
+      return (idx, correct) => {
+        record(practice.lessonId, kind, list[idx].id, correct);
+        if (!figs[idx].classList.contains("right") && !figs[idx].classList.contains("wrong")) revealVisual(figs[idx], practice, list[idx], kind, correct);
+      };
+    };
+    DSL.Quiz.mount(checks, practice.checks, { noun: "question", passScore: Math.ceil(practice.checks.length * 0.66), onAnswer: illustrate(checks, "checks", practice.checks), onComplete: ({ passed }) => { passedChecks = passed; maybePass(); } });
+    DSL.Quiz.mount(warmups, practice.warmups, { noun: "question", passScore: practice.warmups.length, onAnswer: illustrate(warmups, "warmups", practice.warmups), onComplete: ({ passed }) => { passedWarmups = passed; maybePass(); } });
     wireOpen(root.querySelector(".pr-open"), practice);
   }
 

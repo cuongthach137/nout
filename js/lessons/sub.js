@@ -70,9 +70,28 @@
       },
     ],
     checks: [
-      { id: "lisbon", goal: "nest", prompt: "<code>WHERE customer_id = (SELECT id FROM customers WHERE city = 'Lisbon')</code>. Three customers live in Lisbon. What does PostgreSQL do?", options: ["Matches all three Lisbon customers", "Raises an error: the subquery returned more than one row", "Uses the first Lisbon customer"], answer: 1, why: "<code>=</code> needs one value. PostgreSQL stops with an error; SQLite quietly uses the first row, which hides the bug. For a list, use <code>IN</code>." },
-      { id: "runs", goal: "per-row", prompt: "<code>WHERE p.price &gt; (SELECT AVG(x.price) FROM products x WHERE x.category = p.category)</code> on the 8 products. How many times does the inner query run, by its meaning?", options: ["Once", "Once per category: 3", "Once per product: 8"], answer: 2, why: "It uses the outer row's category, so it's evaluated for each of the 8 products. A planner may cache or rewrite it, but that's what it means." },
-      { id: "twice", goal: "steps", prompt: "Orders worth more than the average order. Why compute the order totals in a CTE?", options: ["Because WHERE can't use SUM", "Because the totals are needed twice: once per order, and once to average", "Because CTEs are always faster"], answer: 1, why: "You compare each order's total with the average of all the totals. Name the totals once with WITH, then use them twice." },
+      { id: "lisbon", goal: "nest", prompt: "<code>WHERE customer_id = (SELECT id FROM customers WHERE city = 'Lisbon')</code>. Three customers live in Lisbon. What does PostgreSQL do?", options: ["Matches all three Lisbon customers", "Raises an error: the subquery returned more than one row", "Uses the first Lisbon customer"], answer: 1, why: "<code>=</code> needs one value. PostgreSQL stops with an error; SQLite quietly uses the first row, which hides the bug. For a list, use <code>IN</code>.",
+        visual: {
+          before: "SELECT id FROM customers WHERE city = 'Lisbon'",
+          runBefore: true,
+          after: { label: "PostgreSQL says", columns: ["error"], rows: [["more than one row returned by a subquery used as an expression"]] },
+          mark: (row, phase) => (phase === "after" ? "bad" : "hot"),
+        },
+      },
+      { id: "runs", goal: "per-row", prompt: "<code>WHERE p.price &gt; (SELECT AVG(x.price) FROM products x WHERE x.category = p.category)</code> on the 8 products. How many times does the inner query run, by its meaning?", options: ["Once", "Once per category: 3", "Once per product: 8"], answer: 2, why: "It uses the outer row's category, so it's evaluated for each of the 8 products. A planner may cache or rewrite it, but that's what it means.",
+        visual: {
+          sql: "SELECT p.name, (SELECT ROUND(AVG(x.price), 2) FROM products x\n  WHERE x.category = p.category) AS its_avg\nFROM products p ORDER BY p.category",
+          show: 8,
+          note: "One inner answer per product: 8.",
+        },
+      },
+      { id: "twice", goal: "steps", prompt: "Orders worth more than the average order. Why compute the order totals in a CTE?", options: ["Because WHERE can't use SUM", "Because the totals are needed twice: once per order, and once to average", "Because CTEs are always faster"], answer: 1, why: "You compare each order's total with the average of all the totals. Name the totals once with WITH, then use them twice.",
+        visual: {
+          sql: "WITH totals AS (\n  SELECT o.id, SUM(i.quantity * p.price) AS total FROM orders o\n  JOIN order_items i ON i.order_id = o.id\n  JOIN products p ON p.id = i.product_id GROUP BY o.id\n)\nSELECT id, total FROM totals\nWHERE total > (SELECT AVG(total) FROM totals)\nORDER BY total DESC",
+          show: 4,
+          note: "totals is used twice: per order, and to average.",
+        },
+      },
     ],
     warmups: [
       { id: "above-avg", goal: "nest", prompt: "How would you find the products priced above the average price?", options: ["<code>WHERE price &gt; AVG(price)</code>", "<code>WHERE price &gt; (SELECT AVG(price) FROM products)</code>", "<code>HAVING price &gt; AVG(price)</code>"], answer: 1, why: "WHERE sees one row at a time, so it can't take an average. A scalar subquery computes it first, then every price is compared with that one value." },

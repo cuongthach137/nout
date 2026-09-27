@@ -73,9 +73,25 @@
       },
     ],
     checks: [
-      { id: "rows-out", goal: "keep", prompt: "<code>SELECT category, COUNT(*) OVER (PARTITION BY category) FROM products</code>, on 8 products in 3 categories. How many rows come back?", options: ["3", "8", "24"], answer: 1, why: "A window function never removes rows. Each of the 8 products gets its category's count beside it." },
-      { id: "ties", goal: "rank", prompt: "Four prices, ordered from high to low: 6.50, 5.90, 5.90, 2.80. What does each function give the 2.80?", options: ["ROW_NUMBER 4, RANK 4, DENSE_RANK 3", "ROW_NUMBER 4, RANK 3, DENSE_RANK 3", "All three give 4"], answer: 0, why: "ROW_NUMBER just counts: 4. RANK gives the tie 2 and 2, then skips to 4. DENSE_RANK doesn't skip, so 3." },
-      { id: "running", goal: "line", prompt: "A running total of daily revenue: <code>SUM(revenue) OVER ( ? )</code>. What goes in the brackets?", options: ["<code>PARTITION BY day</code>", "<code>ORDER BY day</code>", "<code>GROUP BY day</code>"], answer: 1, why: "ORDER BY lines the days up, so each row adds itself to everything before it. PARTITION BY day would restart every day, and GROUP BY can't go inside OVER." },
+      { id: "rows-out", goal: "keep", prompt: "<code>SELECT category, COUNT(*) OVER (PARTITION BY category) FROM products</code>, on 8 products in 3 categories. How many rows come back?", options: ["3", "8", "24"], answer: 1, why: "A window function never removes rows. Each of the 8 products gets its category's count beside it.",
+        visual: { sql: "SELECT category, COUNT(*) OVER (PARTITION BY category) AS n\nFROM products ORDER BY category", show: 8, note: "8 rows in, 8 rows out." },
+      },
+      { id: "ties", goal: "rank", prompt: "Four prices, ordered from high to low: 6.50, 5.90, 5.90, 2.80. What does each function give the 2.80?", options: ["ROW_NUMBER 4, RANK 4, DENSE_RANK 3", "ROW_NUMBER 4, RANK 3, DENSE_RANK 3", "All three give 4"], answer: 0, why: "ROW_NUMBER just counts: 4. RANK gives the tie 2 and 2, then skips to 4. DENSE_RANK doesn't skip, so 3.",
+        visual: {
+          before: { label: "Ordered by price, high to low", columns: ["price", "ROW_NUMBER", "RANK", "DENSE_RANK"], rows: [["6.50", 1, 1, 1], ["5.90", 2, 2, 2], ["5.90", 3, 2, 2], ["2.80", "?", "?", "?"]] },
+          after: { label: "Ordered by price, high to low", columns: ["price", "ROW_NUMBER", "RANK", "DENSE_RANK"], rows: [["6.50", 1, 1, 1], ["5.90", 2, 2, 2], ["5.90", 3, 2, 2], ["2.80", 4, 4, 3]] },
+          mark: (row, phase) => (phase === "after" && row[0] === "2.80" ? "hot" : ""),
+          note: "RANK skips 3; DENSE_RANK doesn't.",
+        },
+      },
+      { id: "running", goal: "line", prompt: "A running total of daily revenue: <code>SUM(revenue) OVER ( ? )</code>. What goes in the brackets?", options: ["<code>PARTITION BY day</code>", "<code>ORDER BY day</code>", "<code>GROUP BY day</code>"], answer: 1, why: "ORDER BY lines the days up, so each row adds itself to everything before it. PARTITION BY day would restart every day, and GROUP BY can't go inside OVER.",
+        visual: {
+          before: { label: "Revenue per day", columns: ["day", "revenue", "running"], rows: [["09-02", "23.70", "?"], ["09-05", "11.40", "?"], ["09-06", "10.35", "?"], ["09-09", "5.25", "?"]] },
+          after: { label: "SUM(revenue) OVER (ORDER BY day)", columns: ["day", "revenue", "running"], rows: [["09-02", "23.70", "23.70"], ["09-05", "11.40", "35.10"], ["09-06", "10.35", "45.45"], ["09-09", "5.25", "50.70"]] },
+          mark: (row, phase) => (phase === "after" ? "good" : ""),
+          note: "Each row adds itself to everything before it.",
+        },
+      },
     ],
     warmups: [
       { id: "rank-kinds", goal: "rank", prompt: "What's the difference between ROW_NUMBER, RANK and DENSE_RANK?", options: ["ROW_NUMBER always counts 1, 2, 3; RANK gives ties the same number and then skips; DENSE_RANK gives ties the same number without skipping", "They're the same except for how they treat NULLs", "RANK skips NULLs; DENSE_RANK doesn't"], answer: 0, why: "They only differ on ties: ROW_NUMBER breaks them arbitrarily, RANK leaves a gap after them, DENSE_RANK doesn't." },
