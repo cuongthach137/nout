@@ -23,6 +23,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "pk",
         title: "Primary keys",
@@ -98,7 +99,9 @@
         title: "Your turn: favourites",
         async script(n) { await exercise(n, S.favChallenge(), "fav", { reactions }); },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("keys"),
       {
         id: "finish",
@@ -106,6 +109,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "keys",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🔑", "Keys", "unique, never empty"], ["🔗", "Foreign keys", "no pointer to nothing"], ["🧩", "Junctions", "many-to-many, by pairs"]],
           }));
           await n.say("finish.1");

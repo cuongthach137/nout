@@ -216,6 +216,7 @@
   function makeBeats() {
     const M = DSL.KeysModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-pk", "A key that identifies.", pkStory(), "A primary key is also where other tables point, so its value gets copied into every foreign key. That's why it should never change."),
       teach("teach-unique", "Unique, but not the key.", slice(uniqueStory(), 0, 1)),
       uniquePredict(),
@@ -227,9 +228,13 @@
       addressChallenge(),
       teach("teach-card", "One, many, and many-to-many.", cardStory()),
       favChallenge(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "keys",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["🔑", "Keys", "unique, never empty"], ["🔗", "Foreign keys", "no pointer to nothing"], ["🧩", "Junctions", "many-to-many, by pairs"]],
       }),
     ];

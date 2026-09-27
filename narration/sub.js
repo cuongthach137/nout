@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("sub", {
   "hook.1": "Some questions need the answer to another question first.",
   "hook.2": "Which products cost more than average? First, you need the average.",
   "hook.3": "SQL lets you put a query inside a query. That's this lesson.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Answer the question behind the question with a scalar or list subquery, and know what each must return.",
+  "goals.2": "Two. Write correlated subqueries that run again for each outer row, and test for a match with EXISTS and NOT EXISTS.",
+  "goals.3": "Three. Break a question into named steps with WITH, and read a derived table.",
   "scalar.1": "Here are the eight products and their prices.",
   "scalar.2": {
    "caption": "The inner query, in brackets, runs first. It works out one number: the average price, <b>4.51</b>.",
@@ -68,40 +72,58 @@ window.DataSystemsLab.Narrator.register("sub", {
   "above.missing": "Some customers are missing. Greater than the average, not equal to the maximum.",
   "above.columns": "Two columns: the name, and the count.",
   "above.done": "Maya, Omar, Ana and Yuki. Two named steps, read top to bottom.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "<code>WHERE price &gt; (SELECT AVG(price) FROM products)</code>. What must the subquery return?",
-   "voice": "Where price is more than a subquery that averages the prices. What must that subquery return?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "A scalar subquery returns one value, the average price, and the outer query compares with it. Four products beat it.",
+  "recap.2": "A correlated subquery uses the outer row, so it runs once per row. NOT EXISTS keeps the customers with no paid order.",
+  "recap.3": "A CTE names a step, and the next step reads it like a table. Count each customer's orders, then keep those above the average.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>WHERE customer_id = (SELECT id FROM customers WHERE city = 'Lisbon')</code>. Three customers live in Lisbon. What does PostgreSQL do?",
+   "voice": "Where the customer ID equals a subquery that finds the customers in Lisbon. Three customers live there. What does Postgres do?"
+  },
+  "check.q1-why": "It raises an error. Equals needs one value, and the subquery returned three. SQLite quietly uses the first row. For a list, use IN.",
+  "check.q2": {
+   "caption": "Each product's price is compared with <code>(SELECT AVG(x.price) \u2026 WHERE x.category = p.category)</code>. How many times does the inner query run, by its meaning?",
+   "voice": "Each product's price is compared with the average price of its own category, from a subquery. How many times does the inner query run, by its meaning?"
+  },
+  "check.q2-why": "Eight times, once per product. It uses the outer row's category, so its answer changes from row to row.",
+  "check.q3": "Orders worth more than the average order. Why compute the order totals in a CTE?",
+  "check.q3-why": "Because you need the totals twice: each order's total, and the average of all of them. Name them once, use them twice.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "How would you find the products priced above the average price?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "It's compared with one price, so it must be one value: one row, one column.",
-  "quiz.q2": {
-   "caption": "What makes a subquery correlated?",
+  "interview.w1-why": "WHERE sees one row at a time, so it can't average. A scalar subquery works out the average first, then every price is compared with it.",
+  "interview.w2": {
+   "caption": "What's the difference between EXISTS and IN?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "It uses a column from the outer query, so its result depends on the outer row.",
-  "quiz.q3": {
-   "caption": "Why do people write <code>EXISTS (SELECT 1 \u2026)</code>?",
-   "voice": "Why do people write exists, select one?",
+  "interview.w2-why": "EXISTS asks, for each row, whether any matching row exists. IN compares a value with a list. For no match, NOT EXISTS is the safe choice.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Find each customer's biggest order by total value. Walk me through how you'd structure the query.",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "EXISTS only asks whether a row exists. What the subquery selects is ignored, so one is a convention.",
-  "quiz.q4": {
-   "caption": "Why use a CTE instead of nesting subqueries?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "It names each step, so the query reads top to bottom, and a step can be used more than once.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -176,6 +198,54 @@ window.DataSystemsLab.Narrator.register("sub", {
   "above.missing": {
    "hash": "66abd09e650f",
    "ms": 4693
+  },
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "84513a828b48",
+   "ms": 7765
+  },
+  "check.q1-why": {
+   "hash": "003f8ad99fe9",
+   "ms": 9109
+  },
+  "check.q2": {
+   "hash": "d158a5a384d0",
+   "ms": 8853
+  },
+  "check.q2-why": {
+   "hash": "220c46b8025f",
+   "ms": 6485
+  },
+  "check.q3": {
+   "hash": "52b1c9af670a",
+   "ms": 5077
+  },
+  "check.q3-why": {
+   "hash": "b20827f89761",
+   "ms": 6805
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
   },
   "corr.1": {
    "hash": "07fd59c88134",
@@ -253,6 +323,22 @@ window.DataSystemsLab.Narrator.register("sub", {
    "hash": "4a3d6e6957fc",
    "ms": 3008
   },
+  "goals.1": {
+   "hash": "9de9cff999b6",
+   "ms": 6336
+  },
+  "goals.2": {
+   "hash": "bf9149a6c2c9",
+   "ms": 7168
+  },
+  "goals.3": {
+   "hash": "65fa14e6b38e",
+   "ms": 4309
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "hook.1": {
    "hash": "8dbcf1f9d32c",
    "ms": 3307
@@ -264,6 +350,66 @@ window.DataSystemsLab.Narrator.register("sub", {
   "hook.3": {
    "hash": "f792e14cca1b",
    "ms": 3968
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "4bc74cd56e30",
+   "ms": 6229
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "1728744e42ce",
+   "ms": 3691
+  },
+  "interview.w1-why": {
+   "hash": "49286b4a87f1",
+   "ms": 8149
+  },
+  "interview.w2": {
+   "hash": "8d60c72fcd81",
+   "ms": 2773
+  },
+  "interview.w2-why": {
+   "hash": "c324b9c2310e",
+   "ms": 8747
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -357,61 +503,21 @@ window.DataSystemsLab.Narrator.register("sub", {
    "hash": "4db5155122a7",
    "ms": 4587
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+  "recap.1": {
+   "hash": "ef55743721ae",
+   "ms": 7104
   },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+  "recap.2": {
+   "hash": "ca71366a0f73",
+   "ms": 7680
   },
-  "quiz.q1": {
-   "hash": "ae8419435b2e",
-   "ms": 6251
+  "recap.3": {
+   "hash": "bd98f9617daf",
+   "ms": 8043
   },
-  "quiz.q1-why": {
-   "hash": "1df3c8e6fa0a",
-   "ms": 4373
-  },
-  "quiz.q2": {
-   "hash": "1a08734898d2",
-   "ms": 2133
-  },
-  "quiz.q2-why": {
-   "hash": "0b2837adfb27",
-   "ms": 4501
-  },
-  "quiz.q3": {
-   "hash": "1d0c692c7ec1",
-   "ms": 2539
-  },
-  "quiz.q3-why": {
-   "hash": "9bf6ea69c883",
-   "ms": 6464
-  },
-  "quiz.q4": {
-   "hash": "f9b07561f0e8",
-   "ms": 3691
-  },
-  "quiz.q4-why": {
-   "hash": "ec20e01da8d2",
-   "ms": 5312
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "scalar.1": {
    "hash": "a11d3e7c758d",

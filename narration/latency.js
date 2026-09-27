@@ -3,6 +3,10 @@ window.DataSystemsLab.Narrator.register("latency", {
  "lines": {
   "hook.1": "Some customers say the bakery's website feels slow. But the dashboard says the average page takes a hundred and seventy milliseconds.",
   "hook.2": "Both are true. This lesson is about measuring speed honestly, the way interviewers expect you to.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Tell latency from throughput, and explain why the average hides what users feel.",
+  "goals.2": "Two. Compute p50, p95 and p99 in SQL, and say what each one means for users.",
+  "goals.3": "Three. Predict how the tail grows when a page fans out to many calls, and how latency explodes as a server nears full load.",
   "terms.1": "Two different words first. Each dot is one request to the site.",
   "terms.2": "How long one request takes, start to finish, is its <k>latency</k>.",
   "terms.3": "How many requests finish each second is <k>throughput</k>.",
@@ -64,42 +68,59 @@ window.DataSystemsLab.Narrator.register("latency", {
   "checkout.missing": "Not quite. Only checkout requests, sorted, skip forty-seven, take one.",
   "checkout.columns": "One column: the time.",
   "checkout.done": "Nine hundred and eighty-four milliseconds: the promise holds, just. A promise stated as a percentile is an <k>SLO</k>.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "Average response time is 170 ms, but the median is 101 ms. What does that tell you?",
-   "voice": "Average response time is a hundred and seventy milliseconds, but the median is a hundred and one. What does that tell you?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "Latency is how long one request takes. Throughput is how many finish each second. A few very slow requests drag the average far above the median.",
+  "recap.2": "A percentile says how many requests are at or below a value. The p99 is over two seconds: one request in a hundred waits longer.",
+  "recap.3": "A page waiting on ten calls is slow about one time in ten. And near full load, queueing delay makes latency shoot up.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "The site handles 500 requests a second. The team doubles the servers, and it now handles 1,000. What happened to each request's latency?",
+   "voice": "The site handles five hundred requests a second. The team doubles the servers, and now it handles a thousand. What happened to each request's latency?"
+  },
+  "check.q1-why": "Not necessarily anything. Throughput counts requests per second; latency is how long each one takes. Each request only speeds up if it was waiting in a queue.",
+  "check.q2": {
+   "caption": "The promise: 95% of checkouts in under a second. The checkout p95 is 984 ms, and a few take over 2 s. Is the promise kept?",
+   "voice": "The promise: ninety-five percent of checkouts in under a second. The checkout p95 is nine hundred and eighty-four milliseconds, and a few take over two seconds. Is the promise kept?"
+  },
+  "check.q2-why": "Yes. The promise is about p95, and that's under a second. If the slowest few matter too, promise a p99 as well.",
+  "check.q3": "Page A calls one service. Page B calls fifty services in parallel. Every service is slow one time in a hundred. Which is right?",
+  "check.q3-why": "Page B is slow about forty percent of the time. Parallel calls finish only when the slowest one does: fifty chances to be unlucky.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "Why would you report p99 latency rather than the average?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "A few very slow requests pull the average up. The distribution has a long tail, so report percentiles.",
-  "quiz.q2": {
-   "caption": "What does \"p99 is 2 seconds\" mean?",
-   "voice": "What does p99 is two seconds mean?",
-   "speaker": "interviewer"
-  },
-  "quiz.q2-why": "Ninety-nine in a hundred requests take two seconds or less. One in a hundred takes longer.",
-  "quiz.q3": {
-   "caption": "A page calls 10 services in parallel, each slow 1% of the time. Roughly how often is the page slow?",
-   "voice": "A page calls ten services in parallel, each slow one percent of the time. Roughly how often is the page slow?",
-   "speaker": "interviewer"
-  },
-  "quiz.q3-why": "It waits for the slowest call: one minus point nine nine to the tenth power, about ten percent.",
-  "quiz.q4": {
+  "interview.w1-why": "The average hides the slow tail that some users actually hit. p50 describes the typical user; p99, the unlucky one in a hundred.",
+  "interview.w2": {
    "caption": "A server goes from 80% to 95% busy. What happens to response time?",
-   "voice": "A server goes from eighty percent to ninety-five percent busy. What happens to response time?",
+   "voice": "A server goes from eighty to ninety-five percent busy. What happens to response time?",
    "speaker": "interviewer"
   },
-  "quiz.q4-why": "Queues grow steeply near full capacity. In the simple queueing model it goes from five times the service time to twenty: four times worse.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
+  "interview.w2-why": "It roughly quadruples. Queues grow steeply near full capacity, so the last bit of capacity is the most expensive.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Users say the site feels slow, but the average response time looks fine. How would you investigate, and how would you report it?",
+   "speaker": "interviewer"
   },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -175,6 +196,54 @@ window.DataSystemsLab.Narrator.register("latency", {
    "hash": "f3a006112c54",
    "ms": 2688
   },
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "1857cf23c3fb",
+   "ms": 9045
+  },
+  "check.q1-why": {
+   "hash": "856b0ebb2817",
+   "ms": 9941
+  },
+  "check.q2": {
+   "hash": "1b65292e42c0",
+   "ms": 11520
+  },
+  "check.q2-why": {
+   "hash": "c06159bf36f4",
+   "ms": 8171
+  },
+  "check.q3": {
+   "hash": "51fef083e756",
+   "ms": 8619
+  },
+  "check.q3-why": {
+   "hash": "7afaae2e74ce",
+   "ms": 8619
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
+  },
   "checkout.1": {
    "hash": "d01ddac412ff",
    "ms": 5909
@@ -247,6 +316,22 @@ window.DataSystemsLab.Narrator.register("latency", {
    "hash": "555b915c7e66",
    "ms": 3712
   },
+  "goals.1": {
+   "hash": "fe0409119df2",
+   "ms": 5141
+  },
+  "goals.2": {
+   "hash": "1391c65810fa",
+   "ms": 7168
+  },
+  "goals.3": {
+   "hash": "8cae6ea335bc",
+   "ms": 7573
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "hook.1": {
    "hash": "81186ad0e3ae",
    "ms": 7808
@@ -254,6 +339,66 @@ window.DataSystemsLab.Narrator.register("latency", {
   "hook.2": {
    "hash": "39c337ad4420",
    "ms": 5611
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "7070502fe7f0",
+   "ms": 8107
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "a2f9acecca83",
+   "ms": 4352
+  },
+  "interview.w1-why": {
+   "hash": "ec88576f4254",
+   "ms": 9259
+  },
+  "interview.w2": {
+   "hash": "be8f61846854",
+   "ms": 5717
+  },
+  "interview.w2-why": {
+   "hash": "863a2fd23ac7",
+   "ms": 7211
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -319,61 +464,21 @@ window.DataSystemsLab.Narrator.register("latency", {
    "hash": "2ed1a053ca50",
    "ms": 5973
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+  "recap.1": {
+   "hash": "08f1922d4237",
+   "ms": 9387
   },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+  "recap.2": {
+   "hash": "2b54b196232d",
+   "ms": 9237
   },
-  "quiz.q1": {
-   "hash": "307234c0fe64",
-   "ms": 8064
+  "recap.3": {
+   "hash": "18a9f3e4faee",
+   "ms": 7552
   },
-  "quiz.q1-why": {
-   "hash": "523c697bbc8c",
-   "ms": 6592
-  },
-  "quiz.q2": {
-   "hash": "c05cb2ab983f",
-   "ms": 3008
-  },
-  "quiz.q2-why": {
-   "hash": "55564abb6583",
-   "ms": 5312
-  },
-  "quiz.q3": {
-   "hash": "3f268daadb02",
-   "ms": 7765
-  },
-  "quiz.q3-why": {
-   "hash": "118130565de4",
-   "ms": 5781
-  },
-  "quiz.q4": {
-   "hash": "5cad369c732f",
-   "ms": 6229
-  },
-  "quiz.q4-why": {
-   "hash": "e1fc9c6c4600",
-   "ms": 8576
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "tail.1": {
    "hash": "8de27e227025",

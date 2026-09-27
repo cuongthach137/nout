@@ -3,7 +3,10 @@
   "voice": "af_heart",
   "speed": 1.0,
   "speakers": {
-    "interviewer": { "voice": "bm_george", "label": "Interviewer" }
+    "interviewer": {
+      "voice": "bm_george",
+      "label": "Interviewer"
+    }
   },
   "keywords": {
     "document-model": {
@@ -39,10 +42,12 @@
     "hook.1": "Maya's bakery lives in tables. Not every system does.",
     "hook.2": "Many apps store a whole order as one JSON document. Social apps store who knows whom as a graph.",
     "hook.3": "Same data, three shapes. Each makes some questions easy and others painful. Interviewers want to hear which is which.",
-
+    "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+    "goals.1": "One. Model an order as a document, explain embedding and data locality, and name the cost of copied data.",
+    "goals.2": "Two. Contrast schema on write with schema on read, and say who pays for each.",
+    "goals.3": "Three. Model connections as a graph, and traverse it to any depth with a recursive CTE.",
     "rel.1": "First, the shape you know. To show order one, the database joins four tables: the order, its customer, its items, and their products.",
     "rel.2": "Each fact lives once, and joins stitch them back together on every read. That's the relational model.",
-
     "doc.1": "Here's the same order as a document. The customer and the items are nested right inside it.",
     "doc.2": "Putting related data inside the document is called <k>embedding</k>. It's the heart of the <k id=\"document-model\">document model</k>.",
     "doc.3": "Showing the order is now one read, with no joins. Data that's read together is stored together: <k id=\"data-locality\">data locality</k>.",
@@ -51,7 +56,6 @@
     "doc.four": "Four. One per order she's placed.",
     "doc.sixteen": "Not all of them. Just hers: four.",
     "doc.4": "It's the update anomaly from the notebook, back again. Documents trade cheap reads for costly updates of copied data.",
-
     "names.1": "Your turn. The documents live in a table called order docs. Pull out each order's ID and the customer's name.",
     "names.ask": "Use json extract to reach inside the document.",
     "names.hint": {
@@ -63,18 +67,15 @@
     "names.missing": "Some rows are off. Keep every document, even the walk-ins with no customer.",
     "names.columns": "Two columns: the order's ID, and the customer's name.",
     "names.done": "Sixteen documents, and the walk-ins come back NULL. The path simply finds nothing.",
-
     "schema.1": "Order eight has a note that no other order has. Nobody declared that field.",
     "schema.2": "A table would have refused it: the structure is checked as each row is written. That's <k id=\"schema-on-write\">schema on write</k>.",
     "schema.3": "A document accepts any shape. The code that reads it copes with whatever it finds: <k id=\"schema-on-read\">schema on read</k>.",
     "schema.4": "Flexible for fields that vary. But every reader now handles every old version, forever.",
-
     "graph.1": "Now the third shape. Some customers brought in friends. Maya brought Ana and Omar, and they brought others.",
     "graph.2": "People are nodes, and each referral is an edge between two of them. That's the <k id=\"graph-model\">graph model</k>.",
     "graph.3": "Who joined because of Maya, directly or not? Follow the edges one hop at a time until they run out.",
     "graph.4": "That's a <k>traversal</k>. Ana and Omar, then Ines and Yuki, then Priya: three hops deep.",
     "graph.5": "SQL can do it with a recursive CTE. Graph databases make it the main event, with queries like: follow referred, any depth.",
-
     "net.1": "Your turn. Find everyone Maya brought in, at any depth.",
     "net.ask": "Finish the recursive step: join referrals to the people found so far.",
     "net.hint": {
@@ -86,7 +87,6 @@
     "net.missing": "Some people are missing. Is the recursive step following the edges from people already found?",
     "net.columns": "Just the names, please.",
     "net.done": "Five people, three hops deep. That's a graph traversal in SQL.",
-
     "pick.1": "So which shape when? Here's how to say it in an interview.",
     "pick.2": "Documents when data is read as one tree, like an order or a profile, and rarely joined to much else.",
     "pick.3": "Graphs when everything connects to everything, and questions follow links to an unknown depth.",
@@ -96,27 +96,57 @@
     "pick.document": "A document can hold your own friends list, but friends of friends means following links. That's a graph.",
     "pick.relational": "Tables can do it with recursive queries, but it gets slow and awkward at depth. A graph fits more naturally.",
     "pick.5": "And the lines blur. PostgreSQL stores JSON columns, and many document databases now do joins. Pick by how the data is read.",
-
-    "quiz.intro": "Four quick questions.",
-    "quiz.q1": { "caption": "Why is a document store fast at showing a whole order?", "speaker": "interviewer" },
-    "quiz.q1-why": "Everything the page needs is embedded in one document, so it's one read with no joins. That's data locality.",
-    "quiz.q2": { "caption": "A customer's details are embedded in each of her orders. What goes wrong when she moves?", "speaker": "interviewer" },
-    "quiz.q2-why": "Every copy must be updated. Miss one and the documents disagree: the update anomaly again.",
-    "quiz.q3": { "caption": "What does schema on read mean?", "speaker": "interviewer" },
-    "quiz.q3-why": "Writes accept any shape; the reading code interprets and copes with each variant. Tables check on write instead.",
-    "quiz.q4": { "caption": "Which question most needs a graph model?", "speaker": "interviewer" },
-    "quiz.q4-why": "Following links to an unknown depth is a traversal: the graph model's strength.",
-    "quiz.right1": "Right.",
-    "quiz.right2": "Exactly.",
-    "quiz.right3": "Correct.",
-    "quiz.pass": { "caption": "<b>{right} / 4</b>. Passed.", "voice": "Nicely done. You passed." },
-    "quiz.retry": { "caption": "<b>{right} / 4</b>. Worth another pass.", "voice": "Not quite there. Replay a chapter or two, then try again." },
-
+    "recap.intro": "Let's look back at what you can do now.",
+    "recap.1": "A document embeds the customer and the items, so showing an order is one read with no joins. The cost: Maya's phone is copied four times.",
+    "recap.2": "Tables check the shape as each row is written. Documents take any shape, and every reader copes. Only order eight has a note.",
+    "recap.3": "In a graph, people are nodes and referrals are edges. A traversal follows them hop by hop: Maya's network is five people, three hops deep.",
+    "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+    "check.q1": "Each order document embeds the price of every item. The bakery raises the croissant's price. What should happen to the old order documents?",
+    "check.q1-why": "Leave them. An order should freeze the price it was sold at. Not every copy is a bug: copy what should freeze, point at what must stay current.",
+    "check.q2": "A new app version stores the customer's phone as a list. Older documents hold a single number. With schema on read, who deals with the difference?",
+    "check.q2-why": "Every piece of code that reads phones. Schema on read moves the check from the write to every reader.",
+    "check.q3": "Why does a plain join struggle to find everyone Maya brought in, at any depth?",
+    "check.q3-why": "Each join follows exactly one hop, and nobody knows how many hops there are. A recursive query repeats the hop until nothing new appears.",
+    "check.right1": "Right.",
+    "check.right2": "Exactly.",
+    "check.right3": "Correct.",
+    "check.pass": {
+      "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+      "voice": "Nicely done. The ideas are sticking."
+    },
+    "check.retry": {
+      "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+      "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+    },
+    "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+    "interview.w1": {
+      "caption": "When would you choose a document database over a relational one?",
+      "speaker": "interviewer"
+    },
+    "interview.w1-why": "When data is read as one self-contained tree, like an order or a profile, and rarely joined. That's locality.",
+    "interview.w2": {
+      "caption": "What's the difference between schema on write and schema on read?",
+      "speaker": "interviewer"
+    },
+    "interview.w2-why": "Where the structure is enforced: by the database on every write, or by the code on every read.",
+    "interview.right1": "Good answer.",
+    "interview.right2": "That's the one they want.",
+    "interview.open": {
+      "caption": "The bakery wants customer reviews and a \"customers also bought\" feature. Would you use tables, documents or a graph? Walk me through the trade-offs.",
+      "voice": "The bakery wants customer reviews, and a customers-also-bought feature. Would you use tables, documents or a graph? Walk me through the trade-offs.",
+      "speaker": "interviewer"
+    },
+    "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+    "interview.hint": "Press Reveal when you're ready.",
+    "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+    "interview.rate": "Be honest. How did you do?",
+    "interview.got": "Nice. That's an answer that lands.",
+    "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+    "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
     "keywords.1": "Before we wrap up, here are the words worth keeping.",
     "keywords.ask": "Flip each card. Star the ones you want to practise later.",
     "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
     "keywords.done": "Starred words go to your flashcards. A few minutes a day keeps them fresh.",
-
     "finish.1": "That's the lesson. Tables store each fact once, documents store what's read together, and graphs store connections. Choose by how the data is read.",
     "finish.2": "Next up: measuring a system, with latency, throughput and percentiles."
   }

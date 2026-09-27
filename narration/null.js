@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("null", {
   "hook.1": "Raj never gave his city. Three customers have no phone. Two orders have no customer.",
   "hook.2": "Each gap is a NULL, and NULL doesn't mean zero or empty. It means unknown.",
   "hook.3": "Unknown values break queries quietly: no error, just wrong answers. Here are the traps interviewers love.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Explain three-valued logic, find missing values with IS NULL, and keep the NULL rows that not-equals would drop.",
+  "goals.2": "Two. Spot why NOT IN returns nothing when its list holds a NULL, and rewrite it with NOT EXISTS.",
+  "goals.3": "Three. Predict how NULL spreads through expressions and aggregates, and choose a default with COALESCE.",
   "unknown.1": "Find the customers with no city. The obvious query says: city equals NULL.",
   "unknown.2": "Nothing comes back. Not even Raj.",
   "unknown.3": "Is Raj's unknown city equal to unknown? Nobody knows. So the answer isn't true or false. It's unknown.",
@@ -75,42 +79,59 @@ window.DataSystemsLab.Narrator.register("null", {
   "phone.missing": "The rows don't match. Is the default exactly: no phone?",
   "phone.columns": "Two columns: the name, and the phone or the default.",
   "phone.done": "Ten customers, three with no phone. No NULLs left to trip over.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "What does <code>WHERE city = NULL</code> return?",
-   "voice": "What does where city equals null return?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "A comparison with NULL is unknown, and WHERE keeps only true. Not equal to Lisbon drops Raj. Add OR city IS NULL, and he's back.",
+  "recap.2": "One NULL in the list, and NOT IN is never true. The walk-in orders empty the result. NOT EXISTS asks the same question safely.",
+  "recap.3": "NULL spreads through expressions, and aggregates skip it. COALESCE returns the first value that isn't NULL, when you mean a default.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>WHERE phone &lt;&gt; '555-0101'</code> on the 10 customers. That's Maya's phone, and three customers have none. How many rows?",
+   "voice": "Where the phone isn't Maya's number, on the ten customers. Three customers have no phone at all. How many rows come back?"
+  },
+  "check.q1-why": "Six. Maya fails the test, and the three missing phones are unknown, not different. So WHERE drops them too.",
+  "check.q2": {
+   "caption": "<code>WHERE id NOT IN (1, 2, NULL)</code> on the customers. What comes back?",
+   "voice": "Where the ID is not in one, two, and NULL. What comes back?"
+  },
+  "check.q2-why": "No rows. Not equal to NULL is unknown for every customer, so the whole test is never true.",
+  "check.q3": "Average spend per customer. Lena and Theo never ordered, so their totals are NULL. What does AVG do with them?",
+  "check.q3-why": "It skips them, and averages over the eight who ordered. If they should count as zero, say so with COALESCE.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "Why doesn't <code>WHERE city = NULL</code> find the customers with no city?",
+   "voice": "Why doesn't where city equals NULL find the customers with no city?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "Comparing with NULL is unknown, never true, so no row passes. Use IS NULL.",
-  "quiz.q2": {
-   "caption": "10 customers: 3 in Lisbon, 1 with a NULL city. How many rows does <code>WHERE city &lt;&gt; 'Lisbon'</code> return?",
-   "voice": "Ten customers: three in Lisbon, one with a null city. How many rows does where city is not Lisbon return?",
+  "interview.w1-why": "Comparing with NULL is unknown, never true, so WHERE drops every row. IS NULL asks the right question.",
+  "interview.w2": {
+   "caption": "To find customers who never ordered, would you use NOT IN or NOT EXISTS?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "The NULL city is unknown, not different, so it's dropped: six, not seven.",
-  "quiz.q3": {
-   "caption": "<code>WHERE id NOT IN (SELECT customer_id FROM orders)</code> returns nothing, though some customers never ordered. Why?",
-   "voice": "Where the ID is not in the customer IDs from orders returns nothing, though some customers never ordered. Why?",
+  "interview.w2-why": "NOT EXISTS. One NULL from the subquery, and NOT IN returns nothing at all. NOT EXISTS can't be broken that way.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "What does NULL mean in SQL, and what are the ways it can make a query quietly return the wrong answer?",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "The list contains a NULL, so NOT IN is never true. Use NOT EXISTS, or filter out the NULLs.",
-  "quiz.q4": {
-   "caption": "What does <code>COALESCE(phone, 'no phone')</code> return when phone is NULL?",
-   "voice": "What does coalesce phone, no phone return when phone is null?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "COALESCE returns its first argument that isn't NULL.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -198,6 +219,54 @@ window.DataSystemsLab.Narrator.register("null", {
    "hash": "4fd85b7e59a4",
    "ms": 3051
   },
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "4f65960ea1dd",
+   "ms": 7189
+  },
+  "check.q1-why": {
+   "hash": "5b2ce2af93b1",
+   "ms": 6400
+  },
+  "check.q2": {
+   "hash": "3c68d5c5b132",
+   "ms": 3285
+  },
+  "check.q2-why": {
+   "hash": "4727b8b15f9a",
+   "ms": 5952
+  },
+  "check.q3": {
+   "hash": "b40c36255b35",
+   "ms": 7104
+  },
+  "check.q3-why": {
+   "hash": "1faa5ec2b785",
+   "ms": 6187
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
+  },
   "expr.1": {
    "hash": "184d30d97f1d",
    "ms": 4907
@@ -218,6 +287,22 @@ window.DataSystemsLab.Narrator.register("null", {
    "hash": "14c565dc5ca3",
    "ms": 4651
   },
+  "goals.1": {
+   "hash": "901700398164",
+   "ms": 7467
+  },
+  "goals.2": {
+   "hash": "de6a0d1bdc21",
+   "ms": 5717
+  },
+  "goals.3": {
+   "hash": "cb313aead915",
+   "ms": 5760
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "hook.1": {
    "hash": "2ff2ba31d690",
    "ms": 5568
@@ -229,6 +314,66 @@ window.DataSystemsLab.Narrator.register("null", {
   "hook.3": {
    "hash": "cf72e467580a",
    "ms": 6656
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "899f816aeedf",
+   "ms": 6592
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "f465442007f4",
+   "ms": 4331
+  },
+  "interview.w1-why": {
+   "hash": "fc1dbc79538a",
+   "ms": 6400
+  },
+  "interview.w2": {
+   "hash": "76d7ef16f710",
+   "ms": 5077
+  },
+  "interview.w2-why": {
+   "hash": "c795f08c2dd8",
+   "ms": 7083
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -378,61 +523,21 @@ window.DataSystemsLab.Narrator.register("null", {
    "hash": "4f4cdd820fca",
    "ms": 3520
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+  "recap.1": {
+   "hash": "6d4428f8453f",
+   "ms": 8427
   },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+  "recap.2": {
+   "hash": "7cf1e5873ccf",
+   "ms": 8064
   },
-  "quiz.q1": {
-   "hash": "ccea71b27f30",
-   "ms": 2816
+  "recap.3": {
+   "hash": "826f751cbc33",
+   "ms": 7723
   },
-  "quiz.q1-why": {
-   "hash": "13e1d0bb363e",
-   "ms": 4907
-  },
-  "quiz.q2": {
-   "hash": "cd7848be439a",
-   "ms": 7232
-  },
-  "quiz.q2-why": {
-   "hash": "6c2ba34e1c80",
-   "ms": 4395
-  },
-  "quiz.q3": {
-   "hash": "89aa9de29329",
-   "ms": 7573
-  },
-  "quiz.q3-why": {
-   "hash": "dc4a05d3ac97",
-   "ms": 5675
-  },
-  "quiz.q4": {
-   "hash": "9364077db598",
-   "ms": 3883
-  },
-  "quiz.q4-why": {
-   "hash": "23fa5e4d06d6",
-   "ms": 2923
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "unknown.1": {
    "hash": "4d303ee3bd36",

@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("models", {
   "hook.1": "Maya's bakery lives in tables. Not every system does.",
   "hook.2": "Many apps store a whole order as one JSON document. Social apps store who knows whom as a graph.",
   "hook.3": "Same data, three shapes. Each makes some questions easy and others painful. Interviewers want to hear which is which.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Model an order as a document, explain embedding and data locality, and name the cost of copied data.",
+  "goals.2": "Two. Contrast schema on write with schema on read, and say who pays for each.",
+  "goals.3": "Three. Model connections as a graph, and traverse it to any depth with a recursive CTE.",
   "rel.1": "First, the shape you know. To show order one, the database joins four tables: the order, its customer, its items, and their products.",
   "rel.2": "Each fact lives once, and joins stitch them back together on every read. That's the relational model.",
   "doc.1": "Here's the same order as a document. The customer and the items are nested right inside it.",
@@ -54,38 +58,53 @@ window.DataSystemsLab.Narrator.register("models", {
   "pick.document": "A document can hold your own friends list, but friends of friends means following links. That's a graph.",
   "pick.relational": "Tables can do it with recursive queries, but it gets slow and awkward at depth. A graph fits more naturally.",
   "pick.5": "And the lines blur. PostgreSQL stores JSON columns, and many document databases now do joins. Pick by how the data is read.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "Why is a document store fast at showing a whole order?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "A document embeds the customer and the items, so showing an order is one read with no joins. The cost: Maya's phone is copied four times.",
+  "recap.2": "Tables check the shape as each row is written. Documents take any shape, and every reader copes. Only order eight has a note.",
+  "recap.3": "In a graph, people are nodes and referrals are edges. A traversal follows them hop by hop: Maya's network is five people, three hops deep.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": "Each order document embeds the price of every item. The bakery raises the croissant's price. What should happen to the old order documents?",
+  "check.q1-why": "Leave them. An order should freeze the price it was sold at. Not every copy is a bug: copy what should freeze, point at what must stay current.",
+  "check.q2": "A new app version stores the customer's phone as a list. Older documents hold a single number. With schema on read, who deals with the difference?",
+  "check.q2-why": "Every piece of code that reads phones. Schema on read moves the check from the write to every reader.",
+  "check.q3": "Why does a plain join struggle to find everyone Maya brought in, at any depth?",
+  "check.q3-why": "Each join follows exactly one hop, and nobody knows how many hops there are. A recursive query repeats the hop until nothing new appears.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "When would you choose a document database over a relational one?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "Everything the page needs is embedded in one document, so it's one read with no joins. That's data locality.",
-  "quiz.q2": {
-   "caption": "A customer's details are embedded in each of her orders. What goes wrong when she moves?",
+  "interview.w1-why": "When data is read as one self-contained tree, like an order or a profile, and rarely joined. That's locality.",
+  "interview.w2": {
+   "caption": "What's the difference between schema on write and schema on read?",
    "speaker": "interviewer"
   },
-  "quiz.q2-why": "Every copy must be updated. Miss one and the documents disagree: the update anomaly again.",
-  "quiz.q3": {
-   "caption": "What does schema on read mean?",
+  "interview.w2-why": "Where the structure is enforced: by the database on every write, or by the code on every read.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "The bakery wants customer reviews and a \"customers also bought\" feature. Would you use tables, documents or a graph? Walk me through the trade-offs.",
+   "voice": "The bakery wants customer reviews, and a customers-also-bought feature. Would you use tables, documents or a graph? Walk me through the trade-offs.",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "Writes accept any shape; the reading code interprets and copes with each variant. Tables check on write instead.",
-  "quiz.q4": {
-   "caption": "Which question most needs a graph model?",
-   "speaker": "interviewer"
-  },
-  "quiz.q4-why": "Following links to an unknown depth is a traversal: the graph model's strength.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -129,6 +148,54 @@ window.DataSystemsLab.Narrator.register("models", {
   }
  },
  "audio": {
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "348f8a74fc2f",
+   "ms": 8533
+  },
+  "check.q1-why": {
+   "hash": "e8a8cb88fba8",
+   "ms": 8107
+  },
+  "check.q2": {
+   "hash": "9e95f5f111e7",
+   "ms": 8768
+  },
+  "check.q2-why": {
+   "hash": "b16bf66aae9b",
+   "ms": 5931
+  },
+  "check.q3": {
+   "hash": "bc6b81840bfa",
+   "ms": 4373
+  },
+  "check.q3-why": {
+   "hash": "e5ecc25e43f3",
+   "ms": 8533
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
+  },
   "doc.1": {
    "hash": "60db077745a4",
    "ms": 5568
@@ -169,6 +236,22 @@ window.DataSystemsLab.Narrator.register("models", {
    "hash": "f064871db87a",
    "ms": 4352
   },
+  "goals.1": {
+   "hash": "7bd23fcd2f39",
+   "ms": 6869
+  },
+  "goals.2": {
+   "hash": "e82b062cb1f0",
+   "ms": 4651
+  },
+  "goals.3": {
+   "hash": "d90acfba12b8",
+   "ms": 5696
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "graph.1": {
    "hash": "1a83621bec87",
    "ms": 6165
@@ -200,6 +283,66 @@ window.DataSystemsLab.Narrator.register("models", {
   "hook.3": {
    "hash": "25aabc63035c",
    "ms": 6976
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "6c7cd6979571",
+   "ms": 9451
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "6b6440d92efe",
+   "ms": 4075
+  },
+  "interview.w1-why": {
+   "hash": "224d264197a4",
+   "ms": 7168
+  },
+  "interview.w2": {
+   "hash": "2076a93b3465",
+   "ms": 4011
+  },
+  "interview.w2-why": {
+   "hash": "fbeb21ddd572",
+   "ms": 5568
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -317,61 +460,21 @@ window.DataSystemsLab.Narrator.register("models", {
    "hash": "a149197f15b5",
    "ms": 6677
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+  "recap.1": {
+   "hash": "17087b5ce3c7",
+   "ms": 9067
   },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+  "recap.2": {
+   "hash": "67092a011254",
+   "ms": 7573
   },
-  "quiz.q1": {
-   "hash": "3ea6fab4d03c",
-   "ms": 3520
+  "recap.3": {
+   "hash": "dac094a9efe2",
+   "ms": 9045
   },
-  "quiz.q1-why": {
-   "hash": "97162ee2de7b",
-   "ms": 6805
-  },
-  "quiz.q2": {
-   "hash": "e38c3493d475",
-   "ms": 5675
-  },
-  "quiz.q2-why": {
-   "hash": "98baa8867e73",
-   "ms": 5824
-  },
-  "quiz.q3": {
-   "hash": "ba1acffd4e0b",
-   "ms": 2325
-  },
-  "quiz.q3-why": {
-   "hash": "bce6ed9b20ff",
-   "ms": 6549
-  },
-  "quiz.q4": {
-   "hash": "78260d5b5829",
-   "ms": 2709
-  },
-  "quiz.q4-why": {
-   "hash": "51c7fc144c34",
-   "ms": 4459
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "rel.1": {
    "hash": "19aaafb4c71b",

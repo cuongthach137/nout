@@ -10,7 +10,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "keys",
-    labs: [{ id: "ident", name: `${DSL.labLabel("keys", "A")} Identify` }, { id: "point", name: `${DSL.labLabel("keys", "B")} Point` }, { id: "relate", name: `${DSL.labLabel("keys", "C")} Relate` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "ident", name: `${DSL.labLabel("keys", "A")} Identify` }, { id: "point", name: `${DSL.labLabel("keys", "B")} Point` }, { id: "relate", name: `${DSL.labLabel("keys", "C")} Relate` }, { id: "quiz", name: "Practice" }],
   });
 
   // Probes: run after the learner's SQL; the result is what's graded.
@@ -41,16 +41,68 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "Why use a surrogate ID rather than an email address as a primary key?", options: ["IDs are always faster to compare", "Emails change and can be missing, and the key is copied into every table that points at it", "Emails can't be indexed"], answer: 1, why: "A key is copied into every foreign key that points at it. A meaningless ID never needs to change; an email does." },
-    { prompt: "You delete a customer who has orders. With a foreign key and no ON DELETE clause, what happens?", options: ["The orders are deleted too", "The delete is refused", "The orders keep a customer_id that points at nothing"], answer: 1, why: "The default (NO ACTION / RESTRICT) refuses the delete. CASCADE or SET NULL must be asked for." },
-    { prompt: "Students take many courses, and courses have many students. How do you model it?", options: ["A course_ids column on students", "A junction table with one row per student and course", "A student_id column on courses"], answer: 1, why: "A junction table, enrolments, with one row per pair and a composite key on (student_id, course_id)." },
-    { prompt: "A UNIQUE column has three rows where it's NULL. Is that allowed?", options: ["Yes, NULLs aren't equal to each other", "No, NULL can appear once", "Only if the column is also NOT NULL"], answer: 0, why: "In PostgreSQL, MySQL and SQLite, yes: NULLs don't clash. SQL Server allows one NULL unless you use a filtered index." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "Where does the foreign key go in a one-to-many relationship?", options: ["On the \"one\" side", "On the \"many\" side", "In a separate table"], answer: 1, why: "Each order points at its one customer, so orders.customer_id holds the foreign key. The customer can't hold a list." },
-    { prompt: "Why index a foreign key column like orders.customer_id?", options: ["The database requires it", "Joins and \"orders for this customer\" lookups use it, and deleting a customer must check it", "It makes the constraint stricter"], answer: 1, why: "PostgreSQL doesn't create that index for you. Without it, every join and every parent delete scans the whole child table." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "keys",
+    goals: [
+      {
+        id: "identify", icon: "🔑", title: "Identify every row", snippet: "id INTEGER PRIMARY KEY\nphone TEXT UNIQUE",
+        text: "Pick a primary key, explain why a surrogate key beats a natural one, and forbid duplicates with UNIQUE.",
+        recap: "A <b>primary key</b> is unique and never empty, and a meaningless <b>surrogate key</b> never has to change. <b>UNIQUE</b> guards other columns; NULLs never clash.",
+        example: {
+          dataset: "bakeryStrict",
+          sql: "CREATE UNIQUE INDEX u ON customers (phone);\nINSERT OR IGNORE INTO customers VALUES\n  (98, 'Copy', NULL, '555-0101', '2024-10-01'),\n  (99, 'No phone', NULL, NULL, '2024-10-01');\nSELECT id, name, phone FROM customers\nWHERE id IN (1, 98, 99)",
+          note: "The copy of Maya's number was refused; the empty phone went in.",
+        },
+      },
+      {
+        id: "point", icon: "🔗", title: "Keep pointers honest", snippet: "customer_id INTEGER\n  REFERENCES customers (id)\n  ON DELETE CASCADE",
+        text: "Enforce references with foreign keys, and choose what ON DELETE does when a parent row goes.",
+        recap: "A <b>foreign key</b> won't let a pointer dangle: by default it refuses to delete Maya while her orders point at her. CASCADE or SET NULL must be asked for.",
+        example: {
+          dataset: "bakeryStrict",
+          before: "DELETE FROM customers WHERE id = 1",
+          sql: "SELECT id, customer_id FROM orders WHERE customer_id = 1 ORDER BY id",
+          note: "Refused: Maya's four orders would point at nothing.",
+        },
+      },
+      {
+        id: "shape", icon: "🧩", title: "Shape relationships", snippet: "PRIMARY KEY (order_id, product_id)",
+        text: "Put the foreign key on the right side for one-to-many and one-to-one, and model many-to-many with a junction table.",
+        recap: "One-to-many puts the foreign key on the many side; one-to-one makes it UNIQUE. Many-to-many needs a <b>junction table</b>, like order_items, keyed by both columns.",
+        example: {
+          sql: "SELECT o.id AS order_id, p.name FROM order_items i JOIN orders o ON o.id = i.order_id JOIN products p ON p.id = i.product_id WHERE o.id IN (1, 3) ORDER BY o.id, p.name",
+          mark: (row) => (row[1] === "Croissant" ? "hot" : ""),
+          note: "One order, many products; one product, many orders.",
+        },
+      },
+    ],
+    checks: [
+      { id: "unique-inserts", goal: "identify", prompt: "<code>phone</code> has a UNIQUE constraint. Three new customers arrive with the phones 555-0101 (Maya's), NULL and NULL. Which inserts succeed?", options: ["Only the first NULL", "Both NULLs; the copy of Maya's number is refused", "All three"], answer: 1, why: "UNIQUE compares values, and NULL isn't equal to anything, not even another NULL. So both empty phones go in, and only the real duplicate clashes." },
+      { id: "set-null", goal: "point", prompt: "<code>orders.customer_id REFERENCES customers (id) ON DELETE SET NULL</code>. You delete Maya. What happens to her 4 orders?", options: ["They're deleted with her", "They stay, with no customer, like the walk-in orders", "The delete is refused"], answer: 1, why: "SET NULL keeps the child rows and empties their pointer. CASCADE would delete them; with no ON DELETE clause, the delete is refused." },
+      { id: "loyalty", goal: "shape", prompt: "Each customer has at most one loyalty card, and each card belongs to one customer. Where does the key go?", options: ["<code>loyalty_cards.customer_id</code> references customers, and is UNIQUE", "A junction table between customers and cards", "A list of card IDs on customers"], answer: 0, why: "One-to-one is one-to-many with the many side capped at one: the same foreign key, made UNIQUE." },
+    ],
+    warmups: [
+      { id: "what-fk", goal: "point", prompt: "What's a foreign key, and what does it protect you from?", options: ["A column whose values must match a row in another table; it stops orphans, pointers to rows that don't exist", "An index that makes joins faster", "A second primary key for the table"], answer: 0, why: "It's a rule, not an index: PostgreSQL won't index it for you. Add an index too, or every join and parent delete scans the child table." },
+      { id: "students", goal: "shape", prompt: "Students take many courses, and courses have many students. How do you model it?", options: ["A <code>course_ids</code> column on students", "A junction table with one row per student and course", "A <code>student_id</code> column on courses"], answer: 1, why: "Neither side can hold one pointer. A table in between, enrolments, holds one row per pair, with a composite key on (student_id, course_id)." },
+    ],
+    open: {
+      id: "bakery-schema",
+      goal: "shape",
+      prompt: "Design the tables for the bakery's customers, orders and products. Walk me through the keys and the relationships.",
+      points: [
+        "customers, orders and products each get a surrogate primary key, <code>id</code>.",
+        "<code>orders.customer_id</code> is a foreign key to customers: one-to-many, so it sits on the many side. Nullable for walk-ins, or NOT NULL if every order needs a customer.",
+        "Orders and products are many-to-many: a junction table <code>order_items (order_id, product_id, quantity)</code>.",
+        "order_items has a composite primary key, (order_id, product_id), and each column is a foreign key.",
+        "Choose ON DELETE on purpose: refuse deleting customers with orders; cascade from an order to its items.",
+        "Index the foreign key columns, and put UNIQUE on natural identifiers like email or phone.",
+      ],
+      answer: "Three entity tables, customers, orders and products, each with a surrogate integer ID as the primary key, because natural keys like emails change. An order belongs to one customer, and a customer has many orders, so orders gets a customer_id foreign key; I'd allow NULL only if walk-in orders exist. Orders and products are many-to-many, so a junction table, order_items, holds one row per order and product, with the quantity, a composite primary key on (order_id, product_id), and a foreign key on each column. For deletes, I'd leave customers restricted, so you can't orphan orders, and cascade from orders to their items. I'd also index the foreign keys for joins, and add a UNIQUE constraint on the customer's email or phone.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const SHAPES = [
     ["One-to-many", "customer → orders", "orders.customer_id REFERENCES customers (id)"],
@@ -71,6 +123,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Keys the database <em>enforces</em>.", "Primary keys, unique constraints, foreign keys, and the shapes relationships take. Schema design questions in interviews are mostly about these, and about what happens when you delete something.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>Exercises here change the schema: create tables, add constraints, delete rows. Each run starts from a fresh copy, and a <b>check</b> query runs afterwards to test what you built. Some labs switch foreign-key enforcement on: SQLite leaves it off unless asked (<code>PRAGMA foreign_keys = ON</code>).</p></div>
@@ -94,10 +147,7 @@
           <div class="sel-ops"><table class="sel-table"><thead><tr><th>Shape</th><th>Example</th><th>How</th></tr></thead><tbody>${SHAPES.map(([shape, example, how]) => `<tr><td><code>${shape}</code></td><td>${example}</td><td>${code(how)}</td></tr>`).join("")}</tbody></table></div>
           ${wonder("Why not a comma-separated list of product IDs on each order?", "It breaks first normal form: you can't index it, join it, or enforce it with a foreign key, and \"which orders contain croissants?\" becomes string searching. A junction table is one row per pair, and every tool in SQL works on it.")}`)}
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about keys</h2><p class="lab-copy">The schema-design questions that come up again and again.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="keys-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Keys review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> for each relationship, say its cardinality, where the foreign key lives, and what should happen when the thing it points at is deleted.</p></div>
         ${DSL.lessonFooter("keys")}
@@ -110,15 +160,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("keys-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Keys review passed",
-      successCopy: "You can design keys and relationships, and say what a delete does.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.KeysModel = Object.freeze({ QUIZ, CHALLENGES, PROBE, progress });
+  DSL.KeysModel = Object.freeze({ PRACTICE, CHALLENGES, PROBE, progress });
   DSL.registerRenderer("keys", renderKeys);
 })(window.DataSystemsLab);

@@ -187,6 +187,7 @@
   function makeBeats() {
     const M = DSL.NullModel;
     return [
+      DSL.Practice.goalsBeat(M.PRACTICE),
       teach("teach-unknown", "NULL means unknown.", unknownStory(), "IS NULL and IS NOT NULL are the only tests that return TRUE or FALSE for a NULL. Everything else (=, <>, <, IN) gives UNKNOWN."),
       notPredict(),
       teach("teach-not", "Not equal drops NULLs.", notStory(), "NOT doesn't help: NOT UNKNOWN is still UNKNOWN."),
@@ -198,9 +199,13 @@
       teach("teach-expr", "NULL spreads.", exprStory(), "NULLIF(a, b) goes the other way: NULL when a = b. total / NULLIF(n, 0) avoids a divide-by-zero."),
       teach("teach-avg", "NULL in averages.", avgStory(), "SUM over no rows is NULL too; only COUNT returns 0. Reports usually want COALESCE(SUM(x), 0)."),
       phoneChallenge(),
-      DSL.Guided.quizBeat({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(M.PRACTICE),
+      DSL.Practice.checkBeat(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(M.PRACTICE),
+      DSL.Practice.openBeat(M.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "null",
+        before: () => DSL.Practice.goalsSummary(M.PRACTICE),
         badges: [["❓", "Unknown", "test with IS NULL"], ["🚫", "NOT IN", "breaks on a NULL"], ["🩹", "COALESCE", "a default, on purpose"]],
       }),
     ];

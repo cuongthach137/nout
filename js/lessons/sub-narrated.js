@@ -22,6 +22,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "scalar",
         title: "A value from a query",
@@ -102,7 +103,9 @@
           await exercise(n, S.aboveChallenge(), "above", { reactions: ["error", "extra", "missing", "columns"] });
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("sub"),
       {
         id: "finish",
@@ -110,6 +113,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "sub",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["🪆", "Nest", "a value or a list"], ["🔁", "Per row", "correlated, EXISTS"], ["🏷️", "Name it", "WITH, step by step"]],
           }));
           await n.say("finish.1");

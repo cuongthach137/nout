@@ -4,6 +4,10 @@ window.DataSystemsLab.Narrator.register("keys", {
   "hook.1": "Remember the notebook? Orders stopped copying Maya's details, and pointed at her instead.",
   "hook.2": "A pointer only helps if it can't point at nothing. And an ID only helps if no two rows share it.",
   "hook.3": "This lesson makes the database enforce both. Every change here runs for real, on a fresh copy.",
+  "goals.intro": "Here's what you'll be able to do by the end of this lesson.",
+  "goals.1": "One. Pick a primary key, explain why a surrogate key beats a natural one, and forbid duplicates with UNIQUE.",
+  "goals.2": "Two. Enforce references with foreign keys, and choose what ON DELETE does when a parent row goes.",
+  "goals.3": "Three. Put the foreign key on the right side of a relationship, and model many to many with a junction table.",
   "pk.1": "Every customer has an ID. That column is the table's <k id=\"primary-key\">primary key</k>: unique, and never empty.",
   "pk.2": "Try adding a second customer with ID one. The database refuses.",
   "pk.3": "Why not use the phone number as the key? Three customers don't have one, and phones change.",
@@ -63,41 +67,58 @@ window.DataSystemsLab.Narrator.register("keys", {
   "fav.extra": "The check found extra key columns. Just customer ID and product ID.",
   "fav.columns": "Is the table called favourites, with customer ID and product ID?",
   "fav.done": "A many-to-many relationship, built from two one-to-manys. That's how every relational database does it.",
-  "quiz.intro": "Four quick questions.",
-  "quiz.q1": {
-   "caption": "Why use a surrogate ID rather than an email address as a primary key?",
-   "voice": "Why use a surrogate I D rather than an email address as a primary key?",
+  "recap.intro": "Let's look back at what you can do now.",
+  "recap.1": "A primary key is unique and never empty, and a surrogate key never has to change. UNIQUE guards other columns, and NULLs never clash.",
+  "recap.2": "A foreign key refuses to delete Maya while her orders point at her. CASCADE and SET NULL have to be asked for.",
+  "recap.3": "One to many puts the foreign key on the many side. Many to many needs a junction table, like order items, keyed by both columns.",
+  "check.intro": "Now three quick checks. Each asks you to use an idea, not just name it.",
+  "check.q1": {
+   "caption": "<code>phone</code> is UNIQUE. Three new customers arrive with the phones 555-0101 (Maya's), NULL and NULL. Which inserts succeed?",
+   "voice": "The phone column is unique. Three new customers arrive: one with Maya's number, and two with no phone. Which inserts succeed?"
+  },
+  "check.q1-why": "Both empty phones go in. NULL isn't equal to anything, not even another NULL. Only the copy of Maya's number clashes.",
+  "check.q2": {
+   "caption": "<code>orders.customer_id</code> has <code>ON DELETE SET NULL</code>. You delete Maya. What happens to her 4 orders?",
+   "voice": "The foreign key on orders says: on delete, set NULL. You delete Maya. What happens to her four orders?"
+  },
+  "check.q2-why": "They stay, with no customer, like the walk-ins. CASCADE would delete them. With no ON DELETE clause, the delete is refused.",
+  "check.q3": "Each customer has at most one loyalty card, and each card belongs to one customer. Where does the key go?",
+  "check.q3-why": "On the cards: a customer ID that references customers, made UNIQUE. One to one is one to many, capped at one.",
+  "check.right1": "Right.",
+  "check.right2": "Exactly.",
+  "check.right3": "Correct.",
+  "check.pass": {
+   "caption": "<b>{right} / 3</b>. The ideas are sticking.",
+   "voice": "Nicely done. The ideas are sticking."
+  },
+  "check.retry": {
+   "caption": "<b>{right} / 3</b>. The goals marked revisit are the ones to replay.",
+   "voice": "A few to revisit. The goals marked revisit at the end are the ones to replay."
+  },
+  "interview.intro": "Now an interview round. Two quick questions, then one you answer in your own words.",
+  "interview.w1": {
+   "caption": "What's a foreign key, and what does it protect you from?",
    "speaker": "interviewer"
   },
-  "quiz.q1-why": "Emails change and can be missing, and a key is copied into every table that points at it. A meaningless ID never needs to change.",
-  "quiz.q2": {
-   "caption": "You delete a customer who has orders. With a foreign key and no ON DELETE clause, what happens?",
-   "voice": "You delete a customer who has orders. With a foreign key and no on delete clause, what happens?",
-   "speaker": "interviewer"
-  },
-  "quiz.q2-why": "The default refuses the delete, so no order is left pointing at nothing. CASCADE or SET NULL must be asked for.",
-  "quiz.q3": {
+  "interview.w1-why": "It's a rule: every value must match a row in the other table. It stops orphans. It's not an index, so add one for joins.",
+  "interview.w2": {
    "caption": "Students take many courses, and courses have many students. How do you model it?",
    "speaker": "interviewer"
   },
-  "quiz.q3-why": "A junction table, enrolments, with one row per student and course pair, and a composite key on both.",
-  "quiz.q4": {
-   "caption": "A UNIQUE column has three rows where it's NULL. Is that allowed?",
-   "voice": "A unique column has three rows where it's null. Is that allowed?",
+  "interview.w2-why": "A junction table, with one row per student and course, and a composite key on both columns.",
+  "interview.right1": "Good answer.",
+  "interview.right2": "That's the one they want.",
+  "interview.open": {
+   "caption": "Design the tables for the bakery's customers, orders and products. Walk me through the keys and the relationships.",
    "speaker": "interviewer"
   },
-  "quiz.q4-why": "Yes, in most databases. NULLs aren't equal to each other, so they don't clash. SQL Server is the exception.",
-  "quiz.right1": "Right.",
-  "quiz.right2": "Exactly.",
-  "quiz.right3": "Correct.",
-  "quiz.pass": {
-   "caption": "<b>{right} / 4</b>. Passed.",
-   "voice": "Nicely done. You passed."
-  },
-  "quiz.retry": {
-   "caption": "<b>{right} / 4</b>. Worth another pass.",
-   "voice": "Not quite there. Replay a chapter or two, then try again."
-  },
+  "interview.think": "Take a minute. Say your answer out loud, as if you were in the room, or jot some notes. Then reveal the model answer.",
+  "interview.hint": "Press Reveal when you're ready.",
+  "interview.reveal": "Here's what an interviewer listens for. Tick the points you covered.",
+  "interview.rate": "Be honest. How did you do?",
+  "interview.got": "Nice. That's an answer that lands.",
+  "interview.partly": "Good start. It's in your flashcards now, so it'll come back.",
+  "interview.missed": "That's what practice is for. It's in your flashcards, and it'll come back.",
   "keywords.1": "Before we wrap up, here are the words worth keeping.",
   "keywords.ask": "Flip each card. Star the ones you want to practise later.",
   "keywords.hint": "Tap a card to flip it. Press Done when you're ready.",
@@ -201,6 +222,54 @@ window.DataSystemsLab.Narrator.register("keys", {
    "hash": "b97ab183fecd",
    "ms": 6955
   },
+  "check.intro": {
+   "hash": "e5b8ce767e4c",
+   "ms": 4352
+  },
+  "check.pass": {
+   "hash": "2042c6b1884a",
+   "ms": 2219
+  },
+  "check.q1": {
+   "hash": "5f777c8bc675",
+   "ms": 7616
+  },
+  "check.q1-why": {
+   "hash": "4c308ee7fe7d",
+   "ms": 7659
+  },
+  "check.q2": {
+   "hash": "0dfd0bca224a",
+   "ms": 6165
+  },
+  "check.q2-why": {
+   "hash": "198b36031581",
+   "ms": 7509
+  },
+  "check.q3": {
+   "hash": "dd6770f9368d",
+   "ms": 6549
+  },
+  "check.q3-why": {
+   "hash": "34858c6a574e",
+   "ms": 7168
+  },
+  "check.retry": {
+   "hash": "3429b67ce974",
+   "ms": 4800
+  },
+  "check.right1": {
+   "hash": "7fbe46dd22ea",
+   "ms": 725
+  },
+  "check.right2": {
+   "hash": "5217151b2ec3",
+   "ms": 917
+  },
+  "check.right3": {
+   "hash": "8d6cd3cbe687",
+   "ms": 789
+  },
   "del.1": {
    "hash": "e128a8d8df30",
    "ms": 4949
@@ -281,6 +350,22 @@ window.DataSystemsLab.Narrator.register("keys", {
    "hash": "ade1352950d5",
    "ms": 7211
   },
+  "goals.1": {
+   "hash": "f73c094c5cf7",
+   "ms": 6741
+  },
+  "goals.2": {
+   "hash": "dc030a366dbb",
+   "ms": 5675
+  },
+  "goals.3": {
+   "hash": "bd8fe7b5e1b4",
+   "ms": 6016
+  },
+  "goals.intro": {
+   "hash": "4f830014daa9",
+   "ms": 2773
+  },
   "hook.1": {
    "hash": "9bcaff00c81d",
    "ms": 5227
@@ -292,6 +377,66 @@ window.DataSystemsLab.Narrator.register("keys", {
   "hook.3": {
    "hash": "a9de6002e6a3",
    "ms": 6059
+  },
+  "interview.got": {
+   "hash": "ff3a62868565",
+   "ms": 1984
+  },
+  "interview.hint": {
+   "hash": "71671f983567",
+   "ms": 1557
+  },
+  "interview.intro": {
+   "hash": "fd2b9f5f211e",
+   "ms": 4629
+  },
+  "interview.missed": {
+   "hash": "bdb95a72e8b4",
+   "ms": 3797
+  },
+  "interview.open": {
+   "hash": "ae6ee0ed6a18",
+   "ms": 7360
+  },
+  "interview.partly": {
+   "hash": "68c0249489ef",
+   "ms": 3243
+  },
+  "interview.rate": {
+   "hash": "2a2b4a87bfe2",
+   "ms": 1643
+  },
+  "interview.reveal": {
+   "hash": "28474cd07ede",
+   "ms": 3413
+  },
+  "interview.right1": {
+   "hash": "ffc673b01d76",
+   "ms": 896
+  },
+  "interview.right2": {
+   "hash": "f6e03f942855",
+   "ms": 1216
+  },
+  "interview.think": {
+   "hash": "3078f157e206",
+   "ms": 6912
+  },
+  "interview.w1": {
+   "hash": "e160d3eda7fe",
+   "ms": 3157
+  },
+  "interview.w1-why": {
+   "hash": "c95294c881da",
+   "ms": 7851
+  },
+  "interview.w2": {
+   "hash": "bc7612d6a590",
+   "ms": 5120
+  },
+  "interview.w2-why": {
+   "hash": "9dfebddc5c12",
+   "ms": 5611
   },
   "keywords.1": {
    "hash": "6e8f6ec7dc0f",
@@ -357,61 +502,21 @@ window.DataSystemsLab.Narrator.register("keys", {
    "hash": "99f8cc54a3ec",
    "ms": 5781
   },
-  "quiz.intro": {
-   "hash": "f0a37944ed86",
-   "ms": 1365
+  "recap.1": {
+   "hash": "1fc0e1a96d28",
+   "ms": 8256
   },
-  "quiz.pass": {
-   "hash": "fd15ec4d6ef7",
-   "ms": 1579
+  "recap.2": {
+   "hash": "d6299ad346e5",
+   "ms": 6997
   },
-  "quiz.q1": {
-   "hash": "ad37fb6676f0",
-   "ms": 5077
+  "recap.3": {
+   "hash": "7a4381a55618",
+   "ms": 8128
   },
-  "quiz.q1-why": {
-   "hash": "1dc37716b592",
-   "ms": 8213
-  },
-  "quiz.q2": {
-   "hash": "56210540d3f7",
-   "ms": 6485
-  },
-  "quiz.q2-why": {
-   "hash": "abf3aab42680",
-   "ms": 7381
-  },
-  "quiz.q3": {
-   "hash": "bc7612d6a590",
-   "ms": 5120
-  },
-  "quiz.q3-why": {
-   "hash": "f636d1964ef1",
-   "ms": 5888
-  },
-  "quiz.q4": {
-   "hash": "bedabfcaba63",
-   "ms": 4096
-  },
-  "quiz.q4-why": {
-   "hash": "ec882bc6f200",
-   "ms": 7019
-  },
-  "quiz.retry": {
-   "hash": "bae6100ef83b",
-   "ms": 3349
-  },
-  "quiz.right1": {
-   "hash": "7fbe46dd22ea",
-   "ms": 725
-  },
-  "quiz.right2": {
-   "hash": "5217151b2ec3",
-   "ms": 917
-  },
-  "quiz.right3": {
-   "hash": "8d6cd3cbe687",
-   "ms": 789
+  "recap.intro": {
+   "hash": "d0ec67520c20",
+   "ms": 1963
   },
   "uniq.1": {
    "hash": "0740a59c36da",

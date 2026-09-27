@@ -9,7 +9,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "null",
-    labs: [{ id: "unknown", name: `${DSL.labLabel("null", "A")} Unknown` }, { id: "notin", name: `${DSL.labLabel("null", "B")} NOT IN` }, { id: "defaults", name: `${DSL.labLabel("null", "C")} Defaults` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "unknown", name: `${DSL.labLabel("null", "A")} Unknown` }, { id: "notin", name: `${DSL.labLabel("null", "B")} NOT IN` }, { id: "defaults", name: `${DSL.labLabel("null", "C")} Defaults` }, { id: "quiz", name: "Practice" }],
   });
 
   const SPEND = "WITH spend AS (\n  SELECT c.id, c.name, SUM(i.quantity * p.price) AS total\n  FROM customers c\n  LEFT JOIN orders o ON o.customer_id = c.id\n  LEFT JOIN order_items i ON i.order_id = o.id\n  LEFT JOIN products p ON p.id = i.product_id\n  GROUP BY c.id\n)\n";
@@ -34,16 +34,70 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "What does <code>WHERE city = NULL</code> return?", options: ["Rows where city is missing", "No rows", "An error"], answer: 1, why: "Comparing with NULL is unknown, never true, so no row passes. Use IS NULL." },
-    { prompt: "10 customers: 3 in Lisbon, 1 with a NULL city. How many rows does <code>WHERE city &lt;&gt; 'Lisbon'</code> return?", options: ["7", "6", "10"], answer: 1, why: "The NULL city is unknown, not different, so it's dropped: 6, not 7." },
-    { prompt: "<code>WHERE id NOT IN (SELECT customer_id FROM orders)</code> returns nothing, though some customers never ordered. Why?", options: ["NOT IN needs an index", "The list contains a NULL, so NOT IN is never true", "customer_id is a foreign key"], answer: 1, why: "The list contains a NULL, so NOT IN is never true. Use NOT EXISTS, or filter out the NULLs." },
-    { prompt: "What does <code>COALESCE(phone, 'no phone')</code> return when phone is NULL?", options: ["NULL", "'no phone'", "An empty string"], answer: 1, why: "COALESCE returns its first argument that isn't NULL." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "<code>SELECT DISTINCT city</code> on a table with two NULL cities returns…", options: ["Two NULL rows", "One NULL row", "No NULL rows"], answer: 1, why: "DISTINCT, GROUP BY and UNION treat NULLs as the same value: one NULL row. Only comparisons (=, <>, IN) treat NULL as unknown." },
-    { prompt: "<code>SELECT SUM(price) FROM products WHERE 1 = 0</code> returns…", options: ["0", "NULL", "No rows"], answer: 1, why: "SUM over no rows is NULL (COUNT is the exception: 0). Write COALESCE(SUM(price), 0) when a report needs 0." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "null",
+    goals: [
+      {
+        id: "unknown", icon: "❓", title: "Test for unknown", snippet: "WHERE city IS NULL",
+        text: "Explain three-valued logic, find missing values with IS NULL, and keep the NULL rows that <> would drop.",
+        recap: "A comparison with NULL is <b>unknown</b>, and WHERE keeps only true. <code>city &lt;&gt; 'Lisbon'</code> drops Raj; add <code>OR city IS NULL</code> to keep him.",
+        example: {
+          before: "SELECT name, city FROM customers WHERE city <> 'Lisbon' ORDER BY id",
+          sql: "SELECT name, city FROM customers WHERE city <> 'Lisbon' OR city IS NULL ORDER BY id",
+          mark: (row, phase) => (phase === "after" && row[1] === null ? "good" : ""),
+          note: "Six rows became seven: Raj is back.",
+        },
+      },
+      {
+        id: "notin", icon: "🪤", title: "Dodge the NOT IN trap", snippet: "id NOT IN (1, 2, NULL)\n→ no rows",
+        text: "Spot why NOT IN returns nothing when its list holds a NULL, and rewrite it with NOT EXISTS.",
+        recap: "One NULL in the list and <b>NOT IN</b> is never true, so the walk-in orders empty the result. <b>NOT EXISTS</b> asks the same question safely.",
+        example: {
+          before: "SELECT name FROM customers WHERE id NOT IN (SELECT customer_id FROM orders)",
+          sql: "SELECT c.name FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.id)",
+          note: "No rows, then Lena and Theo.",
+        },
+      },
+      {
+        id: "default", icon: "🩹", title: "Give NULL a default", snippet: "COALESCE(phone, 'no phone')",
+        text: "Predict how NULL spreads through expressions and aggregates, and choose a default with COALESCE.",
+        recap: "NULL spreads: <code>10 + NULL</code> is NULL, and AVG skips missing values. <b>COALESCE</b> returns the first value that isn't NULL, when you mean a default.",
+        example: {
+          before: "SELECT name, 'Call ' || name || ' on ' || phone FROM customers ORDER BY id",
+          sql: "SELECT name, COALESCE(phone, 'no phone') FROM customers ORDER BY id",
+          show: 4,
+          mark: (row, phase) => (phase === "before" && row[1] === null ? "bad" : phase === "after" && row[1] === "no phone" ? "good" : ""),
+          note: "Omar's message was NULL; now his phone has a default.",
+        },
+      },
+    ],
+    checks: [
+      { id: "not-maya", goal: "unknown", prompt: "<code>WHERE phone &lt;&gt; '555-0101'</code> on the 10 customers. Maya's phone is 555-0101, and three customers have no phone. How many rows?", options: ["9", "6", "7"], answer: 1, why: "Maya fails the test, and the three NULL phones are unknown, not different, so WHERE drops them too: 10 − 1 − 3 = 6." },
+      { id: "list-null", goal: "notin", prompt: "<code>WHERE id NOT IN (1, 2, NULL)</code> on the customers. What comes back?", options: ["Everyone except customers 1 and 2", "No rows", "An error"], answer: 1, why: "NOT IN means id <> 1 AND id <> 2 AND id <> NULL. The last part is unknown for every row, so the whole test is never true. (IN with a NULL still works: it only needs one match.)" },
+      { id: "avg-skip", goal: "default", prompt: "Average spend per customer. Lena and Theo never ordered, so their totals are NULL. What does <code>AVG</code> do with them?", options: ["Counts them as 0", "Skips them: it averages over the 8 customers who ordered", "Returns NULL for the whole average"], answer: 1, why: "Aggregates skip NULLs, so it's 18.41 over 8. If never ordering should count as zero, say it: <code>AVG(COALESCE(total, 0))</code> gives 14.72 over 10." },
+    ],
+    warmups: [
+      { id: "eq-null", goal: "unknown", prompt: "Why doesn't <code>WHERE city = NULL</code> find the customers with no city?", options: ["Comparing with NULL is unknown, never true; use IS NULL", "NULL values aren't indexed", "It does, in most databases"], answer: 0, why: "Is an unknown city equal to unknown? Nobody knows, so the test is unknown and WHERE drops the row. IS NULL asks the right question." },
+      { id: "notin-exists", goal: "notin", prompt: "To find customers who never ordered, would you use NOT IN or NOT EXISTS?", options: ["NOT EXISTS: NOT IN returns nothing if the subquery produces a NULL", "NOT IN: it's always faster", "Either: they always return the same rows"], answer: 0, why: "Walk-in orders have a NULL customer, which makes NOT IN return no rows at all. NOT EXISTS only asks whether a matching row exists, so NULLs can't break it." },
+    ],
+    open: {
+      id: "null-traps",
+      goal: "unknown",
+      prompt: "What does NULL mean in SQL, and what are the ways it can make a query quietly return the wrong answer?",
+      points: [
+        "NULL means unknown or missing: not zero, and not an empty string.",
+        "Comparisons with NULL are unknown (three-valued logic) and WHERE keeps only true, so <code>= NULL</code> finds nothing and <code>&lt;&gt;</code> drops NULL rows. Use IS NULL or IS DISTINCT FROM.",
+        "<b>NOT IN</b> with a NULL in the list returns no rows; use NOT EXISTS.",
+        "Expressions spread NULL: <code>10 + NULL</code> and <code>'a' || NULL</code> are NULL.",
+        "Aggregates skip NULLs: AVG divides by the non-NULL count, and SUM over no rows is NULL. Use COALESCE when you mean a default.",
+        "Joins never match NULL keys, while GROUP BY and DISTINCT put all NULLs in one group.",
+      ],
+      answer: "NULL means the value is unknown or missing, which is different from zero or an empty string. Because it's unknown, any comparison with it is unknown too: that's three-valued logic, and WHERE keeps only rows where the test is true. So city = NULL finds nothing, and city <> 'Lisbon' silently drops the customers with no city; you need IS NULL or IS DISTINCT FROM. The nastiest case is NOT IN: if the subquery returns a single NULL, NOT IN returns no rows at all, so I use NOT EXISTS. NULL also spreads through expressions, so a concatenation with a missing phone is NULL, and aggregates skip NULLs, so an average ignores customers with no total. When a missing value should mean zero or a default, I say so with COALESCE.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const TRUTH = [["TRUE AND UNKNOWN", "UNKNOWN"], ["FALSE AND UNKNOWN", "FALSE"], ["TRUE OR UNKNOWN", "TRUE"], ["FALSE OR UNKNOWN", "UNKNOWN"], ["NOT UNKNOWN", "UNKNOWN"]];
   const TRAPS = [
@@ -69,6 +123,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "NULL means <em>unknown</em>, and it breaks queries quietly.", "No error, just a missing customer or an empty result. These are the NULL traps interviewers test, each on the bakery's own gaps: Raj's city, three missing phones, and two orders with no customer.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>NULL isn't zero, an empty string, or "no". It's <b>unknown</b>. Ask of every comparison: what happens when this side is unknown?</p></div>
@@ -93,10 +148,7 @@
           <div class="sel-ops"><table class="sel-table"><thead><tr><th>You wrote</th><th>With NULLs it…</th><th>Instead</th></tr></thead><tbody>${TRAPS.map(([wrote, does, instead]) => `<tr><td><code>${wrote.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></td><td>${does}</td><td><code>${instead.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></td></tr>`).join("")}</tbody></table></div>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about NULL</h2><p class="lab-copy">The questions that catch people out.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="null-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "NULL review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> for every nullable column in a query, ask "what happens to the unknown rows here?" That one question catches most NULL bugs.</p></div>
         ${DSL.lessonFooter("null")}
@@ -109,15 +161,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("null-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "NULL review passed",
-      successCopy: "You can spot where unknown values go missing, and fix it.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.NullModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.NullModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("null", renderNull);
 })(window.DataSystemsLab);

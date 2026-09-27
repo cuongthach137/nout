@@ -22,6 +22,7 @@
           await n.say("hook.2");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "terms",
         title: "Latency and throughput",
@@ -92,7 +93,9 @@
         title: "Your turn: the promise",
         async script(n) { await exercise(n, S.checkoutChallenge(), "checkout", { reactions }); },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("latency"),
       {
         id: "finish",
@@ -100,6 +103,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "latency",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["📊", "Percentiles", "not averages"], ["🐢", "The tail", "p99 is a person"], ["🚦", "Headroom", "queues explode near 100%"]],
           }));
           await n.say("finish.1");

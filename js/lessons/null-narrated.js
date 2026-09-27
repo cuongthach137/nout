@@ -22,6 +22,7 @@
           await n.say("hook.3");
         },
       },
+      DSL.Practice.goalsChapter(M.PRACTICE),
       {
         id: "unknown",
         title: "NULL means unknown",
@@ -106,7 +107,9 @@
           await exercise(n, S.phoneChallenge(), "phone", { reactions: ["error", "extra", "missing", "columns"] });
         },
       },
-      DSL.Narrator.quizChapter({ questions: M.QUIZ, passScore: 3, onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.recapChapter(M.PRACTICE),
+      DSL.Practice.checkChapter(M.PRACTICE, { onPass: () => M.progress.complete("quiz") }),
+      DSL.Practice.interviewChapter(M.PRACTICE),
       DSL.Vocab.reviewChapter("null"),
       {
         id: "finish",
@@ -114,6 +117,7 @@
         async script(n) {
           n.mount(DSL.Guided.finishBeat({
             lessonId: "null",
+            before: () => DSL.Practice.goalsSummary(M.PRACTICE),
             badges: [["❓", "Unknown", "test with IS NULL"], ["🚫", "NOT IN", "breaks on a NULL"], ["🩹", "COALESCE", "a default, on purpose"]],
           }));
           await n.say("finish.1");

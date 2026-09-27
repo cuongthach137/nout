@@ -9,7 +9,7 @@
   const code = (sql) => `<code>${DSL.Sql.highlight(sql)}</code>`;
   const progress = DSL.LabKit.createProgress({
     lessonId: "models",
-    labs: [{ id: "docs", name: `${DSL.labLabel("models", "A")} Documents` }, { id: "shape", name: `${DSL.labLabel("models", "B")} Schema on read` }, { id: "graph", name: `${DSL.labLabel("models", "C")} Graphs` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "docs", name: `${DSL.labLabel("models", "A")} Documents` }, { id: "shape", name: `${DSL.labLabel("models", "B")} Schema on read` }, { id: "graph", name: `${DSL.labLabel("models", "C")} Graphs` }, { id: "quiz", name: "Practice" }],
   });
   const D = "bakeryModels";
   const NET = "WITH RECURSIVE net(id) AS (\n  SELECT referred_id FROM referrals WHERE referrer_id = 1\n  UNION ALL\n  ";
@@ -34,16 +34,69 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "Why is a document store fast at showing a whole order?", options: ["It uses better indexes", "Everything the page needs is embedded in one document: one read, no joins", "JSON is faster to parse than rows"], answer: 1, why: "Everything is embedded in one document, so it's one read with no joins. That's data locality." },
-    { prompt: "A customer's details are embedded in each of her orders. What goes wrong when she moves?", options: ["Nothing: documents update themselves", "Every copy must be updated, and a missed one disagrees", "The old orders are deleted"], answer: 1, why: "Every copy must be updated. Miss one and the documents disagree: the update anomaly again." },
-    { prompt: "What does schema on read mean?", options: ["The database has no schema at all", "Writes accept any shape; the reading code copes with each variant", "The schema is checked each time a row is read"], answer: 1, why: "Writes accept any shape; readers interpret it. Tables check on write instead." },
-    { prompt: "Which question most needs a graph model?", options: ["Total revenue per month", "Show one order with its items", "Who's connected to Maya within three hops"], answer: 2, why: "Following links to an unknown depth is a traversal: the graph model's strength." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "PostgreSQL's <code>jsonb</code> columns mean…", options: ["PostgreSQL became a document database", "Documents can live inside a relational database, with indexes and queries on their fields", "JSON is converted to tables on insert"], answer: 1, why: "The models converge: relational databases store and index documents, and document databases add joins. Choose by access pattern, not by product." },
-    { prompt: "SQL can traverse a graph with a recursive CTE. Why use a graph database?", options: ["SQL can't follow edges", "Graph databases store edges for fast hops and have query languages built for paths (like Cypher)", "Graph databases don't need indexes"], answer: 1, why: "Deep or variable-length traversals, path finding and pattern matching are what graph engines and languages like Cypher are built for." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "models",
+    goals: [
+      {
+        id: "document", icon: "📄", title: "Store what's read together", snippet: "json_extract(doc, '$.customer.name')",
+        text: "Model an order as a document, explain embedding and data locality, and name the cost of copied data.",
+        recap: "A <b>document</b> embeds the customer and the items, so showing an order is one read with no joins: <b>data locality</b>. The cost: Maya's phone is copied into every order.",
+        example: {
+          dataset: "bakeryModels",
+          sql: "SELECT id, json_extract(doc, '$.customer.phone') AS phone FROM order_docs WHERE json_extract(doc, '$.customer.id') = 1 ORDER BY id",
+          mark: () => "hot",
+          note: "Her phone lives in four documents: change it four times.",
+        },
+      },
+      {
+        id: "schema", icon: "📐", title: "Choose when to check", snippet: "\"note\": \"Leave at the door\"",
+        text: "Contrast schema on write with schema on read, and say who pays for each.",
+        recap: "Tables check the shape as each row is written: <b>schema on write</b>. Documents take any shape, and every reader copes: <b>schema on read</b>. Only order 8 has a note.",
+        example: {
+          dataset: "bakeryModels",
+          sql: "SELECT id, json_extract(doc, '$.note') AS note FROM order_docs WHERE id BETWEEN 6 AND 9 ORDER BY id",
+          mark: (row) => (row[1] !== null ? "hot" : ""),
+          note: "Every reader must handle a field that may not be there.",
+        },
+      },
+      {
+        id: "graph", icon: "🕸️", title: "Follow the links", snippet: "WITH RECURSIVE net AS (…)",
+        text: "Model connections as a graph, and traverse it to any depth with a recursive CTE.",
+        recap: "In a <b>graph</b>, people are nodes and referrals are edges. A <b>traversal</b> follows them hop by hop: Maya's network is five people, three hops deep.",
+        example: {
+          dataset: "bakeryModels",
+          sql: "WITH RECURSIVE net(id) AS (\n  SELECT referred_id FROM referrals WHERE referrer_id = 1\n  UNION\n  SELECT r.referred_id FROM referrals r\n  JOIN net ON r.referrer_id = net.id\n)\nSELECT group_concat(c.name, ', ') AS network\nFROM net JOIN customers c ON c.id = net.id",
+          note: "Ana and Omar, then Ines and Yuki, then Priya.",
+        },
+      },
+    ],
+    checks: [
+      { id: "old-price", goal: "document", prompt: "Each order document embeds the price of every item. The bakery raises the croissant's price. What should happen to the old order documents?", options: ["Update every one with the new price", "Leave them: the embedded price is what the customer paid at the time", "Delete them and rebuild from the products table"], answer: 1, why: "Not every copy is a bug. An order should freeze the price it was sold at. Embed facts that should freeze; point at facts that must stay current, like a phone number." },
+      { id: "phone-list", goal: "schema", prompt: "A new app version stores <code>customer.phone</code> as a list of numbers; older documents hold a single string. With schema on read, who deals with the difference?", options: ["The database rejects the new documents", "Every piece of code that reads phones must handle both shapes", "The old documents are converted automatically"], answer: 1, why: "Schema on read moves the check from the write to every reader. Nothing converts old documents unless you run a migration yourself." },
+      { id: "hops", goal: "graph", prompt: "Why does a plain JOIN struggle to find everyone Maya brought in, at any depth?", options: ["A JOIN can't use the same table twice", "Each JOIN follows exactly one hop, and the number of hops isn't known in advance", "Referrals need a foreign key first"], answer: 1, why: "Two hops is two joins; three hops, three. A recursive CTE, or a graph query, repeats the hop until no new people appear." },
+    ],
+    warmups: [
+      { id: "when-docs", goal: "document", prompt: "When would you choose a document database over a relational one?", options: ["When data is read as one self-contained tree, like an order or a profile, and rarely joined to much else", "Whenever the data is large", "When the data has many-to-many relationships"], answer: 0, why: "Documents win on locality for tree-shaped reads. Many-to-many data and reports that cut across records suit tables better." },
+      { id: "write-read", goal: "schema", prompt: "What's the difference between schema on write and schema on read?", options: ["On write, the database checks the structure as data is stored; on read, any shape goes in and the reader interprets it", "Schema on read makes writes faster, and that's all", "They're the query languages of SQL and NoSQL"], answer: 0, why: "It's about where the structure is enforced: by the database on every write, or by the code on every read." },
+    ],
+    open: {
+      id: "pick-a-model",
+      goal: "graph",
+      prompt: "The bakery wants customer reviews and a \"customers also bought\" feature. Would you use tables, documents or a graph? Walk me through the trade-offs.",
+      points: [
+        "Choose by how the data is read and connected, not by product.",
+        "Documents suit data read as one tree, like an order (locality), but copied data must be updated everywhere.",
+        "Reviews link customers to products (many-to-many) and feed reports: tables fit, with foreign keys and constraints.",
+        "\"Also bought\" follows links between products through orders. A graph fits deep or variable-depth traversals; one or two hops are fine as SQL joins.",
+        "Schema on write enforces rules; schema on read is flexible, but every reader copes with old shapes.",
+        "The lines blur: PostgreSQL has JSON columns and recursive CTEs, so one database can often do all three.",
+      ],
+      answer: "I'd decide by access pattern. Reviews connect customers and products, which is many-to-many, and the bakery will want reports on them, so a reviews table with foreign keys to both fits best, and the database can enforce the rules. \"Customers also bought\" is a question about connections: from a product, through its orders, to other products. At one or two hops that's just a couple of joins in SQL; if it grew into deeper recommendations across customers, a graph model would fit more naturally. Documents would make sense if we showed an order or a product page as one self-contained tree, for locality, at the cost of updating copied data. And the lines blur: PostgreSQL stores JSON and runs recursive queries, so I'd likely start in one relational database.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   const COMPARE = [
     ["Relational", "each fact once; joins on read", "many-to-many data, reports, constraints", "joins on every read; schema changes are migrations"],
@@ -64,6 +117,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Tables, documents, and <em>graphs</em>.", "The same bakery in three shapes. Each makes some questions easy and others painful. \"When would you use a document store?\" is a staple of system design interviews.")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>These labs add two tables to the bakery: <code>order_docs</code>, the orders as JSON documents (customer and items embedded), and <code>referrals</code>, who brought whom. SQLite's JSON functions and recursive CTEs let one engine play all three models.</p></div>
@@ -90,10 +144,7 @@
           <div class="sel-ops"><table class="sel-table"><thead><tr><th>Model</th><th>Shape</th><th>Great for</th><th>Costs</th></tr></thead><tbody>${COMPARE.map(([model, shape, good, cost]) => `<tr><td><code>${model}</code></td><td>${shape}</td><td>${good}</td><td>${cost}</td></tr>`).join("")}</tbody></table></div>
         </section>
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about data models</h2><p class="lab-copy">The trade-offs system design interviews probe.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="models-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Data models review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> ask what's read together, what's shared, and how deep the links go. Those three answers pick the model.</p></div>
         ${DSL.lessonFooter("models")}
@@ -106,15 +157,9 @@
         onAllDone: () => progress.complete(labId),
       });
     });
-    DSL.Quiz.mount(document.getElementById("models-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Data models review passed",
-      successCopy: "You can say which model fits which question, and what it costs.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.ModelsModel = Object.freeze({ QUIZ, CHALLENGES, progress });
+  DSL.ModelsModel = Object.freeze({ PRACTICE, CHALLENGES, progress });
   DSL.registerRenderer("models", renderModels);
 })(window.DataSystemsLab);

@@ -57,7 +57,7 @@
 
   const progress = DSL.LabKit.createProgress({
     lessonId: "latency",
-    labs: [{ id: "pct", name: `${DSL.labLabel("latency", "A")} Percentiles` }, { id: "tail", name: `${DSL.labLabel("latency", "B")} The tail` }, { id: "load", name: `${DSL.labLabel("latency", "C")} Load` }, { id: "quiz", name: "Quiz" }],
+    labs: [{ id: "pct", name: `${DSL.labLabel("latency", "A")} Percentiles` }, { id: "tail", name: `${DSL.labLabel("latency", "B")} The tail` }, { id: "load", name: `${DSL.labLabel("latency", "C")} Load` }, { id: "quiz", name: "Practice" }],
   });
   const R = "requests";
   const RANKED = "WITH ranked AS (\n  SELECT endpoint, ms,\n         ROW_NUMBER() OVER (PARTITION BY endpoint ORDER BY ms) AS rn,\n         COUNT(*) OVER (PARTITION BY endpoint) AS n\n  FROM requests\n)\n";
@@ -76,16 +76,73 @@
     ],
   };
 
-  const QUIZ = [
-    { prompt: "Average response time is 170 ms, but the median is 101 ms. What does that tell you?", options: ["The measurements are wrong", "A few very slow requests pull the average up: a long tail", "Most requests take about 170 ms"], answer: 1, why: "A few very slow requests pull the average up. The distribution has a long tail, so report percentiles." },
-    { prompt: "What does \"p99 is 2 seconds\" mean?", options: ["99% of requests take about 2 s", "99 in 100 requests take 2 s or less; 1 in 100 takes longer", "The slowest request took 2 s"], answer: 1, why: "Ninety-nine in a hundred requests take two seconds or less. One in a hundred takes longer." },
-    { prompt: "A page calls 10 services in parallel, each slow 1% of the time. Roughly how often is the page slow?", options: ["About 1%", "About 10%", "About 50%"], answer: 1, why: "It waits for the slowest call: 1 − 0.99¹⁰ ≈ 9.6%." },
-    { prompt: "A server goes from 80% to 95% busy. What happens to response time?", options: ["It rises by about 15%", "It roughly quadruples", "It stays the same until 100%"], answer: 1, why: "Queues grow steeply near full capacity. In the simple queueing model it goes from 5× the service time to 20×: four times worse." },
-  ];
-  const QUIZ_MORE = [
-    { prompt: "Ten servers each report their p99. How do you get the p99 of all traffic?", options: ["Average the ten p99s", "Take the largest p99", "Merge the underlying distributions (e.g. histograms), then compute it"], answer: 2, why: "Percentiles don't average or add. Keep histograms (or sketches like t-digest) that can be merged, then read the percentile off the merged data." },
-    { prompt: "Where should you measure response time?", options: ["On the server, after the request is parsed", "On the client, including network and queueing", "Only in load tests"], answer: 1, why: "Server-side timers miss time spent waiting in queues and on the network. Users feel the client-side number." },
-  ];
+  // Goals, and the practice that checks them (js/components/practice.js). Every mode states the
+  // goals at the start and ends with the recap, the checks and the interview round.
+  const PRACTICE = {
+    lessonId: "latency",
+    goals: [
+      {
+        id: "terms", icon: "⏱️", title: "Name the numbers", snippet: "latency ≠ throughput\nmean 170 ms, median 101 ms",
+        text: "Tell latency from throughput, and explain why the average hides what users feel.",
+        recap: "<b>Latency</b> is how long one request takes; <b>throughput</b> is how many finish per second. A few multi-second requests drag the mean to 170 ms; the median is 101 ms.",
+        example: {
+          dataset: "requests",
+          before: "SELECT id, ms FROM requests ORDER BY ms DESC",
+          sql: "SELECT ROUND(AVG(ms)) AS mean,\n  (SELECT ms FROM requests ORDER BY ms LIMIT 1 OFFSET 99) AS median\nFROM requests",
+          show: 4,
+          mark: (row, phase) => (phase === "before" ? "bad" : ""),
+          note: "The slowest few pull the mean far above the middle request.",
+        },
+      },
+      {
+        id: "tail", icon: "📊", title: "Measure the tail", snippet: "ORDER BY ms LIMIT 1 OFFSET 197",
+        text: "Compute p50, p95 and p99 in SQL, and say what each one means for users.",
+        recap: "A <b>percentile</b> says how many requests are at or below a value. p95 is 327 ms, and p99 is over 2 seconds: one request in a hundred waits longer than that.",
+        example: {
+          dataset: "requests",
+          sql: "SELECT\n  (SELECT ms FROM requests ORDER BY ms LIMIT 1 OFFSET 99) AS p50,\n  (SELECT ms FROM requests ORDER BY ms LIMIT 1 OFFSET 189) AS p95,\n  (SELECT ms FROM requests ORDER BY ms LIMIT 1 OFFSET 197) AS p99",
+          mark: () => "hot",
+          note: "Nearest rank: the 100th, 190th and 198th of 200.",
+        },
+      },
+      {
+        id: "slowdowns", icon: "📈", title: "Predict the slowdowns", snippet: "1 − 0.99¹⁰ ≈ 10%",
+        text: "Predict how the tail grows when a page fans out to many calls, and how latency explodes as a server nears full load.",
+        recap: "A page waiting on 10 calls, each slow 1% of the time, is slow about 10% of the time: <b>tail amplification</b>. Near full load, <b>queueing delay</b> makes latency shoot up.",
+        example: {
+          after: [
+            { label: "Tail amplification: each call slow 1%", columns: ["calls per page", "pages slow"], rows: [[1, "1%"], [10, "9.6%"], [100, "63%"]] },
+            { label: "Queueing: 50 ms of work per request", columns: ["server busy", "response time"], rows: [["50%", "100 ms"], ["80%", "250 ms"], ["95%", "1,000 ms"]] },
+          ],
+          note: "From 80% to 95% busy, four times slower.",
+        },
+      },
+    ],
+    checks: [
+      { id: "more-servers", goal: "terms", prompt: "The site handles 500 requests a second. The team doubles the servers, and it now handles 1,000 a second. What happened to each request's latency?", options: ["It halved", "Not necessarily anything: throughput and latency measure different things", "It doubled"], answer: 1, why: "Throughput counts requests finished per second; latency is how long each one takes. More servers raise capacity. Each request only gets faster if it was waiting in a queue." },
+      { id: "slo-met", goal: "tail", prompt: "The promise: 95% of checkouts in under one second. The checkout p95 is 984 ms, and a few checkouts take over 2 s. Is the promise kept?", options: ["Yes: it's about p95, and 984 ms is under a second", "No: some checkouts take over 2 seconds", "You can't tell without the average"], answer: 0, why: "An SLO is a promise stated as a percentile. The slowest 5% can be anything; if they matter too, promise a p99 as well." },
+      { id: "fifty-calls", goal: "slowdowns", prompt: "Page A calls 1 service. Page B calls 50 services in parallel. Every service is slow 1% of the time. Which is right?", options: ["Both pages are slow about 1% of the time", "Page B is slow about 40% of the time: it waits for the slowest of 50 calls", "Page B is never slow, because the calls run in parallel"], answer: 1, why: "Parallel calls still finish only when the slowest one does. 1 − 0.99⁵⁰ ≈ 39.5%: fifty chances to hit a slow tail." },
+    ],
+    warmups: [
+      { id: "why-p99", goal: "tail", prompt: "Why would you report p99 latency rather than the average?", options: ["The average hides the slow tail some users actually hit; p99 shows it", "p99 is cheaper to compute", "Averages can't be computed on large datasets"], answer: 0, why: "Latency is skewed: a few very slow requests move the mean without describing anyone. p50 describes the typical user, p99 the unlucky one in a hundred." },
+      { id: "busy", goal: "slowdowns", prompt: "A server goes from 80% to 95% busy. What happens to response time?", options: ["It rises by about 15%", "It roughly quadruples", "It stays the same until 100%"], answer: 1, why: "Queues grow steeply near full capacity. In the simple queueing model, response time goes from 5 times the work to 20 times: four times worse." },
+    ],
+    open: {
+      id: "feels-slow",
+      goal: "tail",
+      prompt: "Users say the site feels slow, but the average response time looks fine. How would you investigate, and how would you report it?",
+      points: [
+        "The average hides the tail: look at the distribution and report p50, p95 and p99 (and the max).",
+        "Break it down by endpoint and over time: the slow requests may be the valuable ones, like checkout.",
+        "Measure where users feel it, on the client, including network and queueing time.",
+        "Check fan-out: a page waiting on many calls hits someone's tail often (tail amplification); find the slowest dependency.",
+        "Check load: near full utilization, queueing delay makes latency explode; leave headroom.",
+        "Agree on an SLO stated as a percentile, and never average percentiles across servers: merge histograms instead.",
+      ],
+      answer: "An average can look fine while real users wait, because a few very slow requests are hidden in it. I'd look at the latency distribution and report percentiles: p50 for the typical user, p95 and p99 for the unlucky ones. Then I'd break it down by endpoint and over time, since checkout may have a much worse tail than the menu, and those are the requests that matter most. I'd make sure we measure on the client, including network and queueing. For causes, I'd check fan-out, since a page that waits on many services hits one of their slow tails often, and load, since near full utilization queueing makes latency climb steeply. Finally I'd agree an SLO as a percentile, like 95% of checkouts under a second, and compute it from merged histograms, not averaged percentiles.",
+    },
+  };
+  DSL.Practice.registerCards(PRACTICE);
 
   // One playground panel's markup: "amp" (tail amplification) or "queue".
   function panel(kind) {
@@ -171,6 +228,7 @@
     DSL.elements.root.innerHTML = `
       <article class="lesson sel">
         ${DSL.lessonHeader(lesson, "Measure the <em>tail</em>, not the average.", "Latency, throughput and percentiles: the vocabulary of every performance question, and of every system design interview that asks \"how fast does it need to be?\".")}
+        <div class="pr-intro"><p class="pr-kicker">By the end, you'll be able to</p>${DSL.Practice.cardsMarkup(PRACTICE, { compact: true })}</div>
         ${progress.markup()}
 
         <div class="insight"><span class="insight-mark">//</span><p>The table <code>requests</code> holds 200 requests to the bakery's site: <code>id</code>, <code>endpoint</code> (<code>/menu</code> or <code>/checkout</code>) and <code>ms</code>. Average: <b>${ALL.mean.toFixed(0)} ms</b>. Median: <b>${ALL.p50} ms</b>. p99: <b>${ALL.p99} ms</b>. Same data.</p></div>
@@ -192,10 +250,7 @@
             <div><h3>SLOs</h3><p>State targets as percentiles: "95% of checkouts under 1 s, measured at the client, over 30 days." Averages can meet a target while one user in twenty suffers.</p></div>
           </div>`, false)}
 
-        <section class="lab" id="lab-quiz">
-          <div class="lab-top"><div><span class="lab-kicker">Check yourself</span><h2>Six calls about latency</h2><p class="lab-copy">Percentiles, fan-out, queues, and where to measure.</p></div><div class="lab-side"><button class="button" type="button" data-quiz-reset>Reset answers</button>${DSL.LabKit.stamp()}</div></div>
-          <div id="latency-quiz">${DSL.Quiz.render([...QUIZ, ...QUIZ_MORE], "Latency review")}</div>
-        </section>
+        ${DSL.Practice.exploreMarkup(PRACTICE)}
 
         <div class="insight"><span class="insight-mark">!</span><p><strong>Transferable idea:</strong> ask "what's the p99, measured where, under what load?" before believing any speed claim, including your own.</p></div>
         ${DSL.lessonFooter("latency")}
@@ -209,15 +264,9 @@
       });
     });
     wirePlaygrounds(document.getElementById("lab-load"), () => progress.complete("load"));
-    DSL.Quiz.mount(document.getElementById("latency-quiz"), [...QUIZ, ...QUIZ_MORE], {
-      noun: "call",
-      passScore: 5,
-      successTitle: "Latency review passed",
-      successCopy: "You can read a latency distribution and explain its tail.",
-      onComplete: ({ passed }) => { if (passed) progress.complete("quiz"); },
-    });
+    DSL.Practice.mountExplore(document.getElementById("lab-quiz"), PRACTICE, { onPass: () => progress.complete("quiz") });
   }
 
-  DSL.LatencyModel = Object.freeze({ QUIZ, CHALLENGES, REQUESTS, ALL, stats, slowPage, response, SERVICE_MS, mulberry32, playgrounds, panel, slowLoads, wirePlaygrounds, progress });
+  DSL.LatencyModel = Object.freeze({ PRACTICE, CHALLENGES, REQUESTS, ALL, stats, slowPage, response, SERVICE_MS, mulberry32, playgrounds, panel, slowLoads, wirePlaygrounds, progress });
   DSL.registerRenderer("latency", renderLatency);
 })(window.DataSystemsLab);

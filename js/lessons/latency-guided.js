@@ -195,6 +195,7 @@
   function makeBeats() {
     const LM = DSL.LatencyModel;
     return [
+      DSL.Practice.goalsBeat(LM.PRACTICE),
       teach("teach-flow", "Latency vs throughput.", flowStory(), "Response time is what the user sees: waiting in queues plus network plus the actual work. Latency is sometimes used for just the waiting part."),
       teach("teach-hist", "A distribution, not a number.", slice(histStory(), 0, 3)),
       medianPredict(),
@@ -205,9 +206,13 @@
       ampSlider(),
       queueSlider(),
       checkoutChallenge(),
-      DSL.Guided.quizBeat({ questions: LM.QUIZ, passScore: 3, onPass: () => LM.progress.complete("quiz") }),
+      DSL.Practice.recapBeat(LM.PRACTICE),
+      DSL.Practice.checkBeat(LM.PRACTICE, { onPass: () => LM.progress.complete("quiz") }),
+      DSL.Practice.warmupBeat(LM.PRACTICE),
+      DSL.Practice.openBeat(LM.PRACTICE),
       DSL.Guided.finishBeat({
         lessonId: "latency",
+        before: () => DSL.Practice.goalsSummary(LM.PRACTICE),
         badges: [["📊", "Percentiles", "not averages"], ["🐢", "The tail", "p99 is a person"], ["🚦", "Headroom", "queues explode near 100%"]],
       }),
     ];
